@@ -2,7 +2,7 @@ import streamlit as st
 
 # Configuração da página
 st.set_page_config(
-    page_title="Análise de Crédito Inteligente",
+    page_title="Início",
     page_icon="💳",
     layout="wide"
 )
