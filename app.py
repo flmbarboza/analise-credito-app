@@ -1,27 +1,20 @@
 import streamlit as st
 
-# Configuração da página
+# Configuração global (APENAS AQUI)
 st.set_page_config(
-    page_title="App para Gestor de Risco de Crédito",
-    page_icon="💳",
-    layout="wide"
+    page_title="App Básico",
+    page_icon="✨",
+    layout="centered"
 )
 
-# Menu principal no sidebar
-st.sidebar.title("🏦 Menu Principal")
-pagina_selecionada = st.sidebar.selectbox(
-    "Escolha uma opção:",
-    [
-        "Início",
-        "Teste"
-    ]
+# Menu sidebar (opcional)
+st.sidebar.title("NAVEGAÇÃO")
+pagina = st.sidebar.radio(
+    "Ir para:",
+    ["🏠 Home", "🚀 Teste"],
+    index=0  # Página padrão
 )
 
-# Footer
+# Rodapé (opcional)
 st.sidebar.markdown("---")
-st.sidebar.markdown("""
-<div style='text-align: center; color: gray; font-size: 12px;'>
-    💳 Plataforma Financeira Completa<br>
-    Versão 2.0
-</div>
-""", unsafe_allow_html=True)
+st.sidebar.caption("v1.0 • Feito com Streamlit")
