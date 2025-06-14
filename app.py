@@ -18,3 +18,6 @@ pagina = st.sidebar.radio(
 # Rodapé (opcional)
 st.sidebar.markdown("---")
 st.sidebar.caption("v1.0 • Feito com Streamlit")
+
+import os
+st.write("Páginas detectadas:", os.listdir("pages"))
