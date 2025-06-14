@@ -10,14 +10,14 @@ def main():
     
     with col1:
         st.info("""
-        ### 💳 Análise de Crédito
-        Avalie seu perfil de crédito de forma rápida e inteligente
+        ### 💳 Análise Univariada
+        Avalie cada uma das variáveis de forma independente
         """)
     
     with col2:
         st.success("""
-        ### 📊 Dashboard Financeiro
-        Visualize suas finanças em tempo real
+        ### 📊 Análise Bivariada
+        Verifique a relação entre cada variável explicativa e a qualidade de crédito
         """)
     
     with col3:
