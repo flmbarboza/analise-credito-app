@@ -12,7 +12,7 @@ st.markdown("""
 <style>
     /* Esconde o título padrão "app" */
     [data-testid="stSidebar"] > div:first-child {
-        display: none !important;
+        display: none;
     }
 </style>
 """, unsafe_allow_html=True)
