@@ -12,7 +12,7 @@ st.sidebar.title("🏦 Menu Principal")
 pagina_selecionada = st.sidebar.selectbox(
     "Escolha uma opção:",
     [
-        "Página_Inicial"
+        "1_Página_Inicial"
     ]
 )
 
