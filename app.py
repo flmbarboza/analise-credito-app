@@ -1,9 +1,10 @@
 import streamlit as st
 
-# --- SOLUÇÃO DEFINITIVA PARA O MENU ---
+# --- SIDEBAR ---
 with st.sidebar:
-    # Container vazio para "engolir" o título padrão
-    placeholder = st.empty()
-    
-    # Seu menu personalizado
-    st.title("📚 Menu da Disciplina")  # Título visível
+    st.title("📚 Menu da Disciplina")  # Título do menu
+
+    opcao = st.sidebar.selectbox(
+        "Navegue pelos tópicos:",
+        ("Introdução", "Conteúdo", "Exercícios", "Sobre")
+    )
