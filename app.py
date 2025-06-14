@@ -1,7 +1,10 @@
 import streamlit as st
 from streamlit_option_menu import option_menu  # Instale com: pip install streamlit-option-menu
 
-st.set_page_config(layout="wide")
+st.set_page_config(
+    page_title="Análise de Crédito",  # Título da aba do navegador
+    layout="wide"
+)
 
 # Menu horizontal ou vertical
 pagina = option_menu(
