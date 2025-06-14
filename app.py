@@ -7,6 +7,13 @@ st.set_page_config(
     layout="centered"
 )
 
+# Menu sidebar (opcional)
+st.sidebar.title("NAVEGAÇÃO")
+pagina = st.sidebar.radio(
+    "Ir para:",
+    ["🏠 Home", "🚀 Teste"],
+    index=0  # Página padrão
+)
 # Conteúdo opcional da página principal
 st.write("""
 Este é o arquivo principal. Use o menu lateral **automático** do Streamlit 
