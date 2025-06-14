@@ -1,23 +1,17 @@
 import streamlit as st
+from streamlit_option_menu import option_menu  # Instale com: pip install streamlit-option-menu
 
-# Configuração global (APENAS AQUI)
-st.set_page_config(
-    page_title="App Básico",
-    page_icon="✨",
-    layout="centered"
+st.set_page_config(layout="wide")
+
+# Menu horizontal ou vertical
+pagina = option_menu(
+    menu_title=None,
+    options=["Home", "Teste"],
+    icons=["house", "rocket"],
+    orientation="horizontal"
 )
 
-# Menu sidebar (opcional)
-st.sidebar.title("NAVEGAÇÃO")
-pagina = st.sidebar.radio(
-    "Ir para:",
-    ["🏠 Home", "🚀 Teste"],
-    index=0  # Página padrão
-)
-
-# Rodapé (opcional)
-st.sidebar.markdown("---")
-st.sidebar.caption("v1.0 • Feito com Streamlit")
-
-import os
-st.write("Páginas detectadas:", os.listdir("pages"))
+if pagina == "Home":
+    st.switch_page("pages/1_🏠_Home.py")
+elif pagina == "Teste":
+    st.switch_page("pages/2_🚀_Teste.py")
