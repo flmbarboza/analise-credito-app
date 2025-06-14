@@ -2,7 +2,7 @@ import streamlit as st
 from streamlit_option_menu import option_menu  # Instale com: pip install streamlit-option-menu
 
 st.set_page_config(
-    page_title="Análise de Crédito",  # Título da aba do navegador
+    page_title="Risco de Crédito",  # Título da aba do navegador
     layout="wide"
 )
 
@@ -18,11 +18,5 @@ pagina = option_menu(
     }
 )
 
-
 # Adicione seu próprio título acima do menu (opcional)
 st.markdown("<h1 style='text-align: center;'>Risco de Crédito e Credit Scoring</h1>", unsafe_allow_html=True)
-
-if pagina == "Home":
-    st.switch_page("pages/1_🏠_Home.py")
-elif pagina == "Teste":
-    st.switch_page("pages/2_🚀_Teste.py")
