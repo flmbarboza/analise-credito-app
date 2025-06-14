@@ -3,12 +3,6 @@ from streamlit_option_menu import option_menu
 
 st.sidebar.title("Menu")
 
-# Configuração da página
-st.set_page_config(
-    page_title="Risco de Crédito",
-    layout="wide"
-)
-
 st.markdown("""
 <style>
     .main-title {
