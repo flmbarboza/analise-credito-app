@@ -5,7 +5,7 @@ st.set_page_config(layout="wide")
 
 # Menu horizontal ou vertical
 pagina = option_menu(
-    menu_title=None,
+    menu_title="Cardápio",
     options=["Home", "Teste"],
     icons=["house", "rocket"],
     orientation="horizontal"
