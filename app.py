@@ -1,41 +1,44 @@
 import streamlit as st
 
-# Configuração principal
+# Configuração da página
 st.set_page_config(
     page_title="Risco de Crédito",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# --- CSS PARA REMOVER SOMENTE O TÍTULO "app" ---
+# CSS para customização do sidebar
 st.markdown("""
 <style>
-    /* Remove apenas o título "app" */
-    [data-testid="stSidebarUserContent"] > div:first-child {
-        visibility: hidden;
-        height: 0px;
+    /* Remove o título padrão 'app' */
+    [data-testid="stSidebar"] > div:first-child > div:first-child > div:first-child {
+        display: none;
     }
     
-    /* Mantém o resto da sidebar visível */
-    [data-testid="stSidebarNav"] {
-        margin-top: -30px;
+    /* Ajusta o posicionamento do conteúdo customizado */
+    [data-testid="stSidebarUserContent"] {
+        padding-top: 2rem;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# --- MENU PERSONALIZADO ---
+# Menu lateral personalizado
 with st.sidebar:
-    # Seu título customizado
-    st.markdown("# 📚 Menu da Disciplina")
+    # Título do menu personalizado
+    st.markdown("""
+    <h1 style='font-size: 1.5rem; margin-bottom: 1.5rem;'>
+    📚 Menu da Disciplina
+    </h1>
+    """, unsafe_allow_html=True)
     
-    # Itens do menu
+    # Opções de navegação
     pagina = st.radio(
-        "Navegação:",
-        ["🏠 Home", "🚀 Teste"],
-        index=0
+        "Selecione a página:",
+        options=["🏠 Home", "🚀 Teste"],
+        label_visibility="collapsed"  # Oculta o label padrão
     )
 
-# --- REDIRECIONAMENTO ---
+# Lógica de redirecionamento
 if "Home" in pagina:
     st.switch_page("pages/1_🏠_Home.py")
 elif "Teste" in pagina:
