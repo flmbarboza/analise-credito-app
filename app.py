@@ -2,7 +2,7 @@ import streamlit as st
 
 # Configuração da página
 st.set_page_config(
-    page_title="Início",
+    page_title="App para Gestor de Risco de Crédito",
     page_icon="💳",
     layout="wide"
 )
@@ -12,7 +12,7 @@ st.sidebar.title("🏦 Menu Principal")
 pagina_selecionada = st.sidebar.selectbox(
     "Escolha uma opção:",
     [
-        "Home",
+        "Início",
         "Teste"
     ]
 )
