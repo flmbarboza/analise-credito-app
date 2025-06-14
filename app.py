@@ -14,6 +14,12 @@ pagina = st.sidebar.radio(
     ["🏠 Home", "🚀 Teste"],
     index=0  # Página padrão
 )
+
+if pagina == "Home":
+    st.switch_page("pages/1_🏠_Home.py")
+elif pagina == "Teste":
+    st.switch_page("pages/2_🚀_Teste.py")
+    
 # Conteúdo opcional da página principal
 st.write("""
 Este é o arquivo principal. Use o menu lateral **automático** do Streamlit 
