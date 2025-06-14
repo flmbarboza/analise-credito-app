@@ -12,13 +12,7 @@ st.sidebar.title("🏦 Menu Principal")
 pagina_selecionada = st.sidebar.selectbox(
     "Escolha uma opção:",
     [
-        "🏠 Página Inicial",
-        "💳 Análise Univariada",
-        "📊 Análise Bivariada",
-        "📈 Escore Preliminar",
-        "🎯 Planejamento Financeiro",
-        "📚 Educação Financeira",
-        "⚙️ Configurações"
+        "Página_Inicial"
     ]
 )
 
