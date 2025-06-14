@@ -11,7 +11,7 @@ pagina = option_menu(
     menu_title=None,
     options=["Home", "Teste"],
     icons=["house", "rocket"],
-    orientation="horizontal",
+    orientation="vertical",
     styles={
         "container": {"padding": "0!important", "background-color": "#f0f2f6"},
         "nav-link": {"font-size": "18px", "text-align": "center", "margin": "0px"},
