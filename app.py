@@ -1,81 +1,42 @@
 import streamlit as st
-from streamlit_option_menu import option_menu
 
-# Configuração da página (OBRIGATÓRIO para aplicar o CSS)
+# Configuração principal
 st.set_page_config(
     page_title="Risco de Crédito",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-# --- INÍCIO: Código para remover o título "app" ---
+# --- CSS PARA REMOVER SOMENTE O TÍTULO "app" ---
 st.markdown("""
 <style>
-    /* Esconde o título padrão "app" */
-    [data-testid="stSidebar"] > div:first-child {
-        display: none;
+    /* Remove apenas o título "app" */
+    [data-testid="stSidebarUserContent"] > div:first-child {
+        visibility: hidden;
+        height: 0px;
+    }
+    
+    /* Mantém o resto da sidebar visível */
+    [data-testid="stSidebarNav"] {
+        margin-top: -30px;
     }
 </style>
 """, unsafe_allow_html=True)
-# --- FIM do código de remoção ---
 
-# 1=sidebar menu, 2=horizontal menu, 3=horizontal menu w/ custom menu
-EXAMPLE_NO = 1
+# --- MENU PERSONALIZADO ---
+with st.sidebar:
+    # Seu título customizado
+    st.markdown("# 📚 Menu da Disciplina")
+    
+    # Itens do menu
+    pagina = st.radio(
+        "Navegação:",
+        ["🏠 Home", "🚀 Teste"],
+        index=0
+    )
 
-
-def streamlit_menu(example=1):
-    if example == 1:
-        # 1. as sidebar menu
-        with st.sidebar:
-            selected = option_menu(
-                menu_title="Main Menu",  # required
-                options=["Home", "Projects", "Contact"],  # required
-                icons=["house", "book", "envelope"],  # optional
-                menu_icon="cast",  # optional
-                default_index=0,  # optional
-            )
-        return selected
-
-    if example == 2:
-        # 2. horizontal menu w/o custom style
-        selected = option_menu(
-            menu_title=None,  # required
-            options=["Home", "Projects", "Contact"],  # required
-            icons=["house", "book", "envelope"],  # optional
-            menu_icon="cast",  # optional
-            default_index=0,  # optional
-            orientation="horizontal",
-        )
-        return selected
-
-    if example == 3:
-        # 2. horizontal menu with custom style
-        selected = option_menu(
-            menu_title=None,  # required
-            options=["Home", "Projects", "Contact"],  # required
-            icons=["house", "book", "envelope"],  # optional
-            menu_icon="cast",  # optional
-            default_index=0,  # optional
-            orientation="horizontal",
-            styles={
-                "container": {"padding": "0!important", "background-color": "#fafafa"},
-                "icon": {"color": "orange", "font-size": "25px"},
-                "nav-link": {
-                    "font-size": "25px",
-                    "text-align": "left",
-                    "margin": "0px",
-                    "--hover-color": "#eee",
-                },
-                "nav-link-selected": {"background-color": "green"},
-            },
-        )
-        return selected
-
-
-selected = streamlit_menu(example=EXAMPLE_NO)
-
-if selected == "Home":
-    st.title(f"You have selected {selected}")
-if selected == "Projects":
-    st.title(f"You have selected {selected}")
-if selected == "Contact":
-    st.title(f"You have selected {selected}")
+# --- REDIRECIONAMENTO ---
+if "Home" in pagina:
+    st.switch_page("pages/1_🏠_Home.py")
+elif "Teste" in pagina:
+    st.switch_page("pages/2_🚀_Teste.py")
