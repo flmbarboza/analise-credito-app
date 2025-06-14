@@ -13,9 +13,9 @@ pagina_selecionada = st.sidebar.selectbox(
     "Escolha uma opção:",
     [
         "🏠 Página Inicial",
-        "💳 Análise de Crédito",
-        "📊 Dashboard Financeiro",
-        "📈 Simulador de Investimentos",
+        "💳 Análise Univariada",
+        "📊 Análise Bivariada",
+        "📈 Escore Preliminar",
         "🎯 Planejamento Financeiro",
         "📚 Educação Financeira",
         "⚙️ Configurações"
