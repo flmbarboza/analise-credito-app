@@ -20,7 +20,7 @@ if not st.session_state.get('redirecionado'):
     por meio de técnicas estatísticas e computacionais.
     
     ### Como começar?
-    1. Clique em **🏠 Home** no menu lateral
+    1. Clique em **🏠 Home** no menu lateral (/Home)
     2. Siga o fluxo de análise proposto
     3. Explore as ferramentas interativas
     
