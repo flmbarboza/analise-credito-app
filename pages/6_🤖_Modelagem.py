@@ -39,6 +39,8 @@ def main():
                 
             except Exception as e:
                 st.error(f"Erro: {str(e)}")
+    # 🚀 Link para a próxima página
+    st.page_link("pages/7_✅_Análise_e_Validação.py", label="➡️ Ir para a próxima página: Análise e Validação", icon="✅")
 
 if __name__ == "__main__":
     main()
