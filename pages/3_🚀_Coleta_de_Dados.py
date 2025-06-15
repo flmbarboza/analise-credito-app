@@ -108,6 +108,8 @@ def main():
             - **bool**: Verdadeiro/Falso
             - **datetime**: Datas
             """)
+    # 🚀 Link para a próxima página
+    st.page_link("pages/4_🚀_Análise_Univariada.py", label="➡️ Ir para a próxima página: Análise Univariada", icon="📝")
 
 if __name__ == "__main__":
     main()
