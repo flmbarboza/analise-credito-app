@@ -32,7 +32,7 @@ def main():
                 annot=True, fmt='d', ax=ax)
     st.pyplot(fig)
     # 🚀 Link para a próxima página
-    st.page_link("pages/8_⚙️_Aperfeiçoamento.py", label="➡️ Ir para a próxima página: Aperfeicoamento", icon="⚙️")
+    st.page_link("pages/8_⚙️_Aperfeicoamento.py", label="➡️ Ir para a próxima página: Aperfeiçoamento", icon="⚙️")
 
 if __name__ == "__main__":
     main()
