@@ -5,4 +5,4 @@ base="light"
 runOnSave = true
 
 [client]
-showSidebarNavigation = false
+showSidebarNavigation = true
