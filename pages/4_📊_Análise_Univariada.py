@@ -38,6 +38,8 @@ def main():
         
         if dados[variavel].isnull().sum() > 0:
             st.warning(f"⚠️ Contém {dados[variavel].isnull().sum()} valores faltantes")
+    # 🚀 Link para a próxima página
+    st.page_link("pages/5_📈_Análise_Bivariada.py", label="➡️ Ir para a próxima página: Análise Bivariada", icon="📈")
 
 if __name__ == "__main__":
     main()
