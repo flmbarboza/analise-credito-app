@@ -20,7 +20,7 @@ def main():
         score = (renda * 0.4) - (divida * 0.6)
         st.success(f"Score Preliminar: {score:.1f}")
     # 🚀 Link para a próxima página
-    st.page_link("pages/11_📑_Relatório.py", label="➡️ Ir para a próxima página: Relatório", icon="📑")
+    st.page_link("pages/11_📑_Relatorio.py", label="➡️ Ir para a próxima página: Relatório", icon="📑")
 
 if __name__ == "__main__":
     main()
