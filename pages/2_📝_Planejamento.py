@@ -153,6 +153,9 @@ def main():
         progresso = sum(passos)/len(passos)
         st.progress(progresso)
         st.caption(f"Você completou {int(progresso*100)}% do roteiro")
+    # 🚀 Link para a próxima página
+    st.page_link("pages/3_🚀_Coleta_de_Dados.py", label="➡️ Ir para a próxima página: Coleta de Dados", icon="📝")
+
 
 if __name__ == "__main__":
     main()
