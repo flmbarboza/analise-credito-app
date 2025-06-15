@@ -26,7 +26,7 @@ def main():
         st.metric("Score Calculado", f"{score:.0f}")
         st.success("✅ Aprovado" if aprovado else "❌ Reprovado")
     # 🚀 Link para a próxima página
-    st.page_link("pages/10_📊_Entendendo_Análise_de_Crédito.py", label="➡️ Ir para a próxima página: Entendendo Análise de Crédito", icon="📊")
+    st.page_link("pages/10_📊_Entendendo_Analise_de_Credito.py", label="➡️ Ir para a próxima página: Entendendo Análise de Crédito", icon="📊")
 
 if __name__ == "__main__":
     main()
