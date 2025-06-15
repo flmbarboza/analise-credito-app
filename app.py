@@ -1,26 +1,26 @@
-import streamlit as st
+from streamlit_option_menu import option_menu
 
-# Configuração da página
 st.set_page_config(
     page_title="Risco de Crédito",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded"  # Garante que a sidebar esteja visível
 )
 
-# Seu menu personalizado
+# Título principal centralizado
+st.markdown("<h1 style='text-align: center;'>Risco de Crédito e Credit Scoring</h1>", unsafe_allow_html=True)
+
+# Menu na sidebar esquerda (CORREÇÃO PRINCIPAL)
 with st.sidebar:
-    # Título customizado (opcional)
-    st.markdown("## 📚 Menu da Disciplina")
-    
-    # Itens de navegação
-    pagina = st.radio(
-        "Selecione:",
-        ["🏠 Home", "🚀 Teste"],
-        index=0
+    selected = option_menu(
+        menu_title="Menu Principal",  # Título que aparece acima do menu
+        options=["Home", "Teste"],
+        icons=["house", "rocket"],
+        menu_icon="cast",  # Ícone do menu (opcional)
+        default_index=0,
     )
 
-# Lógica de redirecionamento
-if "Home" in pagina:
+# Navegação
+if selected == "Home":
     st.switch_page("pages/1_🏠_Home.py")
-elif "Teste" in pagina:
+elif selected == "Teste":
     st.switch_page("pages/2_🚀_Teste.py")
