@@ -1,15 +1,17 @@
 import streamlit as st
-from gtts import gTTS
-import io
+from utils import leitor_de_texto
 
 def main():
     st.title("🚀 Desafio da Disciplina: Risco de Crédito e Credit Scoring")
-
-    # Definir os textos dos blocos
+    
+    # Textos da página
     texto_apresentacao = """
-    Seja muito bem-vindo à disciplina de Risco de Crédito e Credit Scoring. Aqui você vai aprender como transformar dados em decisões que impactam diretamente o sucesso das empresas.
-    Imagine que você trabalha em uma empresa ou fintech. Um cliente pede crédito. A proposta parece boa, mas e se ele não pagar? Como tomar essa decisão de forma inteligente?
-    Nesta disciplina, você fará parte de uma grande empresa simulada, enfrentando desafios reais do mercado. Vamos juntos construir um modelo de análise de risco de crédito, entender os dados, descobrir padrões e validar modelos de scoring.
+    Seja muito bem-vindo à disciplina de Risco de Crédito e Credit Scoring.
+    Aqui você vai aprender como transformar dados em decisões que impactam diretamente o sucesso das empresas.
+    Imagine que você trabalha em uma empresa ou fintech. Um cliente pede crédito.
+    A proposta parece boa, mas e se ele não pagar? Como tomar essa decisão de forma inteligente?
+    Nesta disciplina, você fará parte de uma grande empresa simulada, enfrentando desafios reais do mercado.
+    Vamos juntos construir um modelo de análise de risco de crédito, entender os dados, descobrir padrões e validar modelos de scoring.
     Prepare-se: essa é uma habilidade extremamente valorizada no mercado e que pode impulsionar sua carreira!
     """
     
@@ -25,38 +27,11 @@ def main():
     Por que empresas concedem crédito mesmo sabendo que há risco de inadimplência?
     """
     
-    # Bloco de áudio
-    st.subheader("🔈 Acessibilidade - Leitura dos conteúdos")
-    st.markdown("""
-    <button onclick="lerTexto()">🔊 Clique para ouvir o conteúdo da página</button>
+    # Junta todos os textos para leitura em áudio
+    texto_para_leitura = texto_apresentacao + "\n" + texto_o_que_leva + "\n" + texto_mini_desafio
     
-    <script>
-    function lerTexto() {
-      const texto = `
-    """ + texto_apresentacao + texto_o_que_leva + texto_mini_desafio + """
-      `;
-      const utterance = new SpeechSynthesisUtterance(texto);
-      utterance.lang = "pt-BR";
-      speechSynthesis.cancel();  // Cancela qualquer leitura anterior
-      speechSynthesis.speak(utterance);
-    }
-    </script>
-    """, unsafe_allow_html=True)
-
-    # 🔊 Áudio de acessibilidade
-    texto_audio = """
-    Seja muito bem-vindo à disciplina de Risco de Crédito e Credit Scoring. Aqui, você vai aprender como transformar dados em decisões que impactam diretamente o sucesso das empresas. 
-    Imagine que você trabalha em uma empresa ou fintech. Um cliente pede crédito. A proposta parece boa, mas e se ele não pagar? Como tomar essa decisão de forma inteligente?
-    Nesta disciplina, você fará parte de uma grande empresa simulada, enfrentando desafios reais do mercado. Vamos juntos construir um modelo de análise de risco de crédito, entender os dados, descobrir padrões e validar modelos de scoring.
-    Prepare-se: essa é uma habilidade extremamente valorizada no mercado e que pode impulsionar sua carreira!
-    """
-    tts = gTTS(text=texto_audio, lang='pt')
-    audio_bytes = io.BytesIO()
-    tts.write_to_fp(audio_bytes)
-    audio_bytes.seek(0)
-
-    st.subheader("🔈 Acessibilidade - Ouça a descrição da página")
-    st.audio(audio_bytes, format='audio/mp3')
+    # Botão para leitura
+    leitor_de_texto(texto_para_leitura)
 
     st.subheader("🕹️ Bora começar? Você precisa desbloquear o desafio.")
 
