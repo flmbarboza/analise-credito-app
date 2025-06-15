@@ -31,6 +31,8 @@ def main():
     sns.heatmap(confusion_matrix(y_test, y_pred), 
                 annot=True, fmt='d', ax=ax)
     st.pyplot(fig)
+    # 🚀 Link para a próxima página
+    st.page_link("pages/8_⚙️_Aperfeiçoamento.py", label="➡️ Ir para a próxima página: Aperfeicoamento", icon="⚙️")
 
 if __name__ == "__main__":
     main()
