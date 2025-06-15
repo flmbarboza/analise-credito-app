@@ -4,9 +4,9 @@ def main():
     st.title("🚀 Desafio da Disciplina: Risco de Crédito e Credit Scoring")
 
     # 🔊 Inclusão de áudio para acessibilidade
-    st.subheader("🔈 Acessibilidade - Descrição em áudio")
-    audio_file = open('descricao.mp3', 'rb')
-    st.audio(audio_file.read(), format='audio/mp3')
+    #st.subheader("🔈 Acessibilidade - Descrição em áudio")
+    #audio_file = open('descricao.mp3', 'rb')
+    #st.audio(audio_file.read(), format='audio/mp3')
 
     st.subheader("🕹️ Bora começar? Você precisa desbloquear o desafio.")
 
