@@ -1,28 +1,6 @@
 import streamlit as st
-from streamlit_option_menu import option_menu
 
 st.set_page_config(
     page_title="Análise de Crédito",  # Título da aba do navegador
     layout="wide"
 )
-
-# Menu horizontal (corrigido)
-pagina = option_menu(
-    menu_title=None,  # Remove o título padrão "app"
-    options=["Home", "Teste"],
-    icons=["house", "rocket"],
-    orientation="horizontal",
-    styles={
-        "container": {"padding": "0!important", "background-color": "#f0f2f6"},
-        "nav-link": {"font-size": "18px", "text-align": "center", "margin": "0px"},
-    }
-)
-
-# Adicione seu próprio título acima do menu (opcional)
-st.markdown("<h1 style='text-align: center;'>Risco de Crédito e Credit Scoring</h1>", unsafe_allow_html=True)
-
-# Navegação
-if pagina == "Home":
-    st.switch_page("pages/1_🏠_Home.py")
-elif pagina == "Teste":
-    st.switch_page("pages/2_🚀_Teste.py")
