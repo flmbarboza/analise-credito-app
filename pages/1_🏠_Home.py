@@ -1,4 +1,9 @@
 import streamlit as st
+from gtts import gTTS
+from io import BytesIO
+sound_file = BytesIO()
+tts = gTTS('Leitor de texto aqui.', lang='pt-br')
+tts.write_to_fp(sound_file)
 
 def main():
     st.title("🚀 Desafio da Disciplina: Risco de Crédito e Credit Scoring")
@@ -101,6 +106,7 @@ def main():
 
     else:
         st.info("👆 Clique no botão acima para desbloquear o desafio e começar a jornada!")
+        st.audio(sound_file)
 
 if __name__ == "__main__":
     main()
