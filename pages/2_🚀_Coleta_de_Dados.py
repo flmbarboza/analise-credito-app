@@ -15,6 +15,7 @@ def main():
     # Container para os dados
     if 'dados' not in st.session_state:
         st.session_state.dados = None
+        st.session_state.colunas_originais = None
 
     # Opções de coleta
     opcao = st.radio(
@@ -50,34 +51,73 @@ def main():
             except Exception as e:
                 st.error(f"Erro ao ler arquivo: {str(e)}")
 
-    # Mostrar estrutura dos dados se disponível
+   # Seção para ajuste de nomes de variáveis
     if st.session_state.dados is not None:
         st.divider()
-        st.subheader("Estrutura dos Dados")
         
-        col1, col2 = st.columns(2)
+        # 1. OPÇÃO PARA AJUSTAR NOMES DAS VARIÁVEIS
+        st.subheader("🔧 Ajuste dos Nomes das Variáveis")
         
-        with col1:
-            st.markdown("**Primeiras linhas:**")
-            st.dataframe(st.session_state.dados.head())
+        if st.checkbox("Deseja renomear as colunas?"):
+            colunas_atuais = st.session_state.dados.columns.tolist()
+            novos_nomes = []
+            
+            for i, coluna in enumerate(colunas_atuais):
+                novo_nome = st.text_input(
+                    f"Renomear '{coluna}' para:",
+                    value=coluna,
+                    key=f"nome_{i}"
+                )
+                novos_nomes.append(novo_nome)
+            
+            if st.button("Aplicar novos nomes"):
+                st.session_state.dados.columns = novos_nomes
+                st.success("Nomes das colunas atualizados!")
+                st.session_state.colunas_originais = colunas_atuais  # Guarda original
+
+        # 2. ANÁLISE SIMPLIFICADA PARA LEIGOS
+        st.subheader("🧐 Entendendo Seus Dados")
         
-        with col2:
-            st.markdown("**Últimas linhas:**")
-            st.dataframe(st.session_state.dados.tail())
-        
-        st.divider()
-        
-        # Análise de estrutura
-        st.subheader("Metadados")
         buffer = StringIO()
         st.session_state.dados.info(buf=buffer)
         info_text = buffer.getvalue()
         
-        st.text(info_text)
+        # Processa a saída do .info() para leigos
+        st.markdown("""
+        ### 📋 Resumo das Variáveis
         
-        # Estatísticas básicas
-        st.subheader("Estatísticas Descritivas")
-        st.dataframe(st.session_state.dados.describe(include='all'))
+        **O que cada número significa:**
+        - **Total de registros**: Quantas linhas de dados você tem
+        - **Variáveis não-nulas**: Quantos valores preenchidos existem em cada coluna
+        - **Tipo de dado**: Como a informação está armazenada (texto, número, etc.)
+        """)
+        
+        # Tabela simplificada
+        info_lines = [line for line in info_text.split('\n') if 'non-null' in line]
+        
+        resumo = []
+        for line in info_lines:
+            parts = line.split()
+            nome = parts[1] if len(parts) > 1 else ""
+            tipo = parts[-1] if len(parts) > 2 else ""
+            nao_nulos = parts[3] if len(parts) > 3 else ""
+            
+            resumo.append({
+                "Variável": nome,
+                "Tipo": tipo,
+                "Preenchida (%)": f"{int(nao_nulos)/len(st.session_state.dados)*100:.1f}%"
+            })
+        
+        st.table(pd.DataFrame(resumo))
+        
+        # Explicação dos tipos de dados
+        with st.expander("ℹ️ O que significam os tipos de dados?"):
+            st.markdown("""
+            - **object**: Texto ou dados categóricos (ex: nomes, categorias)
+            - **int64/float64**: Números inteiros ou decimais
+            - **bool**: Valores verdadeiro/falso
+            - **datetime64**: Datas e horários
+            """)
 
 if __name__ == "__main__":
     main()
