@@ -1,3 +1,4 @@
+# pages/1_🏠_Home.py
 import streamlit as st
 from utils import leitor_de_texto
 
@@ -27,11 +28,16 @@ def main():
     Por que empresas concedem crédito mesmo sabendo que há risco de inadimplência?
     """
     
-    # Junta todos os textos para leitura em áudio
-    texto_para_leitura = texto_apresentacao + "\n" + texto_o_que_leva + "\n" + texto_mini_desafio
+    # Container para o áudio
+    audio_placeholder = st.empty()
     
     # Botão para leitura
-    leitor_de_texto(texto_para_leitura)
+    if audio_placeholder.button('🎧 Ouvir introdução'):
+        texto_para_leitura = texto_apresentacao + "\n" + texto_o_que_leva + "\n" + texto_mini_desafio
+        audio_file = leitor_de_texto(texto_para_leitura)
+        
+        # Mostra o player de áudio
+        audio_placeholder.audio(audio_file, format='audio/mp3')
 
     st.subheader("🕹️ Bora começar? Você precisa desbloquear o desafio.")
 
