@@ -10,8 +10,14 @@ def main():
 
     st.subheader("🕹️ Bora começar? Você precisa desbloquear o desafio.")
 
-    # Primeira interação - botão para revelar a introdução
+    # ✅ Controle de estado para abrir ou não o conteúdo principal
+    if 'desafio_desbloqueado' not in st.session_state:
+        st.session_state.desafio_desbloqueado = False
+
     if st.button("🔓 Clique para desbloquear o primeiro desafio"):
+        st.session_state.desafio_desbloqueado = True
+
+    if st.session_state.desafio_desbloqueado:
         st.markdown("""
         ## 🚩 **Desafio lançado: Você aprovaria esse crédito?**  
         Imagine que você trabalha no setor financeiro de uma empresa, de um banco ou de uma fintech.  
@@ -59,7 +65,7 @@ def main():
         with st.expander("🎯 O que você leva disso?"):
             st.markdown("""
             ## 🎯 **O que você leva disso?**  
-            - Uma habilidade que o mercado paga muito bem. De acordo com o site Glassdoor ([clique aqui](https://www.glassdoor.com.br/Sal%C3%A1rios/credit-risk-manager-sal%C3%A1rio-SRCH_KO0,19.htm)), um gestor de risco de crédito ganha entre **R\$ 200 mil e R\$ 400 mil**, além de bonificações.  
+            - Uma habilidade que o mercado paga muito bem. De acordo com o site Glassdoor ([clique aqui](https://www.glassdoor.com.br/Sal%C3%A1rios/credit-risk-manager-sal%C3%A1rio-SRCH_KO0,19.htm)), um gestor de risco de crédito ganha entre **R$ 200 mil e R$ 400 mil**, além de bonificações.  
             - Capacidade real de transformar dados em decisão.  
             - Um raciocínio mais analítico, mais lógico e mais preparado pra qualquer área da gestão — não só finanças.  
 
@@ -68,9 +74,13 @@ def main():
 
         st.divider()
 
-        # ✅ Terceira interação - mini quiz dentro de um expansor (inicia fechado)
+        # ✅ Controle de estado para resposta do mini desafio
+        if 'resposta_desafio' not in st.session_state:
+            st.session_state.resposta_desafio = None
+
         with st.expander("🧠 Mini Desafio Rápido"):
             st.subheader("💡 Responda antes de avançar:")
+
             resposta = st.radio(
                 "Por que empresas se preocupam tanto em analisar risco de crédito?",
                 [
@@ -79,11 +89,15 @@ def main():
                     "Porque é uma formalidade burocrática sem impacto real.",
                     "Porque é uma moda recente trazida pela tecnologia."
                 ],
-                index=None
+                index=None,
+                key="radio_resposta"
             )
 
             if resposta:
-                if resposta == "Porque precisam proteger seu dinheiro e tomar melhores decisões.":
+                st.session_state.resposta_desafio = resposta
+
+            if st.session_state.resposta_desafio:
+                if st.session_state.resposta_desafio == "Porque precisam proteger seu dinheiro e tomar melhores decisões.":
                     st.success("✅ Perfeito! Você já entendeu o ponto central da disciplina!")
                 else:
                     st.error("❌ Não exatamente... Tente pensar no impacto de inadimplência para qualquer negócio.")
