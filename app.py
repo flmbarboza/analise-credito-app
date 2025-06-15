@@ -13,5 +13,5 @@ with st.sidebar:
 
     opcao = st.sidebar.selectbox(
         "Navegue pelos tópicos:",
-        ("Introdução", "Conteúdo", "Exercícios", "Sobre")
+        ("Home", "Teste", "Exercícios", "Sobre")
     )
