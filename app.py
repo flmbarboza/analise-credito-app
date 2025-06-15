@@ -7,11 +7,20 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- SIDEBAR ---
+# Seu menu personalizado
 with st.sidebar:
-    st.title("📚 Menu da Disciplina")  # Título do menu
-
-    opcao = st.sidebar.selectbox(
-        "Navegue pelos tópicos:",
-        ("Home", "Teste", "Exercícios", "Sobre")
+    # Título customizado (opcional)
+    st.markdown("## 📚 Menu da Disciplina")
+    
+    # Itens de navegação
+    pagina = st.radio(
+        "Selecione:",
+        ["🏠 Home", "🚀 Teste"],
+        index=0
     )
+
+# Lógica de redirecionamento
+if "Home" in pagina:
+    st.switch_page("pages/1_🏠_Home.py")
+elif "Teste" in pagina:
+    st.switch_page("pages/2_🚀_Teste.py")
