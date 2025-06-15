@@ -3,8 +3,13 @@ import streamlit as st
 def main():
     st.title("🚀 Desafio da Disciplina: Risco de Crédito e Credit Scoring")
 
+    # 🔊 Inclusão de áudio para acessibilidade
+    st.subheader("🔈 Acessibilidade - Descrição em áudio")
+    audio_file = open('descricao.mp3', 'rb')
+    st.audio(audio_file.read(), format='audio/mp3')
+
     st.subheader("🕹️ Bora começar? Você precisa desbloquear o desafio.")
-    
+
     # Primeira interação - botão para revelar a introdução
     if st.button("🔓 Clique para desbloquear o primeiro desafio"):
         st.markdown("""
@@ -19,6 +24,9 @@ def main():
         **Essa não é só uma pergunta acadêmica.** É uma decisão que acontece **todos os dias em milhares de empresas, bancos e plataformas digitais.**  
         E quem sabe fazer isso bem, **domina uma das habilidades mais valorizadas no mercado.**  
         """)
+
+        # ✅ Inclusão do vídeo do YouTube
+        st.video("https://www.youtube.com/watch?v=8jzvzRo3Ij0")
 
         st.divider()
 
@@ -51,7 +59,7 @@ def main():
         with st.expander("🎯 O que você leva disso?"):
             st.markdown("""
             ## 🎯 **O que você leva disso?**  
-            - Uma habilidade que o mercado paga muito bem.  
+            - Uma habilidade que o mercado paga muito bem. De acordo com o site Glassdoor ([clique aqui](https://www.glassdoor.com.br/Sal%C3%A1rios/credit-risk-manager-sal%C3%A1rio-SRCH_KO0,19.htm)), um gestor de risco de crédito ganha entre **R$ 200 mil e R$ 400 mil**, além de bonificações.  
             - Capacidade real de transformar dados em decisão.  
             - Um raciocínio mais analítico, mais lógico e mais preparado pra qualquer área da gestão — não só finanças.  
 
@@ -60,28 +68,28 @@ def main():
 
         st.divider()
 
-        # Terceira interação - mini quiz reflexivo
-        st.subheader("🧠 Mini Desafio Rápido")
+        # ✅ Terceira interação - mini quiz dentro de um expansor (inicia fechado)
+        with st.expander("🧠 Mini Desafio Rápido"):
+            st.subheader("💡 Responda antes de avançar:")
+            resposta = st.radio(
+                "Por que empresas se preocupam tanto em analisar risco de crédito?",
+                [
+                    "Porque é uma exigência legal apenas.",
+                    "Porque precisam proteger seu dinheiro e tomar melhores decisões.",
+                    "Porque é uma formalidade burocrática sem impacto real.",
+                    "Porque é uma moda recente trazida pela tecnologia."
+                ],
+                index=None
+            )
 
-        resposta = st.radio(
-            "Por que empresas se preocupam tanto em analisar risco de crédito?",
-            [
-                "Porque é uma exigência legal apenas.",
-                "Porque precisam proteger seu dinheiro e tomar melhores decisões.",
-                "Porque é uma formalidade burocrática sem impacto real.",
-                "Porque é uma moda recente trazida pela tecnologia."
-            ]
-        )
-
-        if resposta:
-            if resposta == "Porque precisam proteger seu dinheiro e tomar melhores decisões.":
-                st.success("✅ Perfeito! Você já entendeu o ponto central da disciplina!")
-            else:
-                st.error("❌ Não exatamente... Tente pensar no impacto de inadimplência para qualquer negócio.")
+            if resposta:
+                if resposta == "Porque precisam proteger seu dinheiro e tomar melhores decisões.":
+                    st.success("✅ Perfeito! Você já entendeu o ponto central da disciplina!")
+                else:
+                    st.error("❌ Não exatamente... Tente pensar no impacto de inadimplência para qualquer negócio.")
 
     else:
         st.info("👆 Clique no botão acima para desbloquear o desafio e começar a jornada!")
-        
 
 if __name__ == "__main__":
     main()
