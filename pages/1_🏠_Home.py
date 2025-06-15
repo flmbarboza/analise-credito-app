@@ -2,7 +2,13 @@ import streamlit as st
 from gtts import gTTS
 from io import BytesIO
 sound_file = BytesIO()
-tts = gTTS('Leitor de texto aqui.', lang='pt-br')
+tts = gTTS('Olá! Vamos encarar mais um desafio?', 
+           'O tema aqui é Risco de Crédito e Credit Scoring. Bora começar?',
+           'Desafio lançado: Você aprovaria esse crédito?', 
+           'Imagine que você trabalha no setor financeiro de uma empresa, ',
+           'de um banco ou de uma fintech.',  
+           'Um cliente chega solicitando crédito. A proposta parece boa…',  
+            lang='pt-br')
 tts.write_to_fp(sound_file)
 
 def main():
