@@ -1,31 +1,14 @@
 import streamlit as st
 from gtts import gTTS
 from io import BytesIO
-from pydub import AudioSegment
 
-def gerar_audio_unico(textos, lang='pt-br'):
-    # Lista para guardar áudios individuais
-    audios = []
 
-    for txt in textos:
-        tts = gTTS(txt, lang=lang)
-        fp = BytesIO()
-        tts.write_to_fp(fp)
-        fp.seek(0)
-        audio = AudioSegment.from_file(fp, format="mp3")
-        audios.append(audio)
-    
-    # Concatenar os áudios
-    audio_completo = audios[0]
-    for a in audios[1:]:
-        audio_completo += a
-    
-    # Exportar para BytesIO como mp3
-    out_fp = BytesIO()
-    audio_completo.export(out_fp, format="mp3")
-    out_fp.seek(0)
-    return out_fp
-           
+def gerar_audio(texto):
+    sound_file = BytesIO()
+    tts = gTTS(text=texto, lang='pt-br')
+    tts.write_to_fp(sound_file)
+    sound_file.seek(0)
+    return sound_file
 #sound_file = BytesIO()
 textos = ['Olá! Vamos encarar mais um desafio?', 
            'O tema aqui é Risco de Crédito e Credit Scoring. Bora começar?',
@@ -143,8 +126,6 @@ def main():
 
     else:
         st.info("👆 Clique no botão acima para desbloquear o desafio e começar a jornada!")
-        audio_bytes = gerar_audio_unico(textos)
-        st.audio(audio_bytes, format="audio/mp3")
         #st.audio(sound_file)
 
 if __name__ == "__main__":
