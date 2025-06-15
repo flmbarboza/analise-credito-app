@@ -1,16 +1,28 @@
 import streamlit as st
+from gtts import gTTS
+import io
 
 def main():
     st.title("🚀 Desafio da Disciplina: Risco de Crédito e Credit Scoring")
 
-    # 🔊 Inclusão de áudio para acessibilidade
-    #st.subheader("🔈 Acessibilidade - Descrição em áudio")
-    #audio_file = open('descricao.mp3', 'rb')
-    #st.audio(audio_file.read(), format='audio/mp3')
+    # 🔊 Áudio de acessibilidade
+    texto_audio = """
+    Seja muito bem-vindo à disciplina de Risco de Crédito e Credit Scoring. Aqui, você vai aprender como transformar dados em decisões que impactam diretamente o sucesso das empresas. 
+    Imagine que você trabalha em uma empresa ou fintech. Um cliente pede crédito. A proposta parece boa, mas e se ele não pagar? Como tomar essa decisão de forma inteligente?
+    Nesta disciplina, você fará parte de uma grande empresa simulada, enfrentando desafios reais do mercado. Vamos juntos construir um modelo de análise de risco de crédito, entender os dados, descobrir padrões e validar modelos de scoring.
+    Prepare-se: essa é uma habilidade extremamente valorizada no mercado e que pode impulsionar sua carreira!
+    """
+    tts = gTTS(text=texto_audio, lang='pt')
+    audio_bytes = io.BytesIO()
+    tts.write_to_fp(audio_bytes)
+    audio_bytes.seek(0)
+
+    st.subheader("🔈 Acessibilidade - Ouça a descrição da página")
+    st.audio(audio_bytes, format='audio/mp3')
 
     st.subheader("🕹️ Bora começar? Você precisa desbloquear o desafio.")
 
-    # ✅ Controle de estado para abrir ou não o conteúdo principal
+    # ✅ Controle de estado
     if 'desafio_desbloqueado' not in st.session_state:
         st.session_state.desafio_desbloqueado = False
 
@@ -31,12 +43,10 @@ def main():
         E quem sabe fazer isso bem, **domina uma das habilidades mais valorizadas no mercado.**  
         """)
 
-        # ✅ Inclusão do vídeo do YouTube
         st.video("https://www.youtube.com/watch?v=8jzvzRo3Ij0")
 
         st.divider()
 
-        # Segunda interação - caixas expansíveis com conteúdos
         with st.expander("🔥 Clique aqui para descobrir como vamos trabalhar"):
             st.markdown("""
             ## 🔥 **Aqui, a sala vira uma empresa de crédito.**  
@@ -65,7 +75,7 @@ def main():
         with st.expander("🎯 O que você leva disso?"):
             st.markdown("""
             ## 🎯 **O que você leva disso?**  
-            - Uma habilidade que o mercado paga muito bem. De acordo com o site Glassdoor ([clique aqui](https://www.glassdoor.com.br/Sal%C3%A1rios/credit-risk-manager-sal%C3%A1rio-SRCH_KO0,19.htm)), um gestor de risco de crédito ganha entre **R$ 200 mil e R$ 400 mil**, além de bonificações.  
+            - Uma habilidade que o mercado paga muito bem. De acordo com o site Glassdoor ([clique aqui](https://www.glassdoor.com.br/Sal%C3%A1rios/credit-risk-manager-sal%C3%A1rio-SRCH_KO0,19.htm)), um gestor de risco de crédito ganha entre **R\$ 200 mil e R\$ 400 mil**, além de bonificações.  
             - Capacidade real de transformar dados em decisão.  
             - Um raciocínio mais analítico, mais lógico e mais preparado pra qualquer área da gestão — não só finanças.  
 
@@ -74,7 +84,6 @@ def main():
 
         st.divider()
 
-        # ✅ Controle de estado para resposta do mini desafio
         if 'resposta_desafio' not in st.session_state:
             st.session_state.resposta_desafio = None
 
@@ -101,6 +110,11 @@ def main():
                     st.success("✅ Perfeito! Você já entendeu o ponto central da disciplina!")
                 else:
                     st.error("❌ Não exatamente... Tente pensar no impacto de inadimplência para qualquer negócio.")
+
+        st.divider()
+
+        # 🚀 Link para a próxima página
+        st.page_link("pages/2_📝_Planejamento.py", label="➡️ Ir para a próxima página: Planejamento", icon="📝")
 
     else:
         st.info("👆 Clique no botão acima para desbloquear o desafio e começar a jornada!")
