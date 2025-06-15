@@ -2,28 +2,9 @@ import streamlit as st
 from gtts import gTTS
 from io import BytesIO
 
-
-def gerar_audio(texto):
-    sound_file = BytesIO()
-    tts = gTTS(text=texto, lang='pt-br')
-    tts.write_to_fp(sound_file)
-    sound_file.seek(0)
-    return sound_file
-#sound_file = BytesIO()
-textos = ['Olá! Vamos encarar mais um desafio?', 
-           'O tema aqui é Risco de Crédito e Credit Scoring. Bora começar?',
-           'Desafio lançado: Você aprovaria esse crédito?', 
-           'Imagine que você trabalha no setor financeiro de uma empresa, ',
-           'de um banco ou de uma fintech.',  
-           'Um cliente chega solicitando crédito. A proposta parece boa…',
-           'Mas e se ele não pagar? Quem arca com esse prejuízo?',  
-           'Como separar quem é bom pagador de quem traz risco real?',  
-           'E mais: como fazer isso de forma rápida, **precisa e baseada em dados?**',
-           'Essa não é só uma pergunta acadêmica.',
-           'É uma decisão que acontece todos os dias em milhares de empresas, bancos e plataformas digitais.', 
-           'E quem sabe fazer isso bem, domina uma das habilidades mais valorizadas no mercado.']
-#tts = gTTS('Leia o texto aqui', lang='pt-br')
-#tts.write_to_fp(sound_file)
+sound_file = BytesIO()
+tts = gTTS('Leia o texto aqui', lang='pt-br')
+tts.write_to_fp(sound_file)
 
 def main():
     st.title("🚀 Desafio da Disciplina: Risco de Crédito e Credit Scoring")
@@ -126,11 +107,7 @@ def main():
 
     else:
         st.info("👆 Clique no botão acima para desbloquear o desafio e começar a jornada!")
-        #st.audio(sound_file)
-        # Gera players para cada bloco
-        st.write(textos)
-        audio = gerar_audio(textos)
-        st.audio(audio)
+        st.audio(sound_file)
             
 if __name__ == "__main__":
     main()
