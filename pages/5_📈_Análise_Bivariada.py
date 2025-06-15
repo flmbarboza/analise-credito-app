@@ -41,6 +41,8 @@ def main():
     if dados[var_x].dtype != 'object' and dados[var_y].dtype != 'object':
         correlacao = dados[[var_x, var_y]].corr().iloc[0,1]
         st.metric("Coeficiente de Correlação", f"{correlacao:.2f}")
+    # 🚀 Link para a próxima página
+    st.page_link("pages/6_🤖_Modelagem.py", label="➡️ Ir para a próxima página: Modelagem", icon="🤖")
 
 if __name__ == "__main__":
     main()
