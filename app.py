@@ -31,6 +31,9 @@ if not st.session_state.get('redirecionado'):
     if st.button("➡️ Ir para a Página Inicial", type="primary"):
         st.page_link("pages/1_🏠_Home.py", label="➡️ Ir para a próxima página: Home", icon="🏠 Home")
 
+if st.query_params.get("redirect") != "true" and not st.session_state.get('redirecionado'):
+    st.query_params["redirect"] = "true"  # Força atualização da URL
+    st.rerun()
     
 # Footer (aparece em todas as páginas)
 st.sidebar.markdown("---")
@@ -41,5 +44,3 @@ st.sidebar.markdown("""
     Risco de Crédito e Credit Scoring
 </div>
 """, unsafe_allow_html=True)
-
-# Roteamento das páginas (
