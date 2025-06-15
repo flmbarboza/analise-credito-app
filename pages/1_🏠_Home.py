@@ -127,6 +127,12 @@ def main():
     else:
         st.info("👆 Clique no botão acima para desbloquear o desafio e começar a jornada!")
         #st.audio(sound_file)
-
+        # Gera players para cada bloco
+        for idx, txt in enumerate(textos):
+            st.subheader(f"🗣️ Bloco {idx + 1}")
+            st.write(txt)
+            audio = gerar_audio(txt)
+            st.audio(audio, format='audio/mp3')
+            
 if __name__ == "__main__":
     main()
