@@ -1,44 +1,8 @@
-# pages/1_🏠_Home.py
 import streamlit as st
-from utils import leitor_de_texto
 
 def main():
     st.title("🚀 Desafio da Disciplina: Risco de Crédito e Credit Scoring")
     
-    # Textos da página
-    texto_apresentacao = """
-    Seja muito bem-vindo à disciplina de Risco de Crédito e Credit Scoring.
-    Aqui você vai aprender como transformar dados em decisões que impactam diretamente o sucesso das empresas.
-    Imagine que você trabalha em uma empresa ou fintech. Um cliente pede crédito.
-    A proposta parece boa, mas e se ele não pagar? Como tomar essa decisão de forma inteligente?
-    Nesta disciplina, você fará parte de uma grande empresa simulada, enfrentando desafios reais do mercado.
-    Vamos juntos construir um modelo de análise de risco de crédito, entender os dados, descobrir padrões e validar modelos de scoring.
-    Prepare-se: essa é uma habilidade extremamente valorizada no mercado e que pode impulsionar sua carreira!
-    """
-    
-    texto_o_que_leva = """
-    O que você leva disso?
-    - Uma habilidade que o mercado paga muito bem. De acordo com o site Glassdoor, um gestor de risco de crédito ganha entre R$ 200 mil e R$ 400 mil mais bonificações.
-    - Capacidade de tomar decisões fundamentadas em dados.
-    - Entendimento profundo de como as instituições financeiras controlam riscos e aumentam a rentabilidade.
-    """
-    
-    texto_mini_desafio = """
-    Mini Desafio Rápido:
-    Por que empresas concedem crédito mesmo sabendo que há risco de inadimplência?
-    """
-    
-    # Container para o áudio
-    audio_placeholder = st.empty()
-    
-    # Botão para leitura
-    if audio_placeholder.button('🎧 Ouvir introdução'):
-        texto_para_leitura = texto_apresentacao + "\n" + texto_o_que_leva + "\n" + texto_mini_desafio
-        audio_file = leitor_de_texto(texto_para_leitura)
-        
-        # Mostra o player de áudio
-        audio_placeholder.audio(audio_file, format='audio/mp3')
-
     st.subheader("🕹️ Bora começar? Você precisa desbloquear o desafio.")
 
     # ✅ Controle de estado
