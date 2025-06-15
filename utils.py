@@ -1,21 +1,24 @@
 import streamlit as st
 
 def leitor_de_texto(texto: str):
-    """
-    Botão para leitura do texto informado usando a Web Speech API do navegador.
-    """
+    texto_js = texto.replace("\n", " ").replace("`", "'").replace('"', "'")  # Sanitiza texto para JS
     st.subheader("🔈 Acessibilidade - Leitura do conteúdo")
 
     st.markdown(f"""
-    <button onclick="lerTexto()">🔊 Clique para ouvir o conteúdo da página</button>
+    <button id="btnAudio" style="padding:10px; font-size:16px;">🔊 Clique para ouvir o conteúdo da página</button>
 
     <script>
-    function lerTexto() {{
-      const texto = `{texto}`;
-      const utterance = new SpeechSynthesisUtterance(texto);
-      utterance.lang = "pt-BR";
-      speechSynthesis.cancel();
-      speechSynthesis.speak(utterance);
-    }}
+    const btn = document.getElementById('btnAudio');
+    btn.addEventListener('click', () => {{
+        let texto = `{texto_js}`;
+        if ('speechSynthesis' in window) {{
+            speechSynthesis.cancel();  // Para qualquer fala atual
+            let utterance = new SpeechSynthesisUtterance(texto);
+            utterance.lang = 'pt-BR';
+            speechSynthesis.speak(utterance);
+        }} else {{
+            alert('Desculpe, seu navegador não suporta síntese de voz.');
+        }}
+    }});
     </script>
     """, unsafe_allow_html=True)
