@@ -75,48 +75,38 @@ def main():
                 st.success("Nomes das colunas atualizados!")
                 st.session_state.colunas_originais = colunas_atuais  # Guarda original
 
-        # 2. ANÁLISE SIMPLIFICADA PARA LEIGOS
+        # 2. ANÁLISE SIMPLIFICADA (VERSÃO CORRIGIDA)
         st.subheader("🧐 Entendendo Seus Dados")
         
-        buffer = StringIO()
-        st.session_state.dados.info(buf=buffer)
-        info_text = buffer.getvalue()
-        
-        # Processa a saída do .info() para leigos
-        st.markdown("""
-        ### 📋 Resumo das Variáveis
-        
-        **O que cada número significa:**
-        - **Total de registros**: Quantas linhas de dados você tem
-        - **Variáveis não-nulas**: Quantos valores preenchidos existem em cada coluna
-        - **Tipo de dado**: Como a informação está armazenada (texto, número, etc.)
+        # Método mais robusto para análise dos dados
+        st.markdown(f"""
+        ### 📋 Resumo do Dataset
+        - **Total de registros**: {len(st.session_state.dados):,}
+        - **Número de variáveis**: {len(st.session_state.dados.columns)}
         """)
         
-        # Tabela simplificada
-        info_lines = [line for line in info_text.split('\n') if 'non-null' in line]
-        
+        # Tabela resumida
         resumo = []
-        for line in info_lines:
-            parts = line.split()
-            nome = parts[1] if len(parts) > 1 else ""
-            tipo = parts[-1] if len(parts) > 2 else ""
-            nao_nulos = parts[3] if len(parts) > 3 else ""
+        for coluna in st.session_state.dados.columns:
+            nao_nulos = st.session_state.dados[coluna].count()
+            percent_preenchido = (nao_nulos / len(st.session_state.dados)) * 100
             
             resumo.append({
-                "Variável": nome,
-                "Tipo": tipo,
-                "Preenchida (%)": f"{int(nao_nulos)/len(st.session_state.dados)*100:.1f}%"
+                "Variável": coluna,
+                "Tipo": str(st.session_state.dados[coluna].dtype),
+                "Valores únicos": st.session_state.dados[coluna].nunique(),
+                "Preenchida (%)": f"{percent_preenchido:.1f}%"
             })
         
-        st.table(pd.DataFrame(resumo))
+        st.dataframe(pd.DataFrame(resumo))
         
-        # Explicação dos tipos de dados
-        with st.expander("ℹ️ O que significam os tipos de dados?"):
+        # Explicação dos tipos
+        with st.expander("ℹ️ Legenda dos Tipos de Dados"):
             st.markdown("""
-            - **object**: Texto ou dados categóricos (ex: nomes, categorias)
-            - **int64/float64**: Números inteiros ou decimais
-            - **bool**: Valores verdadeiro/falso
-            - **datetime64**: Datas e horários
+            - **object**: Texto ou categorias
+            - **int/float**: Números
+            - **bool**: Verdadeiro/Falso
+            - **datetime**: Datas
             """)
 
 if __name__ == "__main__":
