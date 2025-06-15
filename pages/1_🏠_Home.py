@@ -3,18 +3,50 @@ from gtts import gTTS
 from io import BytesIO
 
 sound_file = BytesIO()
-tts = gTTS(""" Olá! Vamos encarar mais um desafio?',
-           'O tema aqui é Risco de Crédito e Credit Scoring. Bora começar?',
-           'Desafio lançado: Você aprovaria esse crédito?', 
-           'Imagine que você trabalha no setor financeiro de uma empresa, ',
-           'de um banco ou de uma fintech.',  
-           'Um cliente chega solicitando crédito. A proposta parece boa…',
-           'Mas e se ele não pagar? Quem arca com esse prejuízo?',  
-           'Como separar quem é bom pagador de quem traz risco real?',  
-           'E mais: como fazer isso de forma rápida, **precisa e baseada em dados?**',
-           'Essa não é só uma pergunta acadêmica.',
-           'É uma decisão que acontece todos os dias em milhares de empresas, bancos e plataformas digitais.', 
-           'E quem sabe fazer isso bem, domina uma das habilidades mais valorizadas no mercado.""", 
+tts = gTTS(""" Olá! Vamos encarar mais um desafio?
+           O tema aqui é Risco de Crédito e Credit Scoring. Bora começar?
+           Desafio lançado: Você aprovaria esse crédito?
+           Imagine que você trabalha no setor financeiro de uma empresa
+           de um banco ou de uma fintech.  
+           Um cliente chega solicitando crédito. A proposta parece boa…
+           Mas e se ele não pagar? Quem arca com esse prejuízo?  
+           Como separar quem é bom pagador de quem traz risco real?  
+           E mais: como fazer isso de forma rápida, precisa e baseada em dados?
+           Essa não é só uma pergunta acadêmica.
+           É uma decisão que acontece todos os dias em milhares de empresas, bancos e plataformas digitais. 
+           E quem sabe fazer isso bem, domina uma das habilidades mais valorizadas no mercado.
+           Interessante, não acha? Então, como vamos trabalhar?
+           Aqui, a sala vira uma empresa de crédito. 
+           Todos vocês fazem parte de uma grande empresa simulada.  
+           O nosso trabalho, a partir de hoje, é construir juntos um modelo de análise de risco de crédito, 
+           capaz de responder: Quem merece crédito? Quanto vale o risco? Como transformar dados em decisões que geram lucro — e evitam prejuízo?  
+           Todos terão os mesmos dados. Todos enfrentarão os mesmos desafios.
+           Todos irão desenvolver, testar, errar e melhorar… juntos.
+            Cada etapa da disciplina será uma fase desse desafio:  
+            1️⃣ Entender como funciona uma decisão de crédito.  
+            2️⃣ Escolher as variáveis que realmente importam.  
+            3️⃣ Analisar dados — e descobrir padrões que ninguém vê.  
+            4️⃣ Construir e testar modelos de scoring.  
+            5️⃣ Validar, ajustar e, no final, apresentar um relatório para a turma.
+            **O que você leva disso? 3 coisas no mínimo: **  
+            1 Uma habilidade que o mercado paga muito bem. De acordo com o site Glassdoor, 
+            um gestor de risco de crédito ganha entre 200 mil e 400 mil reais, além de bonificações.  
+            2 Capacidade real de transformar dados em decisão.  
+            3 Um raciocínio mais analítico, mais lógico e mais preparado pra qualquer área da gestão — não só finanças. 
+            **Se você acha que essa disciplina é só mais uma… prepare-se para se surpreender.**
+            Agora, um Mini Desafio Rápido
+            Por que empresas se preocupam tanto em analisar risco de crédito? Vou te dar 4 opções: 
+            1 Porque é uma exigência legal apenas?
+            2 Porque precisam proteger seu dinheiro e tomar melhores decisões?
+            3 Porque é uma formalidade burocrática sem impacto real?
+            4 ou Porque é uma moda recente trazida pela tecnologia?
+            Pense um pouquinho...
+            Se você respondeu 2, está certa sua resposta! Parabéns!
+            Você já entendeu o ponto central da nossa discussão!
+            Como já vimos um pouco do contexto, vamos colocar a mão na massa?
+            Acesse a próxima página e bora nessa empreitada!
+            Espero que se aproveite ao máximo a sua jornada! Até mais!!!
+           """, 
            lang='pt-br')
 tts.write_to_fp(sound_file)
 
@@ -70,7 +102,7 @@ def main():
             2️⃣ Escolher as variáveis que realmente importam.  
             3️⃣ Analisar dados — e descobrir padrões que ninguém vê.  
             4️⃣ Construir e testar modelos de scoring.  
-            5️⃣ Validar, ajustar e, no final, **implantar o modelo vencedor da turma.**  
+            5️⃣ Validar, ajustar e, no final, apresentar um relatório para a turma.**  
             """)
 
         with st.expander("🎯 O que você leva disso?"):
