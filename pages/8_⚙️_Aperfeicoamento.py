@@ -26,7 +26,7 @@ def main():
             
             st.success(f"Modelo otimizado! Acurácia estimada: {st.session_state.acuracia:.1%}")
     # 🚀 Link para a próxima página
-    st.page_link("pages/9_🏛️_Políticas_de_Crédito.py", label="➡️ Ir para a próxima página: Políticas de Crédito", icon="🏛️")
+    st.page_link("pages/9_🏛️_Politicas_de_Credito.py", label="➡️ Ir para a próxima página: Políticas de Crédito", icon="🏛️")
 
 if __name__ == "__main__":
     main()
