@@ -79,7 +79,7 @@ def main():
                     st.success("Dados baixados com sucesso!")
                 
                     seeds_disponiveis = [42, 7, 13, 21, 99, 123, 456, 789, 1010, 2025]
-                    seed_escolhida = st.selectbox("Escolha a seed para subamostragem:", seeds_disponiveis)
+                    seed_escolhida = st.selectbox("Escolha a seed para subamostragem:", seeds_disponiveis, expanded=False)
         
                     st.success(f"Executando pipeline com seed escolhida: {seed_escolhida}")
                     st.session_state.dados = executar_pipeline_seed(dados, seed_escolhida)
