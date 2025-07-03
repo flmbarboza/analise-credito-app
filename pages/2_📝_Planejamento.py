@@ -3,13 +3,6 @@ import streamlit as st
 import time
 from pathlib import Path
 
-# Funciona localmente e no Cloud
-image_path = Path(__file__).parent.parent / "static" / "5c.jpg"
-if image_path.exists():
-    st.image(str(image_path), caption="Os 5 Cs do crédito")
-else:
-    st.error(f"Arquivo não encontrado em: {image_path}")
-
 def mostrar_texto_pausado(texto, velocidade=0.03):
     """Exibe texto letra por letra com efeito de digitação"""
     placeholder = st.empty()
@@ -110,9 +103,14 @@ def main():
             }
         )
 
-        seção_interativa(
+        with st.expander(f"📌 Os Cs do Crédito", expanded=False):
+        # Funciona localmente e no Cloud
+            image_path = Path(__file__).parent.parent / "static" / "5c.jpg"
+            if image_path.exists():
+                st.image(str(image_path), caption="Os 5 Cs do crédito")
+            else:
+                st.error(f"Arquivo não encontrado em: {image_path}")
             
-        )
         
         seção_interativa(
             "Probabilidade e Erros de Decisão",
