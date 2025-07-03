@@ -104,8 +104,7 @@ def main():
 
         seção_interativa(
         # Caminho relativo para a imagem 
-            image_path = "../figs/5c.jpg"
-            st.image(image_path, caption="Os 5 Cs do crédito", use_column_width=True)
+            st.image("5c.jpg", caption="Os 5 Cs do crédito", use_column_width=True)
             #st.image("https://i.imgur.com/JQH90yl.png", width=300)
         )
         
