@@ -14,7 +14,7 @@ def mostrar_texto_pausado(texto, velocidade=0.001):
     placeholder.markdown(texto_completo)
 
 def seção_interativa(titulo, conteudo, quiz=None, opcoes_expansão=None):
-    with st.expander(f"📌 {titulo}", expanded=False):
+    with st.expander(f"📌 {titulo}", expanded=True):
         if isinstance(conteudo, str):
             mostrar_texto_pausado(conteudo)
         else:
