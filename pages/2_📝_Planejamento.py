@@ -142,7 +142,7 @@ def main():
     elif topico == "Modelagem":
         st.header("🤖 Como os Modelos Funcionam?")
         
-        with st.expander("Premissas Básicas", expanded=True):
+        with st.expander("Premissas Básicas", expanded=False):
             st.markdown("""
             **1. Futuro se parece [muito] com o passado.**  
             **2. Os dados refletem a informação fielmente.**  
@@ -153,6 +153,12 @@ def main():
             **5. Objetividade:** Decisões baseadas apenas em dados, não em opiniões  
             **6. Atualização:** Modelos são revisados periodicamente  
             """)
+
+            image_path2 = Path(__file__).parent.parent / "static" / "model.png"
+            if image_path2.exists():
+                st.image(str(image_path2), caption="Desenvolvimento e aplicação de um modelo de Credit Scoring")
+            else:
+                st.error(f"Arquivo não encontrado em: {image_path}")
     
     elif topico == "Roteiro Prático":
         st.header("🗺️ Roteiro para Desenvolver um Modelo")
