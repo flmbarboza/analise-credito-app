@@ -75,12 +75,12 @@ def main():
                 try:
                     path = kagglehub.dataset_download('architsharma01/loan-approval-prediction-dataset')
                     dados = pd.read_csv(f'{path}/loan_approval_dataset.csv')
-                    st.session_state.dados = dados
-                    st.success("Dados baixados com sucesso!")
-                
                     seeds_disponiveis = [42, 7, 13, 21, 99, 123, 456, 789, 1010, 2025]
                     seed_escolhida = st.selectbox("Escolha a seed para subamostragem:", seeds_disponiveis)
         
+                    st.session_state.dados = dados
+                    st.success("Dados baixados com sucesso!")
+                
                     st.success(f"Executando pipeline com seed escolhida: {seed_escolhida}")
                     st.session_state.dados = executar_pipeline_seed(dados, seed_escolhida)
                     st.write(f"Subamostra Selecionada (marcador {seed_escolhida}) - Dimensões: {st.session_state.dados.shape}")
