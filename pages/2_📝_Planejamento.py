@@ -3,7 +3,7 @@ import streamlit as st
 import time
 from pathlib import Path
 
-def mostrar_texto_pausado(texto, velocidade=0.03):
+def mostrar_texto_pausado(texto, velocidade=0.1):
     """Exibe texto letra por letra com efeito de digitação"""
     placeholder = st.empty()
     texto_completo = ""
@@ -14,7 +14,7 @@ def mostrar_texto_pausado(texto, velocidade=0.03):
     placeholder.markdown(texto_completo)
 
 def seção_interativa(titulo, conteudo, quiz=None, opcoes_expansão=None):
-    with st.expander(f"📌 {titulo}", expanded=True):
+    with st.expander(f"📌 {titulo}", expanded=False):
         if isinstance(conteudo, str):
             mostrar_texto_pausado(conteudo)
         else:
