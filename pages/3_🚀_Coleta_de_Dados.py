@@ -82,10 +82,9 @@ def main():
                     seed_escolhida = st.selectbox("Escolha a seed para subamostragem:", seeds_disponiveis)
         
                     st.success(f"Executando pipeline com seed escolhida: {seed_escolhida}")
-        
-                    dados = executar_pipeline_seed(dados, seed_escolhida)
-                    st.write(f"Subamostra Selecionada (marcador {seed_escolhida}) - Dimensões: {dados.shape}")
-                    st.dataframe(dados.head())
+                    st.session_state.dados = executar_pipeline_seed(dados, seed_escolhida)
+                    st.write(f"Subamostra Selecionada (marcador {seed_escolhida}) - Dimensões: {st.session_state.dados.shape}")
+                    st.dataframe(st.session_state.dados.head())
                     st.balloons()
                 except Exception as e:
                     st.error(f"Erro ao baixar dados: {str(e)}")
