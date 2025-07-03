@@ -83,9 +83,9 @@ def main():
         
                     st.success(f"Executando pipeline com seed escolhida: {seed_escolhida}")
         
-                    resultado = executar_pipeline_seed(dados, seed_escolhida)
-                    st.write(f"Subamostra com ruídos (seed {seed_escolhida}) - shape: {resultado.shape}")
-                    st.dataframe(resultado.head())
+                    dados = executar_pipeline_seed(dados, seed_escolhida)
+                    st.write(f"Subamostra Selecionada (marcador {seed_escolhida}) - Dimensões: {dados.shape}")
+                    st.dataframe(dados.head())
                     st.balloons()
                 except Exception as e:
                     st.error(f"Erro ao baixar dados: {str(e)}")
