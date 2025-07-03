@@ -57,6 +57,9 @@ def main():
     - Ou carregar seu próprio arquivo de dados
     """)
 
+    seeds_disponiveis = [42, 7, 13, 21, 99, 123, 456, 789, 1010, 2025]
+    seed_escolhida = st.selectbox("Escolha a seed para subamostragem:", seeds_disponiveis)
+        
     # Container para os dados
     if 'dados' not in st.session_state:
         st.session_state.dados = None
@@ -75,9 +78,7 @@ def main():
                 try:
                     path = kagglehub.dataset_download('architsharma01/loan-approval-prediction-dataset')
                     dados = pd.read_csv(f'{path}/loan_approval_dataset.csv')
-                    seeds_disponiveis = [42, 7, 13, 21, 99, 123, 456, 789, 1010, 2025]
-                    seed_escolhida = st.selectbox("Escolha a seed para subamostragem:", seeds_disponiveis)
-        
+                    
                     st.session_state.dados = dados
                     st.success("Dados baixados com sucesso!")
                 
