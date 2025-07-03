@@ -144,10 +144,10 @@ def main():
         
         with st.expander("Premissas Básicas", expanded=True):
             st.markdown("""
-            **1. Futuro se parece [muito] com o passado.
-            **2. Os dados refletem a informação fielmente.
-            **3. A amostra é representativa, dando possibilidade de generalização.
-
+            **1. Futuro se parece [muito] com o passado.**
+            **2. Os dados refletem a informação fielmente.**
+            **3. A amostra é representativa, dando possibilidade de generalização.**
+            **  **
             Além disso...
             **4. Padronização:** Todos os clientes são avaliados pelos mesmos critérios  
             **5. Objetividade:** Decisões baseadas apenas em dados, não em opiniões  
