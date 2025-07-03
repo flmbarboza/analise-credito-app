@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import kagglehub
+import random
 from io import StringIO
 
 def gerar_subamostra(base, percentual=0.2, seed=42):
