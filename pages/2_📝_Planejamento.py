@@ -153,12 +153,14 @@ def main():
             **5. Objetividade:** Decisões baseadas apenas em dados, não em opiniões  
             **6. Atualização:** Modelos são revisados periodicamente  
             """)
+        
+        with st.expander(f"📌 Visão geral", expanded=False):
 
             image_path2 = Path(__file__).parent.parent / "static" / "model.png"
             if image_path2.exists():
                 st.image(str(image_path2), caption="Desenvolvimento e aplicação de um modelo de Credit Scoring")
             else:
-                st.error(f"Arquivo não encontrado em: {image_path}")
+                st.error(f"Arquivo não encontrado em: {image_path2}")
     
     elif topico == "Roteiro Prático":
         st.header("🗺️ Roteiro para Desenvolver um Modelo")
