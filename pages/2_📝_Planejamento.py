@@ -1,6 +1,10 @@
 # pages/1_📝_Planejamento.py
 import streamlit as st
 import time
+from pathlib import Path
+
+# Funciona localmente e no Cloud
+image_path = Path(__file__).parent.parent / "static" / "5c.jpg"
 
 def mostrar_texto_pausado(texto, velocidade=0.03):
     """Exibe texto letra por letra com efeito de digitação"""
@@ -103,9 +107,10 @@ def main():
         )
 
         seção_interativa(
-        # Caminho relativo para a imagem 
-            st.image("5c.jpg", caption="Os 5 Cs do crédito", use_column_width=True)
-            #st.image("https://i.imgur.com/JQH90yl.png", width=300)
+            if image_path.exists():
+                st.image(str(image_path), caption="Os 5 Cs do crédito")
+            else:
+                st.error(f"Arquivo não encontrado em: {image_path}")
         )
         
         seção_interativa(
