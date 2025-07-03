@@ -3,6 +3,49 @@ import pandas as pd
 import kagglehub
 from io import StringIO
 
+def gerar_subamostra(base, percentual=0.2, seed=42):
+    return base.sample(frac=percentual, random_state=seed).copy()
+
+def simular_instancias_problema(df, n_instancias):
+    df_fake = pd.DataFrame(columns=df.columns)
+    for _ in range(n_instancias):
+        nova_linha = {}
+        for col in df.columns:
+            if df[col].dtype == 'object':
+                if random.random() < 0.2:
+                    nova_linha[col] = "Categoria_Inédita_" + str(random.randint(1, 5))
+                else:
+                    nova_linha[col] = random.choice(df[col].dropna().unique())
+            elif np.issubdtype(df[col].dtype, np.number):
+                tipo_problema = random.choice(["outlier", "inconsistencia", "faltante", "normal"])
+                if tipo_problema == "outlier":
+                    nova_linha[col] = df[col].mean() * random.uniform(5, 10)
+                elif tipo_problema == "inconsistencia":
+                    nova_linha[col] = -abs(df[col].mean())
+                elif tipo_problema == "faltante":
+                    nova_linha[col] = np.nan
+                else:
+                    nova_linha[col] = df[col].mean() + np.random.randn()
+            else:
+                nova_linha[col] = None
+        df_fake = pd.concat([df_fake, pd.DataFrame([nova_linha])], ignore_index=True)
+    return df_fake
+
+def tratar_categorias(df):
+    for col in df.select_dtypes(include='object').columns:
+        freq = df[col].value_counts(normalize=True)
+        categorias_frequentes = freq[freq > 0.01].index
+        df[col] = df[col].apply(lambda x: x if x in categorias_frequentes else 'Outros')
+    return df
+
+def executar_pipeline_seed(base, seed):
+    sub = gerar_subamostra(base, seed=seed)
+    n_instancias_fake = random.randint(60, 120)
+    ruído = simular_instancias_problema(sub, n_instancias_fake)
+    combinado = pd.concat([sub, ruído], ignore_index=True)
+    combinado = tratar_categorias(combinado)
+    return combinado
+
 def main():
     st.title("🚀 Coleta de Dados")
     st.balloons()  # Efeito visual para confirmar o carregamento
@@ -32,110 +75,15 @@ def main():
                     dados = pd.read_csv(f'{path}/loan_approval_dataset.csv')
                     st.session_state.dados = dados
                     st.success("Dados baixados com sucesso!")
-                def gerar_subamostras(base, percentual=0.2, seeds=[42, 7, 13, 21, 99, 123, 456, 789, 1010, 2025]):
-                    subamostras = {}
-                    for seed in seeds:
-                        sub = base.sample(frac=percentual, random_state=seed).copy()
-                        subamostras[seed] = sub
-                    return subamostras
-
-                def simular_instancias_problema(df, n_instancias):
-                    df_fake = pd.DataFrame(columns=df.columns)
-                    for _ in range(n_instancias):
-                        nova_linha = {}
-                        for col in df.columns:
-                            if df[col].dtype == 'object':
-                                if random.random() < 0.2:
-                                    nova_linha[col] = "Categoria_Inédita_" + str(random.randint(1, 5))
-                                else:
-                                    nova_linha[col] = random.choice(df[col].dropna().unique())
-                            elif np.issubdtype(df[col].dtype, np.number):
-                                tipo_problema = random.choice(["outlier", "inconsistencia", "faltante", "normal"])
-                                if tipo_problema == "outlier":
-                                    nova_linha[col] = df[col].mean() * random.uniform(5, 10)
-                                elif tipo_problema == "inconsistencia":
-                                    nova_linha[col] = -abs(df[col].mean())
-                                elif tipo_problema == "faltante":
-                                    nova_linha[col] = np.nan
-                                else:
-                                    nova_linha[col] = df[col].mean() + np.random.randn()
-                            else:
-                                nova_linha[col] = None
-                        df_fake = pd.concat([df_fake, pd.DataFrame([nova_linha])], ignore_index=True)
-                    return df_fake
-
-                def tratar_categorias(df):
-                    for col in df.select_dtypes(include='object').columns:
-                        freq = df[col].value_counts(normalize=True)
-                        categorias_frequentes = freq[freq > 0.01].index
-                        df[col] = df[col].apply(lambda x: x if x in categorias_frequentes else 'Outros')
-                    return df
-
-                def executar_pipeline_completa(base):
-                    subamostras = gerar_subamostras(base)
-                    subamostras_final = {}
-                    for seed, sub in subamostras.items():
-                        n_instancias_fake = random.randint(60, 120)
-                        ruído = simular_instancias_problema(sub, n_instancias_fake)
-                        combinado = pd.concat([sub, ruído], ignore_index=True)
-                        combinado = tratar_categorias(combinado)
-                        subamostras_final[seed] = combinado
-                    return subamostras_final
-
                 
-                seeds_disponiveis = [42, 7, 13, 21, 99, 123, 456, 789, 1010, 2025]
-                seed_escolhida = st.selectbox("Escolha a seed para subamostragem:", seeds_disponiveis)
-
-                st.success(f"Executando pipeline com seed escolhida: {seed_escolhida}")
-
-                def gerar_subamostra(base, percentual=0.2, seed=42):
-                    return base.sample(frac=percentual, random_state=seed).copy()
-
-                def simular_instancias_problema(df, n_instancias):
-                    df_fake = pd.DataFrame(columns=df.columns)
-                    for _ in range(n_instancias):
-                        nova_linha = {}
-                        for col in df.columns:
-                            if df[col].dtype == 'object':
-                                if random.random() < 0.2:
-                                    nova_linha[col] = "Categoria_Inédita_" + str(random.randint(1, 5))
-                                else:
-                                    nova_linha[col] = random.choice(df[col].dropna().unique())
-                            elif np.issubdtype(df[col].dtype, np.number):
-                                tipo_problema = random.choice(["outlier", "inconsistencia", "faltante", "normal"])
-                                if tipo_problema == "outlier":
-                                    nova_linha[col] = df[col].mean() * random.uniform(5, 10)
-                                elif tipo_problema == "inconsistencia":
-                                    nova_linha[col] = -abs(df[col].mean())
-                                elif tipo_problema == "faltante":
-                                    nova_linha[col] = np.nan
-                                else:
-                                    nova_linha[col] = df[col].mean() + np.random.randn()
-                            else:
-                                nova_linha[col] = None
-                        df_fake = pd.concat([df_fake, pd.DataFrame([nova_linha])], ignore_index=True)
-                    return df_fake
-
-                def tratar_categorias(df):
-                    for col in df.select_dtypes(include='object').columns:
-                        freq = df[col].value_counts(normalize=True)
-                        categorias_frequentes = freq[freq > 0.01].index
-                        df[col] = df[col].apply(lambda x: x if x in categorias_frequentes else 'Outros')
-                    return df
-
-                def executar_pipeline_seed(base, seed):
-                    sub = gerar_subamostra(base, seed=seed)
-                    n_instancias_fake = random.randint(60, 120)
-                    ruído = simular_instancias_problema(sub, n_instancias_fake)
-                    combinado = pd.concat([sub, ruído], ignore_index=True)
-                    combinado = tratar_categorias(combinado)
-                    return combinado
-
-                resultado = executar_pipeline_seed(dados, seed_escolhida)
-                st.write(f"Subamostra com ruídos (seed {seed_escolhida}) - shape: {resultado.shape}")
-                st.dataframe(resultado.head())
-
-
+                    seeds_disponiveis = [42, 7, 13, 21, 99, 123, 456, 789, 1010, 2025]
+                    seed_escolhida = st.selectbox("Escolha a seed para subamostragem:", seeds_disponiveis)
+        
+                    st.success(f"Executando pipeline com seed escolhida: {seed_escolhida}")
+        
+                    resultado = executar_pipeline_seed(dados, seed_escolhida)
+                    st.write(f"Subamostra com ruídos (seed {seed_escolhida}) - shape: {resultado.shape}")
+                    st.dataframe(resultado.head())
                     st.balloons()
                 except Exception as e:
                     st.error(f"Erro ao baixar dados: {str(e)}")
