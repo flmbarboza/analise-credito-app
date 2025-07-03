@@ -86,6 +86,34 @@ def main():
     
     elif topico == "Conceitos Básicos":
         st.header("📊 Conceitos Fundamentais")
+
+        with st.expander(f"📌 Os Cs do Crédito", expanded=False):
+        # Funciona localmente e no Cloud
+            image_path = Path(__file__).parent.parent / "static" / "5c.jpg"
+            if image_path.exists():
+                st.image(str(image_path), caption="Os 5 Cs do crédito")
+            else:
+                st.error(f"Arquivo não encontrado em: {image_path}")
+
+        with st.expander(f"📌 Tipos de Credit Scoring", expanded=False):
+            st.title("Scorecard")
+            image_path = Path(__file__).parent.parent / "static" / "scorecard.jpg"
+            if image_path.exists():
+                st.image(str(image_path), caption="Os 5 Cs do crédito")
+            else:
+                st.error(f"Arquivo não encontrado em: {image_path}")
+ 
+            st.title("Equação")
+            st.latex(r'''
+            Score = 600 + 
+            \begin{cases} 
+            50 \times \text{(idade > 30)} \\
+            -30 \times \text{(dívidas > renda)} \\
+            20 \times \text{(tem conta bancária)}
+            \end{cases}
+            ''')
+            st.caption("Exemplo simplificado de como variáveis são ponderadas")            
+
         
         seção_interativa(
             "Credit Scores: Seu Número Mágico",
@@ -102,16 +130,7 @@ def main():
                 "feedback_negativo": "Reveja os fatores que compõem um score tradicional."
             }
         )
-
-        with st.expander(f"📌 Os Cs do Crédito", expanded=False):
-        # Funciona localmente e no Cloud
-            image_path = Path(__file__).parent.parent / "static" / "5c.jpg"
-            if image_path.exists():
-                st.image(str(image_path), caption="Os 5 Cs do crédito")
-            else:
-                st.error(f"Arquivo não encontrado em: {image_path}")
-            
-        
+                           
         seção_interativa(
             "Probabilidade e Erros de Decisão",
             "Nenhum modelo é perfeito. Sempre há:\n\n"
@@ -134,17 +153,6 @@ def main():
             **5. Objetividade:** Decisões baseadas apenas em dados, não em opiniões  
             **6. Atualização:** Modelos são revisados periodicamente  
             """)
-            
-        with st.expander("Cálculo dos Escores", expanded=False):
-            st.latex(r'''
-            Score = 600 + 
-            \begin{cases} 
-            50 \times \text{(idade > 30)} \\
-            -30 \times \text{(dívidas > renda)} \\
-            20 \times \text{(tem conta bancária)}
-            \end{cases}
-            ''')
-            st.caption("Exemplo simplificado de como variáveis são ponderadas")
     
     elif topico == "Roteiro Prático":
         st.header("🗺️ Roteiro para Desenvolver um Modelo")
