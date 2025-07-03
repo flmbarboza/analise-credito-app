@@ -101,6 +101,13 @@ def main():
                 "feedback_negativo": "Reveja os fatores que compõem um score tradicional."
             }
         )
+
+        seção_interativa(
+        # Caminho relativo para a imagem 
+            image_path = "../figs/5c.jpg"
+            st.image(image_path, caption="Os 5 Cs do crédito", use_column_width=True)
+            #st.image("https://i.imgur.com/JQH90yl.png", width=300)
+        )
         
         seção_interativa(
             "Probabilidade e Erros de Decisão",
@@ -115,12 +122,16 @@ def main():
         
         with st.expander("Premissas Básicas", expanded=True):
             st.markdown("""
-            **1. Padronização:** Todos os clientes são avaliados pelos mesmos critérios  
-            **2. Objetividade:** Decisões baseadas apenas em dados, não em opiniões  
-            **3. Atualização:** Modelos são revisados periodicamente  
+            **1. Futuro se parece [muito] com o passado.
+            **2. Os dados refletem a informação fielmente.
+            **3. A amostra é representativa, dando possibilidade de generalização.
+
+            Além disso...
+            **4. Padronização:** Todos os clientes são avaliados pelos mesmos critérios  
+            **5. Objetividade:** Decisões baseadas apenas em dados, não em opiniões  
+            **6. Atualização:** Modelos são revisados periodicamente  
             """)
-            st.image("https://i.imgur.com/JQH90yl.png", width=300)
-        
+            
         with st.expander("Cálculo dos Escores", expanded=False):
             st.latex(r'''
             Score = 600 + 
@@ -153,6 +164,8 @@ def main():
         progresso = sum(passos)/len(passos)
         st.progress(progresso)
         st.caption(f"Você completou {int(progresso*100)}% do roteiro")
+
+    st.markdown(""" Navegue por esta seção no menu ao lado para continuar tratando do Plaejamento ou...""")
     # 🚀 Link para a próxima página
     st.page_link("pages/3_🚀_Coleta_de_Dados.py", label="➡️ Ir para a próxima página: Coleta de Dados", icon="📝")
 
