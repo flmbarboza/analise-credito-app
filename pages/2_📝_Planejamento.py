@@ -3,7 +3,7 @@ import streamlit as st
 import time
 from pathlib import Path
 
-def mostrar_texto_pausado(texto, velocidade=0.1):
+def mostrar_texto_pausado(texto, velocidade=2):
     """Exibe texto letra por letra com efeito de digitação"""
     placeholder = st.empty()
     texto_completo = ""
