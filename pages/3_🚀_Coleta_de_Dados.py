@@ -161,6 +161,19 @@ def main():
             - **bool**: Verdadeiro/Falso
             - **datetime**: Datas
             """)
+
+        with st.expander("Salvar a Amostra", expanded=False):
+            # 3. SALVAR DATAFRAME COMO CSV
+            st.subheader("💾 Salvar Subamostra em CSV")
+            nome_csv = st.text_input("Nome do arquivo para download:", value="subamostra_com_ruido.csv")
+    
+            csv = st.session_state.dados.to_csv(index=False).encode('utf-8')
+            st.download_button(
+                label="📥 Baixar CSV",
+                data=csv,
+                file_name=nome_csv,
+                mime='text/csv'
+            )
     # 🚀 Link para a próxima página
     st.page_link("pages/4_📊_Analise_Univariada.py", label="➡️ Ir para a próxima página: Análise Univariada", icon="📊")
 
