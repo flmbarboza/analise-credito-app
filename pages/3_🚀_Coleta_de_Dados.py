@@ -41,6 +41,10 @@ def tratar_categorias(df):
     return df
 
 def executar_pipeline_seed(base, seed):
+    # Garante que tudo seja reproduzível
+    random.seed(seed)
+    np.random.seed(seed)
+
     sub = gerar_subamostra(base, seed=seed)
     n_instancias_fake = random.randint(60, 120)
     ruído = simular_instancias_problema(sub, n_instancias_fake)
@@ -165,7 +169,7 @@ def main():
         with st.expander("Salvar a Amostra", expanded=False):
             # 3. SALVAR DATAFRAME COMO CSV
             st.subheader("💾 Salvar Subamostra em CSV")
-            nome_csv = st.text_input("Nome do arquivo para download:", value="subamostra_com_ruido.csv")
+            nome_csv = st.text_input("Nome do arquivo para download:", value="subamostra_credito.csv")
     
             csv = st.session_state.dados.to_csv(index=False).encode('utf-8')
             st.download_button(
