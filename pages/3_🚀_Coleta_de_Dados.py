@@ -141,24 +141,9 @@ def main():
         - **Total de registros**: {len(st.session_state.dados):,}
         - **Número de variáveis**: {len(st.session_state.dados.columns)}
         """)
-        
-        # Tabela resumida
-        resumo = []
-        for coluna in st.session_state.dados.columns:
-            nao_nulos = st.session_state.dados[coluna].count()
-            percent_preenchido = (nao_nulos / len(st.session_state.dados)) * 100
-            
-            resumo.append({
-                "Variável": coluna,
-                "Tipo": str(st.session_state.dados[coluna].dtype),
-                "Valores únicos": st.session_state.dados[coluna].nunique(),
-                "Preenchida (%)": f"{percent_preenchido:.1f}%"
-            })
-        
-        st.dataframe(pd.DataFrame(resumo))
-        
+
         # Explicação dos tipos
-        with st.expander("ℹ️ Legenda dos Tipos de Dados"):
+        with st.expander("ℹ️ Legenda dos Tipos de Dados e Descrição das Variáveis"):
             st.markdown("""
             - **object**: Texto ou categorias
             - **int/float**: Números
@@ -206,9 +191,20 @@ def main():
                 use_container_width=True
             )
 
-
-
+        # Tabela resumida
+        resumo = []
+        for coluna in st.session_state.dados.columns:
+            nao_nulos = st.session_state.dados[coluna].count()
+            percent_preenchido = (nao_nulos / len(st.session_state.dados)) * 100
+            
+            resumo.append({
+                "Variável": coluna,
+                "Tipo": str(st.session_state.dados[coluna].dtype),
+                "Valores únicos": st.session_state.dados[coluna].nunique(),
+                "Preenchida (%)": f"{percent_preenchido:.1f}%"
+            })
         
+        st.dataframe(pd.DataFrame(resumo))
         
         with st.expander("Salvar a Amostra", expanded=False):
             # 3. SALVAR DATAFRAME COMO CSV
