@@ -166,6 +166,50 @@ def main():
             - **datetime**: Datas
             """)
 
+            st.subheader("Descrição das Variáveis")
+            
+            # Criação da tabela como um DataFrame do Pandas
+            data = {
+                "Nome da Variável": [
+                    "loan_id", "no_of_dependents", "education", "self_employed",
+                    "income_annum", "loan_amount", "loan_term", "cibil_score",
+                    "residential_assets_value", "commercial_assets_value",
+                    "luxury_assets_value", "bank_asset_value", "loan_status"
+                ],
+                "Descrição": [
+                    "Um ID único para cada solicitação de empréstimo. Um exemplo de ID seria o CPF do solicitante.",
+                    "O número de dependentes que o solicitante do empréstimo possui.",
+                    'O nível de educação do solicitante, indicando se ele é "Graduado" ou "Não Graduado".',
+                    'Indica se o solicitante é autônomo ("Sim" ou "Não").',
+                    "A renda anual do solicitante.",
+                    "O valor do empréstimo solicitado (em moeda corrente).",
+                    "O prazo do empréstimo (em meses).",
+                    "A pontuação de crédito do solicitante feita pela agência CIBIL.",
+                    "O valor dos ativos imobiliários do solicitante para fins de moradia (em moeda corrente).",
+                    "O valor dos ativos comerciais do solicitante para fins comerciais (em moeda corrente).",
+                    "O valor dos ativos do solicitante para fins de lazer (em moeda corrente).",
+                    "O valor dos ativos financeiros do solicitante (em moeda corrente).",
+                    'O status da aprovação do empréstimo, indicando se foi "Aprovado" ou "Rejeitado".'
+                ]
+            }
+            
+            df = pd.DataFrame(data)
+            
+            # Exibe a tabela com formatação profissional
+            st.dataframe(
+                df,
+                column_config={
+                    "Nome da Variável": st.column_config.TextColumn(width="medium"),
+                    "Descrição": st.column_config.TextColumn(width="large")
+                },
+                hide_index=True,
+                use_container_width=True
+            )
+
+
+
+        
+        
         with st.expander("Salvar a Amostra", expanded=False):
             # 3. SALVAR DATAFRAME COMO CSV
             st.subheader("💾 Salvar Subamostra em CSV")
