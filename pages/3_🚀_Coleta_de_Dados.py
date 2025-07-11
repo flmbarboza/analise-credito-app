@@ -185,7 +185,7 @@ def main():
                 st.success("Nomes das colunas atualizados!")
                 st.session_state.colunas_originais = colunas_atuais  # Guarda original
 
-        # 2. ANÁLISE SIMPLIFICADA (VERSÃO CORRIGIDA)
+        # 2. ANÁLISE SIMPLIFICADA
         st.subheader("🧐 Entendendo Seus Dados")
         
         # Método mais robusto para análise dos dados
@@ -252,38 +252,15 @@ def main():
                 df = pd.read_csv(uploaded_file)
                 st.session_state.dados = df  # Armazena na session_state
                 st.success("Novo dataset carregado com sucesso!")
-    
+
+        # Mostra preview dos dados
+        st.subheader("Visualização dos Dados")
+        st.dataframe(df.head(), use_container_width=True)
+        
     # Verifica se temos dados para trabalhar
     if 'df' not in locals():
         st.warning("Por favor, carregue dados para continuar")
         st.stop()
-    
-    # Mostra preview dos dados
-    st.subheader("Visualização dos Dados")
-    st.dataframe(df.head(), use_container_width=True)
-    
-    
-    
-    # Sessão para upload do arquivo
-    with st.expander("📤 Continue com sua amostra ou faça o Upload", expanded=False):
-        uploaded_file = st.file_uploader("Carregue seu arquivo CSV", type=["csv"])
-        
-        if uploaded_file is not None:
-            df = pd.read_csv(uploaded_file)
-            st.success("Dataset carregado com sucesso!")
-            
-            # Exibir visualização rápida
-            st.subheader("Visualização Inicial")
-            st.dataframe(df.head(), use_container_width=True)
-            
-            # Inicializar session_state para armazenar modificações
-            if 'original_df' not in st.session_state:
-                st.session_state.original_df = df.copy()
-                st.session_state.modified_df = df.copy()
-                st.session_state.actions_log = []
-        else:
-            st.warning("Por favor, carregue um arquivo CSV.")
-            st.stop()
     
     # Função para download do DataFrame
     def convert_df_to_csv(df):
