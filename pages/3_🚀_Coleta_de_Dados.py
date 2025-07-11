@@ -108,6 +108,11 @@ def main():
             except Exception as e:
                 st.error(f"Erro ao ler arquivo: {str(e)}")
 
+    
+   # Seção para ajuste de nomes de variáveis
+    if st.session_state.dados is not None:
+        st.divider()
+
 
         # Explicação dos tipos
         with st.expander("ℹ️ Legenda dos Tipos de Dados e Descrição das Variáveis"):
@@ -157,10 +162,6 @@ def main():
                 hide_index=True,
                 use_container_width=True
             )
-    
-   # Seção para ajuste de nomes de variáveis
-    if st.session_state.dados is not None:
-        st.divider()
         
         # 1. OPÇÃO PARA AJUSTAR NOMES DAS VARIÁVEIS
         st.subheader("🔧 Ajuste dos Nomes das Variáveis")
