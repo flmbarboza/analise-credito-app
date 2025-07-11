@@ -369,7 +369,6 @@ def main():
                     
                     # Registrar ação
                     action = {
-                        'timestamp': datetime.now(),
                         'action': f"Removidas {removed_count} linhas com valores faltantes na coluna {col_to_correct}",
                         'type': "Remoção"
                     }
@@ -390,7 +389,6 @@ def main():
                     
                     # Registrar ação
                     action = {
-                        'timestamp': datetime.now(),
                         'action': f"Removidas {removed_count} linhas com valores específicos na coluna {col_to_correct}",
                         'type': "Remoção"
                     }
@@ -417,7 +415,6 @@ def main():
                 
                 # Registrar ação
                 action = {
-                    'timestamp': datetime.now(),
                     'action': f"Substituídos {count} valores '{old_value}' por '{new_value}' na coluna {col_to_correct}",
                     'type': "Substituição"
                 }
@@ -445,7 +442,6 @@ def main():
                     
                     # Registrar ação
                     action = {
-                        'timestamp': datetime.now(),
                         'action': f"Preenchidos {count} valores faltantes com '{fill_value}' na coluna {col_to_correct}",
                         'type': "Preenchimento"
                     }
@@ -465,7 +461,6 @@ def main():
                     
                     # Registrar ação
                     action = {
-                        'timestamp': datetime.now(),
                         'action': f"Preenchidos {count} valores faltantes com {fill_method} ({fill_value:.2f}) na coluna {col_to_correct}",
                         'type': "Preenchimento"
                     }
