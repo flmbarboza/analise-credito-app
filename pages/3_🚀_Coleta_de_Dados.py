@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import kagglehub
 import random
+from io import BytesIO
 from io import StringIO
 
 def gerar_subamostra(base, percentual=0.2, seed=42):
