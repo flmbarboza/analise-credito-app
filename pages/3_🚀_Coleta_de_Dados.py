@@ -229,8 +229,43 @@ def main():
     st.set_page_config(layout="wide")
     st.title("🔍 Pré-Análise de Dados Interativa")
     
+
+    # Opções para carregar dados
+    with st.expander("📤 Carregar Dados", expanded=True):
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            # Opção 1: Usar dados existentes na session_state
+            if 'dados' in st.session_state:
+                st.write("Dados existentes carregados:")
+                st.write(f"Shape: {st.session_state.dados.shape}")
+                if st.button("Continuar usando estes dados"):
+                    df = st.session_state.dados
+                    st.success("Continuando com os dados existentes!")
+            else:
+                st.warning("Nenhum dado carregado na sessão atual")
+        
+        with col2:
+            # Opção 2: Fazer novo upload
+            uploaded_file = st.file_uploader("Ou carregue novo arquivo CSV", type=["csv"])
+            if uploaded_file is not None:
+                df = pd.read_csv(uploaded_file)
+                st.session_state.dados = df  # Armazena na session_state
+                st.success("Novo dataset carregado com sucesso!")
+    
+    # Verifica se temos dados para trabalhar
+    if 'df' not in locals():
+        st.warning("Por favor, carregue dados para continuar")
+        st.stop()
+    
+    # Mostra preview dos dados
+    st.subheader("Visualização dos Dados")
+    st.dataframe(df.head(), use_container_width=True)
+    
+    
+    
     # Sessão para upload do arquivo
-    with st.expander("📤 Upload do Dataset", expanded=True):
+    with st.expander("📤 Continue com sua amostra ou faça o Upload", expanded=False):
         uploaded_file = st.file_uploader("Carregue seu arquivo CSV", type=["csv"])
         
         if uploaded_file is not None:
