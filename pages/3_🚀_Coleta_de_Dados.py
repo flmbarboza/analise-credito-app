@@ -108,39 +108,6 @@ def main():
             except Exception as e:
                 st.error(f"Erro ao ler arquivo: {str(e)}")
 
-   # Seção para ajuste de nomes de variáveis
-    if st.session_state.dados is not None:
-        st.divider()
-        
-        # 1. OPÇÃO PARA AJUSTAR NOMES DAS VARIÁVEIS
-        st.subheader("🔧 Ajuste dos Nomes das Variáveis")
-        
-        if st.checkbox("Deseja renomear as colunas?"):
-            colunas_atuais = st.session_state.dados.columns.tolist()
-            novos_nomes = []
-            
-            for i, coluna in enumerate(colunas_atuais):
-                novo_nome = st.text_input(
-                    f"Renomear '{coluna}' para:",
-                    value=coluna,
-                    key=f"nome_{i}"
-                )
-                novos_nomes.append(novo_nome)
-            
-            if st.button("Aplicar novos nomes"):
-                st.session_state.dados.columns = novos_nomes
-                st.success("Nomes das colunas atualizados!")
-                st.session_state.colunas_originais = colunas_atuais  # Guarda original
-
-        # 2. ANÁLISE SIMPLIFICADA (VERSÃO CORRIGIDA)
-        st.subheader("🧐 Entendendo Seus Dados")
-        
-        # Método mais robusto para análise dos dados
-        st.markdown(f"""
-        ### 📋 Resumo do Dataset
-        - **Total de registros**: {len(st.session_state.dados):,}
-        - **Número de variáveis**: {len(st.session_state.dados.columns)}
-        """)
 
         # Explicação dos tipos
         with st.expander("ℹ️ Legenda dos Tipos de Dados e Descrição das Variáveis"):
@@ -190,6 +157,40 @@ def main():
                 hide_index=True,
                 use_container_width=True
             )
+    
+   # Seção para ajuste de nomes de variáveis
+    if st.session_state.dados is not None:
+        st.divider()
+        
+        # 1. OPÇÃO PARA AJUSTAR NOMES DAS VARIÁVEIS
+        st.subheader("🔧 Ajuste dos Nomes das Variáveis")
+        
+        if st.checkbox("Deseja renomear as colunas?"):
+            colunas_atuais = st.session_state.dados.columns.tolist()
+            novos_nomes = []
+            
+            for i, coluna in enumerate(colunas_atuais):
+                novo_nome = st.text_input(
+                    f"Renomear '{coluna}' para:",
+                    value=coluna,
+                    key=f"nome_{i}"
+                )
+                novos_nomes.append(novo_nome)
+            
+            if st.button("Aplicar novos nomes"):
+                st.session_state.dados.columns = novos_nomes
+                st.success("Nomes das colunas atualizados!")
+                st.session_state.colunas_originais = colunas_atuais  # Guarda original
+
+        # 2. ANÁLISE SIMPLIFICADA (VERSÃO CORRIGIDA)
+        st.subheader("🧐 Entendendo Seus Dados")
+        
+        # Método mais robusto para análise dos dados
+        st.markdown(f"""
+        ### 📋 Resumo do Dataset
+        - **Total de registros**: {len(st.session_state.dados):,}
+        - **Número de variáveis**: {len(st.session_state.dados.columns)}
+        """)
 
         # Tabela resumida
         resumo = []
