@@ -5,6 +5,7 @@ import kagglehub
 import random
 from io import BytesIO
 from io import StringIO
+from datetime import datetime
 
 def gerar_subamostra(base, percentual=0.2, seed=42):
     return base.sample(frac=percentual, random_state=seed).copy()
@@ -369,6 +370,7 @@ def main():
                     
                     # Registrar ação
                     action = {
+                        'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                         'action': f"Removidas {removed_count} linhas com valores faltantes na coluna {col_to_correct}",
                         'type': "Remoção"
                     }
@@ -389,6 +391,7 @@ def main():
                     
                     # Registrar ação
                     action = {
+                        'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                         'action': f"Removidas {removed_count} linhas com valores específicos na coluna {col_to_correct}",
                         'type': "Remoção"
                     }
@@ -415,6 +418,7 @@ def main():
                 
                 # Registrar ação
                 action = {
+                    'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                     'action': f"Substituídos {count} valores '{old_value}' por '{new_value}' na coluna {col_to_correct}",
                     'type': "Substituição"
                 }
@@ -442,6 +446,7 @@ def main():
                     
                     # Registrar ação
                     action = {
+                        'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                         'action': f"Preenchidos {count} valores faltantes com '{fill_value}' na coluna {col_to_correct}",
                         'type': "Preenchimento"
                     }
@@ -461,6 +466,7 @@ def main():
                     
                     # Registrar ação
                     action = {
+                        'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                         'action': f"Preenchidos {count} valores faltantes com {fill_method} ({fill_value:.2f}) na coluna {col_to_correct}",
                         'type': "Preenchimento"
                     }
