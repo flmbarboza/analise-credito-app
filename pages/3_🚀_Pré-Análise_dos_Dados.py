@@ -53,7 +53,159 @@ def main():
         output.seek(0)
         return output.getvalue()
     
-    # Análise Interativa
+  
+        # Expander 1: Identificar Dados Faltantes
+    with st.expander("🔎 Identificar Dados Faltantes", expanded=False):
+        if st.session_state.dados.empty:
+            st.warning("Nenhum dado disponível para análise.")
+        else:
+            coluna_faltantes = st.selectbox(
+                "Selecione a coluna para verificar dados faltantes:",
+                st.session_state.dados.columns,
+                key="faltantes_coluna"
+            )
+            if coluna_faltantes:
+                # Identificar linhas com dados faltantes
+                mask_faltantes = st.session_state.dados[coluna_faltantes].isnull()
+                linhas_faltantes = st.session_state.dados[mask_faltantes]
+    
+                if not linhas_faltantes.empty:
+                    st.warning("⚠️ Linhas com dados faltantes encontradas:")
+                    st.dataframe(linhas_faltantes[[coluna_faltantes]], use_container_width=True)
+    
+                    # Permitir seleção das linhas a serem excluídas
+                    indices = linhas_faltantes.index.tolist()
+                    indices_selecionados = st.multiselect(
+                        "Selecione os índices para excluir:",
+                        options=indices,
+                        default=indices,
+                        key="faltantes_indices"
+                    )
+    
+                    if st.button("Excluir Linhas Selecionadas", key="excluir_faltantes"):
+                        df_atual = st.session_state.dados
+                        df_atual = df_atual.drop(index=indices_selecionados)
+                        st.session_state.dados = df_atual.reset_index(drop=True)
+    
+                        # Registrar ação
+                        action = {
+                            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                            'action': f"Excluídas {len(indices_selecionados)} linhas com dados faltantes na coluna '{coluna_faltantes}'",
+                            'type': "Remoção"
+                        }
+                        st.session_state.actions_log.append(action)
+                        st.success(f"Linhas com dados faltantes removidas com sucesso!")
+                else:
+                    st.success("✅ Nenhum dado faltante encontrado nessa coluna.")
+    
+    # Expander 2: Identificar Dados Inconsistentes (Textuais)
+    with st.expander("✏️ Identificar Dados Inconsistentes", expanded=False):
+        if st.session_state.dados.empty:
+            st.warning("Nenhum dado disponível para análise.")
+        else:
+            cols_texto = st.session_state.dados.select_dtypes(include=['object']).columns
+            if len(cols_texto) == 0:
+                st.info("Nenhuma coluna textual disponível.")
+            else:
+                coluna_inconsistente = st.selectbox(
+                    "Selecione a coluna para verificar inconsistências:",
+                    cols_texto,
+                    key="inconsistente_coluna"
+                )
+                if coluna_inconsistente:
+                    # Contar valores únicos e frequência
+                    value_counts = st.session_state.dados[coluna_inconsistente].value_counts()
+                    st.dataframe(value_counts.rename("Frequência"), use_container_width=True)
+    
+                    # Permitir seleção de valores para exclusão
+                    valores_unicos = value_counts.index.tolist()
+                    valores_selecionados = st.multiselect(
+                        "Selecione os valores inconsistentes para excluir:",
+                        options=valores_unicos,
+                        default=[],
+                        key="inconsistente_valores"
+                    )
+    
+                    if st.button("Excluir Valores Selecionados", key="excluir_inconsistentes"):
+                        df_atual = st.session_state.dados
+                        df_atual = df_atual[~df_atual[coluna_inconsistente].isin(valores_selecionados)]
+                        st.session_state.dados = df_atual.reset_index(drop=True)
+    
+                        # Registrar ação
+                        action = {
+                            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                            'action': f"Excluídos valores inconsistentes: {valores_selecionados} na coluna '{coluna_inconsistente}'",
+                            'type': "Remoção"
+                        }
+                        st.session_state.actions_log.append(action)
+                        st.success(f"Valores inconsistentes removidos com sucesso!")
+    
+    # Expander 3: Identificar Outliers (Numéricos)
+    with st.expander("📊 Identificar Outliers", expanded=False):
+        if st.session_state.dados.empty:
+            st.warning("Nenhum dado disponível para análise.")
+        else:
+            cols_numericas = st.session_state.dados.select_dtypes(include=np.number).columns
+            if len(cols_numericas) == 0:
+                st.info("Nenhuma coluna numérica disponível.")
+            else:
+                coluna_outlier = st.selectbox(
+                    "Selecione a coluna para análise de outliers:",
+                    cols_numericas,
+                    key="outlier_coluna"
+                )
+                if coluna_outlier:
+                    q1 = st.session_state.dados[coluna_outlier].quantile(0.25)
+                    q3 = st.session_state.dados[coluna_outlier].quantile(0.75)
+                    iqr = q3 - q1
+                    lower_bound = q1 - 1.5 * iqr
+                    upper_bound = q3 + 1.5 * iqr
+    
+                    outliers = st.session_state.dados[
+                        (st.session_state.dados[coluna_outlier] < lower_bound) |
+                        (st.session_state.dados[coluna_outlier] > upper_bound)
+                    ]
+    
+                    if not outliers.empty:
+                        st.warning(f"⚠️ Outliers detectados em '{coluna_outlier}':")
+                        st.dataframe(outliers, use_container_width=True)
+    
+                        # Permitir seleção das linhas para exclusão
+                        indices = outliers.index.tolist()
+                        indices_selecionados = st.multiselect(
+                            "Selecione os índices dos outliers para excluir:",
+                            options=indices,
+                            default=indices,
+                            key="outlier_indices"
+                        )
+    
+                        if st.button("Excluir Outliers Selecionados", key="excluir_outliers"):
+                            df_atual = st.session_state.dados
+                            df_atual = df_atual.drop(index=indices_selecionados)
+                            st.session_state.dados = df_atual.reset_index(drop=True)
+    
+                            # Registrar ação
+                            action = {
+                                'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                                'action': f"Excluídos {len(indices_selecionados)} outliers na coluna '{coluna_outlier}'",
+                                'type': "Remoção"
+                            }
+                            st.session_state.actions_log.append(action)
+                            st.success(f"Outliers removidos com sucesso!")
+                    else:
+                        st.success("✅ Nenhum outlier detectado nessa coluna.")
+    
+    # Expander 4: Resumo das Ações (opcional)
+    with st.expander("💾 Resumo das Ações Realizadas", expanded=False):
+        if st.session_state.actions_log:
+            st.subheader("Histórico de Modificações")
+            actions_df = pd.DataFrame(st.session_state.actions_log)
+            st.dataframe(actions_df[['timestamp', 'action']], use_container_width=True)
+        else:
+            st.info("Nenhuma ação registrada ainda.")
+
+    
+    # XXX Análise Interativa
     tab1, tab2, tab3, tab4 = st.tabs([
         "🔎 Identificar Problemas", 
         "✏️ Corrigir Dados", 
