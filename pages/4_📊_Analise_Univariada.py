@@ -30,15 +30,67 @@ def main():
         st.pyplot(fig)
     
     # Análise automática
-    with st.expander("🔍 Insights Automáticos"):
+    with st.expander("🔍 Sugestões de Informações que pode extrair destes dados:"):
+    # Análise automática
+        st.markdown("### 📊 Análise da variável selecionada: `{}`".format(variavel))
+    
+        # 1. Tipo da variável
         if dados[variavel].dtype == 'object':
-            st.write(f"🔹 Variável categórica com {dados[variavel].nunique()} categorias")
+            st.write(f"🔹 **Tipo:** Variável categórica")
+            st.write(f"🔹 **Categorias únicas:** {dados[variavel].nunique()}")
         else:
-            st.write(f"🔹 Variável numérica com média {dados[variavel].mean():.2f}")
+            st.write(f"🔹 **Tipo:** Variável numérica")
+            st.write(f"🔹 **Média:** {dados[variavel].mean():.2f}")
+            st.write(f"🔹 **Desvio padrão:** {dados[variavel].std():.2f}")
         
-        if dados[variavel].isnull().sum() > 0:
-            st.warning(f"⚠️ Contém {dados[variavel].isnull().sum()} valores faltantes")
-
+        # 2. Valores faltantes
+        nulos = dados[variavel].isnull().sum()
+        if nulos > 0:
+            st.warning(f"⚠️ **Valores faltantes:** {nulos} registros ausentes")
+        else:
+            st.success(f"✅ **Valores faltantes:** Nenhum")
+    
+        # 3. Valores duplicados
+        duplicados = dados[variavel].duplicated().sum()
+        if duplicados > 0:
+            st.info(f"🔁 **Valores duplicados:** {duplicados} registros repetidos")
+        else:
+            st.info(f"✅ **Valores duplicados:** Nenhum")
+    
+        # 4. Valor mais frequente (moda)
+        moda = dados[variavel].mode()[0]
+        st.write(f"🔹 **Valor mais frequente (moda):** {moda}")
+    
+        # 5. Faixa de valores (para numéricas)
+        if pd.api.types.is_numeric_dtype(dados[variavel]):
+            st.write(f"🔹 **Valor mínimo:** {dados[variavel].min():.2f}")
+            st.write(f"🔹 **Valor máximo:** {dados[variavel].max():.2f}")
+            st.write(f"🔹 **Amplitude:** {dados[variavel].max() - dados[variavel].min():.2f}")
+    
+        # 6. Tendência de concentração (para numéricas)
+        if pd.api.types.is_numeric_dtype(dados[variavel]):
+            q1 = dados[variavel].quantile(0.25)
+            q3 = dados[variavel].quantile(0.75)
+            iqr = q3 - q1
+            limite_inferior = q1 - 1.5 * iqr
+            limite_superior = q3 + 1.5 * iqr
+            outliers = dados[(dados[variavel] < limite_inferior) | (dados[variavel] > limite_superior)].shape[0]
+            
+            if outliers > 0:
+                st.warning(f"⚠️ **Possíveis outliers:** {outliers} registros fora do padrão")
+            else:
+                st.success(f"✅ **Outliers:** Nenhum valor fora do padrão detectado")
+    
+        # 7. Tendência de distribuição (assimetria)
+        if pd.api.types.is_numeric_dtype(dados[variavel]):
+            media = dados[variavel].mean()
+            mediana = dados[variavel].median()
+            if abs(media - mediana) > 0.5 * dados[variavel].std():
+                st.info(f"📈 **Assimetria:** A média ({media:.2f}) e a mediana ({mediana:.2f}) são diferentes → provável assimetria")
+            else:
+                st.info(f"⚖️ **Simetria:** Média e mediana próximas → distribuição aparentemente simétrica")
+        
+        
     with st.expander("🔍 Como explorar, analisar e extrair insights de variáveis individuais?", expanded=False):
         st.markdown("##### 📘 O que é Análise Univariada?")
         st.markdown("""
@@ -60,14 +112,14 @@ def main():
             - A variável tem muitos valores nulos?
             """)
         
-        st.markdown("#### 📊 Possibilidades para Variáveis Categóricas")
+        st.markdown("##### 📊 Possibilidades para Variáveis Categóricas")
         st.markdown("""
             - Qual categoria é mais frequente?
             - Há categorias raras ou inconsistentes? E os "outros" tem? Pode?
             - A variável precisa ser padronizada?
             - Há necessidade/oportunidade [e consistência racional] de agrupar categorias?
             """)
-    
+        st.markdown("##### **Tente! Investigue! Navegue pelos dados! Be curious!!!**")
 
     # 🚀 Link para a próxima página
     st.page_link("pages/5_📈_Analise_Bivariada.py", label="➡️ Ir para a próxima página: Análise Bivariada", icon="📈")
