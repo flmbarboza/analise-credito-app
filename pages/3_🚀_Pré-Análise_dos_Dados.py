@@ -159,7 +159,7 @@ with st.expander("💾 Resumo das Ações Realizadas", expanded=False):
     if st.session_state.actions_log:
         st.subheader("Histórico de Modificações")
 
-        # Cria o DataFrame e renomeia as colunas
+        # Criar DataFrame e renomear colunas
         actions_df = pd.DataFrame(st.session_state.actions_log)
         actions_df.rename(columns={
             'timestamp': 'Quando',
@@ -167,12 +167,41 @@ with st.expander("💾 Resumo das Ações Realizadas", expanded=False):
             'action': 'Detalhes',
             'removed': 'Quantidade'
         }, inplace=True)
+        actions_df = actions_df[['Quando', 'Ação', 'Detalhes', 'Quantidade']]
 
-        # Exibe apenas as colunas renomeadas
-        st.dataframe(actions_df[['Quando', 'Ação', 'Detalhes', 'Quantidade']], use_container_width=True)
+        # Adicionar coluna de seleção
+        actions_df.insert(0, "Selecionar", False)
+
+        # Permitir edição (seleção de linhas)
+        edited_df = st.data_editor(
+            actions_df,
+            hide_index=False,
+            column_config={
+                "Selecionar": st.column_config.CheckboxColumn("Selecionar", default=False)
+            },
+            disabled=["Quando", "Ação", "Detalhes", "Quantidade"],
+            use_container_width=True
+        )
+
+        # Botão para excluir linhas selecionadas
+        if st.button("🗑️ Excluir Linhas Selecionadas"):
+            # Filtrar linhas NÃO selecionadas
+            selected_rows = edited_df[edited_df["Selecionar"]]
+            if not selected_rows.empty:
+                indices_to_remove = selected_rows.index.tolist()
+                # Atualizar log
+                st.session_state.actions_log = [
+                    action for i, action in enumerate(st.session_state.actions_log)
+                    if i not in indices_to_remove
+                ]
+                st.success(f"{len(indices_to_remove)} ações removidas do histórico.")
+                st.rerun()
+            else:
+                st.warning("⚠️ Nenhuma linha selecionada para excluir.")
+
     else:
         st.info("Nenhuma ação registrada ainda.")
-
+        
 # Expander 5: Exportar Dados Limpos
 with st.expander("💾 Exportar Dados Limpos", expanded=True):
     st.markdown("### Exportar os dados tratados como CSV")
@@ -189,7 +218,8 @@ with st.expander("💾 Exportar Dados Limpos", expanded=True):
         mime='text/csv',
     )
 
-    st.info("✔️ Este arquivo contém os dados após todas as correções realizadas até agora. Com isso, CONFIRA SE ESTA ATIVIDADE ESTÁ COERENTE COM A LIMPEZA MANUAL QUE SUA EQUIPE FEZ ANTERIORMENTE.")
+    st.info("✔️ Este arquivo contém os dados após todas as correções realizadas até agora.\n"
+            "⚙️ IMPORTANTE! Com isso, CONFIRA SE ESTA ATIVIDADE ESTÁ COERENTE COM A LIMPEZA MANUAL QUE SUA EQUIPE FEZ ANTERIORMENTE.")
 
         
 # Botão para ir para a próxima página
