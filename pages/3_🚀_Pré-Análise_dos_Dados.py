@@ -210,34 +210,48 @@ with st.expander("📝 Resumo das Ações Realizadas", expanded=False):
     if st.session_state.actions_log:
         st.subheader("Histórico de Modificações")
 
-        # Criar DataFrame e renomear colunas
+        # Criar DataFrame
         actions_df = pd.DataFrame(st.session_state.actions_log)
-        actions_df.rename(columns={
+        
+        # Verificar se todas as colunas esperadas existem
+        available_columns = actions_df.columns.tolist()
+        expected_columns = ['timestamp', 'type', 'action', 'removed']
+        
+        # Criar dicionário de mapeamento de colunas
+        column_mapping = {
             'timestamp': 'Quando',
             'type': 'Ação',
             'action': 'Detalhes',
             'removed': 'Quantidade'
-        }, inplace=True)
-        actions_df = actions_df[['Quando', 'Ação', 'Detalhes', 'Quantidade']]
+        }
+        
+        # Selecionar apenas as colunas disponíveis
+        columns_to_keep = [col for col in expected_columns if col in available_columns]
+        actions_df = actions_df[columns_to_keep]
+        
+        # Renomear as colunas que existem
+        actions_df = actions_df.rename(columns={
+            col: column_mapping[col] for col in columns_to_keep if col in column_mapping
+        })
 
         # Adicionar coluna de seleção
         actions_df.insert(0, "Selecionar", False)
 
         # Permitir edição (seleção de linhas)
-        df = st.data_editor(
+        edited_df = st.data_editor(
             actions_df,
             hide_index=False,
             column_config={
                 "Selecionar": st.column_config.CheckboxColumn("Selecionar", default=False)
             },
-            disabled=["Quando", "Ação", "Detalhes", "Quantidade"],
+            disabled=[col for col in actions_df.columns if col != "Selecionar"],
             use_container_width=True
         )
 
         # Botão para excluir linhas selecionadas
         if st.button("🗑️ Excluir Linhas Selecionadas", key="excluir"):
             # Filtrar linhas NÃO selecionadas
-            selected_rows = df[df["Selecionar"]]
+            selected_rows = edited_df[edited_df["Selecionar"]]
             if not selected_rows.empty:
                 indices_to_remove = selected_rows.index.tolist()
                 # Atualizar log
@@ -251,8 +265,7 @@ with st.expander("📝 Resumo das Ações Realizadas", expanded=False):
                 st.warning("⚠️ Nenhuma linha selecionada para excluir.")
 
     else:
-        st.info("Nenhuma ação registrada ainda.")
-        
+        st.info("Nenhuma ação registrada ainda.")        
 # Expander 6: Exportar Dados Limpos
 with st.expander("💾 Exportar Dados Limpos", expanded=True):
     st.markdown("### Exportar os dados tratados como CSV")
