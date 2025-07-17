@@ -188,32 +188,10 @@ def main():
             figs.append((fig3, f"{variavel}_barras.png"))
         return figs
     
-    # Bloco de análise
-    if not colunas_selecionadas:
-        st.warning("⚠️ Nenhuma variável selecionada.")
-    else:
-        for variavel in colunas_selecionadas:
-            with st.expander(f"🔍 Análise: `{variavel}`", expanded=True):
-                col1, col2 = st.columns([2, 1])
-    
-                with col1:
-                    st.markdown("### 📊 Dados da variável")
-                    st.dataframe(dados[variavel].head(10).to_frame(), use_container_width=True)
-    
-                with col2:
-                    st.markdown("### 🧠 Insights Automáticos")
-                    st.markdown(gerar_insights(variavel))
-    
-                st.markdown("### 📈 Gráficos")
-                figs = gerar_graficos(variavel)
-                cols = st.columns(len(figs))
-                for i, (fig, nome) in enumerate(figs):
-                    cols[i].pyplot(fig)
-    
     # Bloco de exportação
     with st.expander("📤 Exportar Análises"):
         st.markdown("### Escolha o que deseja salvar:")
-        save_insights = st.checkbox("Salvar Insights Automáticos")
+        save_insights = st.checkbox("Salvar Sugestões de Informações")
         save_hist = st.checkbox("Salvar Histogramas")
         save_boxplot = st.checkbox("Salvar Boxplots")
         save_bars = st.checkbox("Salvar Gráficos de Barras")
