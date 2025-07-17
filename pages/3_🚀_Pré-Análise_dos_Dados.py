@@ -272,8 +272,7 @@ with st.expander("💾 Exportar Dados Limpos", expanded=True):
         mime='text/csv',
     )
 
-    st.info("✔️ Este arquivo contém os dados após todas as correções realizadas até agora.\n"
-            "⚙️ IMPORTANTE! Com isso, CONFIRA SE ESTA ATIVIDADE ESTÁ COERENTE COM A LIMPEZA MANUAL QUE SUA EQUIPE FEZ ANTERIORMENTE.")
+    st.info("✔️ Este arquivo contém os dados após todas as correções realizadas até agora.\n⚙️ IMPORTANTE! Com isso, CONFIRA SE ESTA ATIVIDADE ESTÁ COERENTE COM A LIMPEZA MANUAL QUE SUA EQUIPE FEZ ANTERIORMENTE.")
 
         
 # Botão para ir para a próxima página
