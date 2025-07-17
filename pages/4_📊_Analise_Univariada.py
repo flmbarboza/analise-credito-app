@@ -124,12 +124,12 @@ def main():
 
     # Seleção de múltiplas variáveis
     st.markdown("### 🔍 Selecione as variáveis para que deseja gerar um relatório preliminar:")
-    colunas_selecionadas = st.multiselect("Selecione as colunas", df.columns.tolist(), default=df.columns.tolist())
+    colunas_selecionadas = st.multiselect("Selecione as colunas", dados.columns.tolist(), default=dados.columns.tolist())
     
     # Função para gerar insights automáticos
     def gerar_insights(variavel):
         insights = []
-        serie = df[variavel]
+        serie = dados[variavel]
         
         # Tipo da variável
         if pd.api.types.is_numeric_dtype(serie):
@@ -166,18 +166,18 @@ def main():
     # Função para exportar gráficos
     def gerar_graficos(variavel):
         figs = []
-        serie = df[variavel]
+        serie = dados[variavel]
         if pd.api.types.is_numeric_dtype(serie):
             # Histograma
             fig1, ax1 = plt.subplots()
-            sns.histplot(data=df, x=variavel, ax=ax1)
+            sns.histplot(data=dados, x=variavel, ax=ax1)
             ax1.set_ylabel("Quantidade")
             ax1.set_xlabel(variavel)
             figs.append((fig1, f"{variavel}_histograma.png"))
             
             # Boxplot
             fig2, ax2 = plt.subplots()
-            sns.boxplot(x=df[variavel], ax=ax2)
+            sns.boxplot(x=dados[variavel], ax=ax2)
             ax2.set_xlabel(variavel)
             figs.append((fig2, f"{variavel}_boxplot.png"))
         else:
@@ -198,7 +198,7 @@ def main():
     
                 with col1:
                     st.markdown("### 📊 Dados da variável")
-                    st.dataframe(df[variavel].head(10).to_frame(), use_container_width=True)
+                    st.dataframe(dados[variavel].head(10).to_frame(), use_container_width=True)
     
                 with col2:
                     st.markdown("### 🧠 Insights Automáticos")
