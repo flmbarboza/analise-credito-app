@@ -154,7 +154,56 @@ with st.expander("📊 Identificar Outliers", expanded=False):
             else:
                 st.success("✅ Nenhum outlier detectado nessa coluna.")
 
-# Expander 4: Resumo das Ações
+#Expander 4: Manual
+with st.expander("🧹 Exclusão Manual de Linhas", expanded=True):
+    st.markdown("### Selecione as linhas que deseja excluir manualmente")
+
+    df = st.session_state.dados.copy()
+
+    # Adicionar coluna de seleção
+    df.insert(0, "Selecionar", False)
+
+    # Permitir edição com checkboxes
+    edited_df = st.data_editor(
+        df,
+        hide_index=False,
+        column_config={
+            "Selecionar": st.column_config.CheckboxColumn("Selecionar", default=False)
+        },
+        disabled=df.columns.tolist(),  # Desativa edição das outras colunas
+        use_container_width=True
+    )
+
+    # Campo para justificativa da exclusão
+    reason = st.text_input("Informe o motivo da exclusão:")
+
+    # Botão para aplicar a exclusão
+    if st.button("🗑️ Excluir Linhas Selecionadas"):
+        if not reason.strip():
+            st.warning("⚠️ Por favor, informe o motivo da exclusão.")
+        else:
+            selected_rows = edited_df[edited_df["Selecionar"]]
+            if not selected_rows.empty:
+                indices_to_remove = selected_rows.index.tolist()
+                count_removed = len(indices_to_remove)
+
+                # Atualizar dados
+                st.session_state.dados = st.session_state.dados[~st.session_state.dados.index.isin(indices_to_remove)]
+
+                # Registrar ação com motivo personalizado
+                action = {
+                    'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    'action': f"Exclusão manual de {count_removed} linha(s): {reason}",
+                    'type': "Remoção"
+                }
+                st.session_state.actions_log.append(action)
+
+                st.success(f"{count_removed} linha(s) removida(s) com sucesso!")
+                st.rerun()
+            else:
+                st.warning("⚠️ Nenhuma linha foi selecionada para exclusão.")
+                
+# Expander 5: Resumo das Ações
 with st.expander("💾 Resumo das Ações Realizadas", expanded=False):
     if st.session_state.actions_log:
         st.subheader("Histórico de Modificações")
@@ -202,7 +251,7 @@ with st.expander("💾 Resumo das Ações Realizadas", expanded=False):
     else:
         st.info("Nenhuma ação registrada ainda.")
         
-# Expander 5: Exportar Dados Limpos
+# Expander 6: Exportar Dados Limpos
 with st.expander("💾 Exportar Dados Limpos", expanded=True):
     st.markdown("### Exportar os dados tratados como CSV")
     st.markdown("Clique no botão abaixo para baixar o dataset atualizado:")
