@@ -287,7 +287,7 @@ def main():
         ], horizontal=True)
         
         if analysis_type == "Dados Faltantes":
-            missing = st.session_state.modified_df.isnull().sum()
+            missing = st.session_state.dados.isnull().sum()
             missing = missing[missing > 0]
             
             if not missing.empty:
@@ -304,34 +304,34 @@ def main():
             st.subheader("Análise de Inconsistências")
             
             # Identificar colunas com possíveis inconsistências
-            text_cols = st.session_state.modified_df.select_dtypes(include=['object']).columns
-            num_cols = st.session_state.modified_df.select_dtypes(include=np.number).columns
+            text_cols = st.session_state.dados.select_dtypes(include=['object']).columns
+            num_cols = st.session_state.dados.select_dtypes(include=np.number).columns
             
             col_to_analyze = st.selectbox("Selecione a coluna para análise:", text_cols.union(num_cols))
             
             if col_to_analyze in text_cols:
                 # Análise para colunas textuais
-                value_counts = st.session_state.modified_df[col_to_analyze].value_counts()
+                value_counts = st.session_state.dados[col_to_analyze].value_counts()
                 st.dataframe(value_counts, use_container_width=True)
                 
                 # Identificar valores únicos para possível padronização
                 st.write("Valores únicos encontrados:")
-                st.write(st.session_state.modified_df[col_to_analyze].unique())
+                st.write(st.session_state.dados[col_to_analyze].unique())
             else:
                 # Análise para colunas numéricas
                 st.write(f"Estatísticas descritivas para {col_to_analyze}:")
-                st.write(st.session_state.modified_df[col_to_analyze].describe())
+                st.write(st.session_state.dados[col_to_analyze].describe())
                 
                 # Identificar possíveis outliers
-                q1 = st.session_state.modified_df[col_to_analyze].quantile(0.25)
-                q3 = st.session_state.modified_df[col_to_analyze].quantile(0.75)
+                q1 = st.session_state.dados[col_to_analyze].quantile(0.25)
+                q3 = st.session_state.dados[col_to_analyze].quantile(0.75)
                 iqr = q3 - q1
                 lower_bound = q1 - 1.5 * iqr
                 upper_bound = q3 + 1.5 * iqr
                 
-                outliers = st.session_state.modified_df[
-                    (st.session_state.modified_df[col_to_analyze] < lower_bound) | 
-                    (st.session_state.modified_df[col_to_analyze] > upper_bound)
+                outliers = st.session_state.dados[
+                    (st.session_state.dados[col_to_analyze] < lower_bound) | 
+                    (st.session_state.dados[col_to_analyze] > upper_bound)
                 ]
                 
                 if not outliers.empty:
@@ -351,7 +351,7 @@ def main():
         
         col_to_correct = st.selectbox(
             "Selecione a coluna para correção:", 
-            st.session_state.modified_df.columns
+            st.session_state.dados.columns
         )
         
         if correction_type == "Remover Dados":
@@ -361,14 +361,14 @@ def main():
             ])
             
             if remove_option == "Linhas com valores específicos":
-                if st.session_state.modified_df[col_to_correct].dtype == 'object':
+                if st.session_state.dados[col_to_correct].dtype == 'object':
                     values_to_remove = st.multiselect(
                         "Selecione os valores a remover:", 
-                        st.session_state.modified_df[col_to_correct].unique()
+                        st.session_state.dados[col_to_correct].unique()
                     )
                 else:
-                    min_val = float(st.session_state.modified_df[col_to_correct].min())
-                    max_val = float(st.session_state.modified_df[col_to_correct].max())
+                    min_val = float(st.session_state.dados[col_to_correct].min())
+                    max_val = float(st.session_state.dados[col_to_correct].max())
                     values_to_remove = st.slider(
                         "Selecione o intervalo de valores a remover:", 
                         min_val, max_val, (min_val, max_val)
@@ -376,8 +376,8 @@ def main():
             
             if st.button("Aplicar Remoção"):
                 if remove_option == "Linhas com valores faltantes":
-                    initial_count = len(st.session_state.modified_df)
-                    st.session_state.modified_df = st.session_state.modified_df.dropna(subset=[col_to_correct])
+                    initial_count = len(st.session_state.dados)
+                    st.session_state.modified_df = st.session_state.dados.dropna(subset=[col_to_correct])
                     removed_count = initial_count - len(st.session_state.modified_df)
                     
                     # Registrar ação
