@@ -24,15 +24,16 @@ def main():
         st.write(dados[variavel].describe())
         
     with col2:
-        st.subheader("Distribuição")
+        st.subheader("Gráfico de Barras/Histograma")
         fig, ax = plt.subplots()
+        ax.set_ylabel("Quantidade")
         sns.histplot(data=dados, x=variavel, ax=ax)
         st.pyplot(fig)
     
     # Análise automática
     with st.expander("🔍 Sugestões de Informações que pode extrair destes dados:"):
     # Análise automática
-        st.markdown("### 📊 Análise da variável selecionada: `{}`".format(variavel))
+        st.markdown("##### 📊 Análise da variável selecionada: `{}`".format(variavel))
     
         # 1. Tipo da variável
         if dados[variavel].dtype == 'object':
