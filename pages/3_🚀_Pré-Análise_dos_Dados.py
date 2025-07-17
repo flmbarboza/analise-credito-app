@@ -32,44 +32,43 @@ def registrar_acao(tipo, acao, removidos):
         'removed': removidos
     })
 
-# Expander 1: Dados Faltantes
-with st.expander("🔎 Identificar Dados Faltantes", expanded=False):
-    coluna_faltantes = st.selectbox(
-        "Selecione a coluna para verificar dados faltantes:",
-        df.columns,
-        key="faltantes_coluna"
-    )
-    if coluna_faltantes:
-        mask = df[coluna_faltantes].isnull()
-        linhas_com_faltantes = df[mask]
+# Expander: Identificar e Remover Linhas com Dados Faltantes
+with st.expander("🔎 Identificar e Remover Linhas com Dados Faltantes", expanded=False):
+    st.markdown("### Resumo de Dados Faltantes")
 
-        if not linhas_com_faltantes.empty:
-            st.warning("⚠️ Linhas com dados faltantes encontradas:")
-            st.dataframe(linhas_com_faltantes[[coluna_faltantes]], use_container_width=True)
+    df = st.session_state.dados.copy()
+    
+    # Identificar linhas com dados faltantes
+    mask_linhas_faltantes = df.isnull().any(axis=1)
+    linhas_com_faltantes = df[mask_linhas_faltantes]
 
-            indices = linhas_com_faltantes.index.tolist()
-            st.session_state.faltantes_indices = st.multiselect(
-                "Selecione os índices para excluir:",
-                options=indices,
-                default=indices,
-                key="faltantes_multiselect"
-            )
+    total_linhas = len(df)
+    total_com_faltantes = len(linhas_com_faltantes)
 
-            if st.button("Excluir Linhas Selecionadas", key="excluir_faltantes"):
-                df = df.drop(index=st.session_state.faltantes_indices)
-                st.session_state.dados = df.reset_index(drop=True)
-                removed_count = len(st.session_state.faltantes_indices)
-                registrar_acao(
-                    "Remoção",
-                    f"Excluídas {removed_count} linhas com dados faltantes na coluna '{coluna_faltantes}'",
-                    removed_count
-                )
-                st.session_state.faltantes_indices = []
-                st.success(f"{removed_count} linhas removidas com sucesso!")
-                st.rerun()
-        else:
-            st.success("✅ Nenhum dado faltante encontrado nessa coluna.")
+    if total_com_faltantes > 0:
+        st.warning(f"⚠️ Foram encontradas **{total_com_faltantes} linhas** com dados faltantes em **{total_linhas} linhas totais**.")
 
+        st.markdown("### Visualização das Linhas com Dados Faltantes")
+        st.dataframe(linhas_com_faltantes, use_container_width=True)
+
+        st.markdown("### Ação: Remover Linhas com Dados Faltantes")
+        if st.button("🗑️ Excluir Todas as Linhas com Dados Faltantes"):
+            df = df.dropna(how='any')
+            st.session_state.dados = df.reset_index(drop=True)
+
+            # Registrar ação
+            action = {
+                'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'action': f"Excluídas {total_com_faltantes} linhas com dados faltantes (todas as colunas)",
+                'type': "Remoção"
+            }
+            st.session_state.actions_log.append(action)
+
+            st.success(f"{total_com_faltantes} linhas com dados faltantes foram excluídas com sucesso!")
+            st.rerun()
+    else:
+        st.success("✅ Nenhuma linha com dados faltantes encontrada.")
+        
 # Expander 2: Dados Inconsistentes
 with st.expander("✏️ Identificar Dados Inconsistentes", expanded=False):
     text_cols = df.select_dtypes(include='object').columns
