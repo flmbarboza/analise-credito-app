@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import io
 import zipfile
+import base64
 
 def main():
     st.title("📊 Análise Univariada")
