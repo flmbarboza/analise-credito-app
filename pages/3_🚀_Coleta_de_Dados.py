@@ -219,7 +219,7 @@ def main():
                 mime='text/csv'
             )
     # 🚀 Link para a próxima página
-    st.page_link("pages/4_📊_Analise_Univariada.py", label="➡️ Ir para a próxima página: Análise Univariada", icon="📊")
+    st.page_link("pages/3_🚀_Pré-Análise_dos_Dados.py", label="➡️ Ir para a próxima página: Pré-Análise dos Dados", icon="🚀")
 
 if __name__ == "__main__":
     main()
