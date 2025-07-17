@@ -161,14 +161,11 @@ with st.expander("🧹 Exclusão Manual de Linhas", expanded=False):
         st.warning("⚠️ Nenhum dado carregado.")
         st.stop()
 
-    # Copiar dados para manipulação
-    df = st.session_state.dados.copy()
-
     # Adicionar coluna de seleção
     df.insert(0, "Selecionar", False)
 
     # Permitir edição com checkboxes
-    edited_df = st.data_editor(
+    df = st.data_editor(
         df,
         hide_index=False,
         column_config={
@@ -187,7 +184,7 @@ with st.expander("🧹 Exclusão Manual de Linhas", expanded=False):
             st.warning("⚠️ Por favor, informe o motivo da exclusão.")
         else:
             # Filtrar linhas selecionadas
-            selected_rows = edited_df[edited_df["Selecionar"]]
+            selected_rows = df[df["Selecionar"]]
             if not selected_rows.empty:
                 indices_to_remove = selected_rows.index.tolist()
                 count_removed = len(indices_to_remove)
@@ -227,7 +224,7 @@ with st.expander("📝 Resumo das Ações Realizadas", expanded=False):
         actions_df.insert(0, "Selecionar", False)
 
         # Permitir edição (seleção de linhas)
-        edited_df = st.data_editor(
+        df = st.data_editor(
             actions_df,
             hide_index=False,
             column_config={
@@ -240,7 +237,7 @@ with st.expander("📝 Resumo das Ações Realizadas", expanded=False):
         # Botão para excluir linhas selecionadas
         if st.button("🗑️ Excluir Linhas Selecionadas", key="excluir"):
             # Filtrar linhas NÃO selecionadas
-            selected_rows = edited_df[edited_df["Selecionar"]]
+            selected_rows = df[df["Selecionar"]]
             if not selected_rows.empty:
                 indices_to_remove = selected_rows.index.tolist()
                 # Atualizar log
