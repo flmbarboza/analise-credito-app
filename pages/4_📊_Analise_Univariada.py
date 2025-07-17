@@ -40,7 +40,7 @@ def main():
             st.warning(f"⚠️ Contém {dados[variavel].isnull().sum()} valores faltantes")
 
     with st.expander("🔍 Como explorar, analisar e extrair insights de variáveis individuais?", expanded=False):
-        st.markdown("# 📘 O que é Análise Univariada?")
+        st.markdown("##### 📘 O que é Análise Univariada?")
         st.markdown("""
             A **Análise Univariada** é a análise de **uma variável por vez**, com o objetivo de:
             - Entender sua distribuição
@@ -52,7 +52,7 @@ def main():
             """)
     
     with st.expander("🧠 Exemplos de Informações/Curiosidades/Achados que pode ter", expanded=False):
-        st.markdown("### 📈 Possibilidades para Variáveis Numéricas")
+        st.markdown("##### 📈 Possibilidades para Variáveis Numéricas")
         st.markdown("""
             - A distribuição é simétrica ou assimétrica?
             - Há valores extremos (outliers)?
@@ -60,7 +60,7 @@ def main():
             - A variável tem muitos valores nulos?
             """)
         
-        st.markdown("# 📊 Possibilidades para Variáveis Categóricas")
+        st.markdown("#### 📊 Possibilidades para Variáveis Categóricas")
         st.markdown("""
             - Qual categoria é mais frequente?
             - Há categorias raras ou inconsistentes? E os "outros" tem? Pode?
