@@ -154,17 +154,32 @@ with st.expander("📊 Identificar Outliers", expanded=False):
             else:
                 st.success("✅ Nenhum outlier detectado nessa coluna.")
 
-# Visualização atual dos dados
-st.subheader("📊 Dados Atuais")
-st.dataframe(df.head(10), use_container_width=True)
-
 # Expander 4: Resumo das Ações
 with st.expander("💾 Resumo das Ações Realizadas", expanded=False):
     if st.session_state.actions_log:
         actions_df = pd.DataFrame(st.session_state.actions_log)
-        st.dataframe(actions_df[['timestamp', 'type', 'action', 'removed']], use_container_width=True)
+        st.dataframe(actions_df[['Quando', 'Ação', 'Detalhes', 'Quantidade']], use_container_width=True)
     else:
         st.info("Nenhuma ação registrada ainda.")
+
+# Expander 5: Exportar Dados Limpos
+with st.expander("💾 Exportar Dados Limpos", expanded=True):
+    st.markdown("### Exportar os dados tratados como CSV")
+    st.markdown("Clique no botão abaixo para baixar o dataset atualizado:")
+
+    # Preparar CSV
+    csv = st.session_state.dados.to_csv(index=False).encode('utf-8')
+
+    # Botão de download
+    st.download_button(
+        label="📥 Baixar Dados Limpos (CSV)",
+        data=csv,
+        file_name='dados_limpos.csv',
+        mime='text/csv',
+    )
+
+    st.info("✔️ Este arquivo contém os dados após todas as correções realizadas até agora.")
+
         
 # Botão para ir para a próxima página
 if st.button("Ir para Análise Univariada"):
