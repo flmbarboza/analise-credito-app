@@ -53,8 +53,15 @@ def main():
         output.seek(0)
         return output.getvalue()
     
-  
-        # Expander 1: Identificar Dados Faltantes
+        # Garantir que variáveis de estado existam
+    if 'dados' not in st.session_state:
+        st.session_state.dados = pd.DataFrame()
+    if 'actions_log' not in st.session_state:
+        st.session_state.actions_log = []
+    if 'faltantes_selecionados' not in st.session_state:
+        st.session_state.faltantes_selecionados = []
+    
+    # Expander 1: Identificar Dados Faltantes
     with st.expander("🔎 Identificar Dados Faltantes", expanded=False):
         if st.session_state.dados.empty:
             st.warning("Nenhum dado disponível para análise.")
@@ -78,14 +85,18 @@ def main():
                     indices_selecionados = st.multiselect(
                         "Selecione os índices para excluir:",
                         options=indices,
-                        default=indices,
+                        default=st.session_state.faltantes_selecionados,  # Usa estado anterior
                         key="faltantes_indices"
                     )
+    
+                    # Atualiza o estado com a seleção mais recente
+                    st.session_state.faltantes_selecionados = indices_selecionados
     
                     if st.button("Excluir Linhas Selecionadas", key="excluir_faltantes"):
                         df_atual = st.session_state.dados
                         df_atual = df_atual.drop(index=indices_selecionados)
                         st.session_state.dados = df_atual.reset_index(drop=True)
+                        st.session_state.faltantes_selecionados = []  # Limpa seleção após exclusão
     
                         # Registrar ação
                         action = {
@@ -95,9 +106,11 @@ def main():
                         }
                         st.session_state.actions_log.append(action)
                         st.success(f"Linhas com dados faltantes removidas com sucesso!")
+                        st.experimental_rerun()  # Rerun para atualizar a interface
+    
                 else:
                     st.success("✅ Nenhum dado faltante encontrado nessa coluna.")
-    
+                    
     # Expander 2: Identificar Dados Inconsistentes (Textuais)
     with st.expander("✏️ Identificar Dados Inconsistentes", expanded=False):
         if st.session_state.dados.empty:
