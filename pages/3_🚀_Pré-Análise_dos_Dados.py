@@ -209,7 +209,7 @@ with st.expander("🧹 Exclusão Manual de Linhas", expanded=False):
                 st.warning("⚠️ Nenhuma linha foi selecionada para exclusão.")
                 
 # Expander 5: Resumo das Ações
-with st.expander("💾 Resumo das Ações Realizadas", expanded=False):
+with st.expander("📝 Resumo das Ações Realizadas", expanded=False):
     if st.session_state.actions_log:
         st.subheader("Histórico de Modificações")
 
@@ -276,5 +276,5 @@ with st.expander("💾 Exportar Dados Limpos", expanded=True):
 
         
 # Botão para ir para a próxima página
-if st.button("Ir para Análise Univariada"):
+if st.button("Ir para Análise Univariada 📊"):
     st.switch_page("pages/4_📊_Analise_Univariada.py")
