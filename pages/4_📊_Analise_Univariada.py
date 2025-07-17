@@ -40,18 +40,19 @@ def main():
             st.warning(f"⚠️ Contém {dados[variavel].isnull().sum()} valores faltantes")
 
     with st.expander("🔍 Como explorar, analisar e extrair insights de variáveis individuais?", expanded=False):
-        st.markdown("""📘 O que é Análise Univariada?
+        st.markdown("# 📘 O que é Análise Univariada?")
+        st.markdown("""
             A **Análise Univariada** é a análise de **uma variável por vez**, com o objetivo de:
             - Entender sua distribuição
             - Identificar possíveis problemas na base (dados faltantes, inconsistências e outliers)
             - Verificar qualidade dos dados
             - Tomar decisões sobre transformações ou tratamentos
             
-            Essa é a **primeira etapa** em qualquer análise de dados!
+            Essa é a primeira etapa em qualquer análise de dados!
             """)
     
-    with st.expander("🧠 Exemplos de Insights", expanded=True):
-        st.markdown("### 📈 Insights para Variáveis Numéricas")
+    with st.expander("🧠 Exemplos de Informações/Curiosidades/Achados que pode ter", expanded=False):
+        st.markdown("### 📈 Possibilidades para Variáveis Numéricas")
         st.markdown("""
             - A distribuição é simétrica ou assimétrica?
             - Há valores extremos (outliers)?
@@ -59,12 +60,12 @@ def main():
             - A variável tem muitos valores nulos?
             """)
         
-        st.markdown("### 📊 Insights para Variáveis Categóricas")
+        st.markdown("# 📊 Possibilidades para Variáveis Categóricas")
         st.markdown("""
             - Qual categoria é mais frequente?
-            - Há categorias raras ou inconsistentes?
+            - Há categorias raras ou inconsistentes? E os "outros" tem? Pode?
             - A variável precisa ser padronizada?
-            - Há necessidade de agrupar categorias?
+            - Há necessidade/oportunidade [e consistência racional] de agrupar categorias?
             """)
     
 
