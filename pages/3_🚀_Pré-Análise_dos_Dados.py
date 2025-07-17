@@ -157,7 +157,18 @@ with st.expander("📊 Identificar Outliers", expanded=False):
 # Expander 4: Resumo das Ações
 with st.expander("💾 Resumo das Ações Realizadas", expanded=False):
     if st.session_state.actions_log:
+        st.subheader("Histórico de Modificações")
+
+        # Cria o DataFrame e renomeia as colunas
         actions_df = pd.DataFrame(st.session_state.actions_log)
+        actions_df.rename(columns={
+            'timestamp': 'Quando',
+            'type': 'Ação',
+            'action': 'Detalhes',
+            'removed': 'Quantidade'
+        }, inplace=True)
+
+        # Exibe apenas as colunas renomeadas
         st.dataframe(actions_df[['Quando', 'Ação', 'Detalhes', 'Quantidade']], use_container_width=True)
     else:
         st.info("Nenhuma ação registrada ainda.")
