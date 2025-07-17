@@ -373,7 +373,8 @@ def main():
                         "Selecione o intervalo de valores a remover:", 
                         min_val, max_val, (min_val, max_val)
                     )
-            
+            if 'actions_log' not in st.session_state:
+                st.session_state.actions_log = []
             if st.button("Aplicar Remoção"):
                 if remove_option == "Linhas com valores faltantes":
                     initial_count = len(st.session_state.dados)
@@ -525,7 +526,7 @@ def main():
         st.download_button(
             label="📥 Baixar Dataset Limpo como CSV",
             data=convert_df_to_csv(st.session_state.dados),
-            file_name='dados_limpos.csv',
+            file_name='base_de_dados-emprestimo.csv',
             mime='text/csv'
         )
         
