@@ -30,10 +30,12 @@ if 'outlier_indices' not in st.session_state:
 with st.expander("🔎 Identificar Dados Faltantes", expanded=False):
     coluna_faltantes = st.selectbox(
         "Selecione a coluna para verificar dados faltantes:",
-        df.columns,
+        st.session_state.dados.columns,
         key="faltantes_coluna"
     )
     if coluna_faltantes:
+        # Garantir que df seja sempre uma cópia do estado atual
+        df = st.session_state.dados.copy()
         mask = df[coluna_faltantes].isnull()
         linhas_com_faltantes = df[mask]
 
@@ -42,7 +44,7 @@ with st.expander("🔎 Identificar Dados Faltantes", expanded=False):
             st.dataframe(linhas_com_faltantes[[coluna_faltantes]], use_container_width=True)
 
             indices = linhas_com_faltantes.index.tolist()
-            st.session_state.faltantes_indices = st.multiselect(
+            indices_selecionados = st.multiselect(
                 "Selecione os índices para excluir:",
                 options=indices,
                 default=indices,
@@ -50,22 +52,33 @@ with st.expander("🔎 Identificar Dados Faltantes", expanded=False):
             )
 
             if st.button("Excluir Linhas Selecionadas", key="excluir_faltantes"):
-                df = df.drop(index=st.session_state.faltantes_indices)
+                # Garantir que a cópia seja feita antes da exclusão
+                df = st.session_state.dados.copy()
+                initial_count = len(df)
+                df = df.drop(index=indices_selecionados)
+                removed_count = initial_count - len(df)
+
+                # Atualizar o session_state com o novo DataFrame
                 st.session_state.dados = df.reset_index(drop=True)
-                st.session_state.faltantes_indices = []
-                st.session_state.actions_log.append({
+
+                # Registrar ação com contagem correta
+                action = {
                     'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                    'action': f"Excluídas {len(st.session_state.faltantes_indices)} linhas com dados faltantes na coluna '{coluna_faltantes}'",
+                    'action': f"Excluídas {removed_count} linhas com dados faltantes na coluna '{coluna_faltantes}'",
                     'type': "Remoção"
-                })
-                st.success("Linhas com dados faltantes removidas com sucesso!")
+                }
+                st.session_state.actions_log.append(action)
+
+                # Limpar seleção e recarregar interface
+                st.success(f"{removed_count} linhas removidas com sucesso!")
                 st.rerun()
+
         else:
             st.success("✅ Nenhum dado faltante encontrado nessa coluna.")
-
+            
 # Expander 2: Dados Inconsistentes
 with st.expander("✏️ Identificar Dados Inconsistentes", expanded=False):
-    text_cols = df.select_dtypes(include='object').columns
+    text_cols = st.session_state.dados.select_dtypes(include='object').columns
     if len(text_cols) == 0:
         st.info("Nenhuma coluna textual disponível.")
     else:
@@ -75,27 +88,31 @@ with st.expander("✏️ Identificar Dados Inconsistentes", expanded=False):
             key="inconsistente_coluna"
         )
         if coluna_inconsistente:
+            df = st.session_state.dados.copy()
             value_counts = df[coluna_inconsistente].value_counts()
             st.dataframe(value_counts.rename("Frequência"), use_container_width=True)
 
             valores_unicos = df[coluna_inconsistente].unique()
-            st.session_state.inconsistentes_indices = st.multiselect(
+            valores_selecionados = st.multiselect(
                 "Selecione os valores inconsistentes para excluir:",
                 options=valores_unicos,
                 default=[],
                 key="inconsistentes_multiselect"
             )
 
-            if st.button("Excluir Valores Selecionados", key="excluir_inconsistentes"):
-                df = df[~df[coluna_inconsistente].isin(st.session_state.inconsistentes_indices)]
+            if st.button("Excluir Valores Selecionados", key="excluir_inconsistentes") and valores_selecionados:
+                initial_count = len(df)
+                df = df[~df[coluna_inconsistente].isin(valores_selecionados)]
+                removed_count = initial_count - len(df)
                 st.session_state.dados = df.reset_index(drop=True)
-                st.session_state.actions_log.append({
+
+                action = {
                     'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                    'action': f"Excluídos valores: {st.session_state.inconsistentes_indices} na coluna '{coluna_inconsistente}'",
+                    'action': f"Excluídos valores: {valores_selecionados} na coluna '{coluna_inconsistente}'",
                     'type': "Remoção"
-                })
-                st.session_state.inconsistentes_indices = []
-                st.success("Valores inconsistentes removidos com sucesso!")
+                }
+                st.session_state.actions_log.append(action)
+                st.success(f"{removed_count} linhas removidas com sucesso!")
                 st.rerun()
 
 # Expander 3: Outliers
