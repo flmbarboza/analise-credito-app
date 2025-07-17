@@ -178,7 +178,7 @@ with st.expander("🧹 Exclusão Manual de Linhas", expanded=True):
     reason = st.text_input("Informe o motivo da exclusão:")
 
     # Botão para aplicar a exclusão
-    if st.button("🗑️ Excluir Linhas Selecionadas"):
+    if st.button("🗑️ Excluir Linhas Selecionadas", key="excluir_selected"):
         if not reason.strip():
             st.warning("⚠️ Por favor, informe o motivo da exclusão.")
         else:
@@ -233,7 +233,7 @@ with st.expander("💾 Resumo das Ações Realizadas", expanded=False):
         )
 
         # Botão para excluir linhas selecionadas
-        if st.button("🗑️ Excluir Linhas Selecionadas"):
+        if st.button("🗑️ Excluir Linhas Selecionadas", key="excluir"):
             # Filtrar linhas NÃO selecionadas
             selected_rows = edited_df[edited_df["Selecionar"]]
             if not selected_rows.empty:
