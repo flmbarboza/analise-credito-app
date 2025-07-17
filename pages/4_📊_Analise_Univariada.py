@@ -38,6 +38,36 @@ def main():
         
         if dados[variavel].isnull().sum() > 0:
             st.warning(f"⚠️ Contém {dados[variavel].isnull().sum()} valores faltantes")
+
+    with st.expander("🔍 Como explorar, analisar e extrair insights de variáveis individuais?", expanded=False):
+        st.markdown("""📘 O que é Análise Univariada?
+            A **Análise Univariada** é a análise de **uma variável por vez**, com o objetivo de:
+            - Entender sua distribuição
+            - Identificar possíveis problemas na base (dados faltantes, inconsistências e outliers)
+            - Verificar qualidade dos dados
+            - Tomar decisões sobre transformações ou tratamentos
+            
+            Essa é a **primeira etapa** em qualquer análise de dados!
+            """)
+    
+    with st.expander("🧠 Exemplos de Insights", expanded=True):
+        st.markdown("### 📈 Insights para Variáveis Numéricas")
+        st.markdown("""
+            - A distribuição é simétrica ou assimétrica?
+            - Há valores extremos (outliers)?
+            - A média está próxima da mediana?
+            - A variável tem muitos valores nulos?
+            """)
+        
+        st.markdown("### 📊 Insights para Variáveis Categóricas")
+        st.markdown("""
+            - Qual categoria é mais frequente?
+            - Há categorias raras ou inconsistentes?
+            - A variável precisa ser padronizada?
+            - Há necessidade de agrupar categorias?
+            """)
+    
+
     # 🚀 Link para a próxima página
     st.page_link("pages/5_📈_Analise_Bivariada.py", label="➡️ Ir para a próxima página: Análise Bivariada", icon="📈")
 
