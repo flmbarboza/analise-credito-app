@@ -377,8 +377,8 @@ def main():
             if st.button("Aplicar Remoção"):
                 if remove_option == "Linhas com valores faltantes":
                     initial_count = len(st.session_state.dados)
-                    st.session_state.modified_df = st.session_state.dados.dropna(subset=[col_to_correct])
-                    removed_count = initial_count - len(st.session_state.modified_df)
+                    st.session_state.dados = st.session_state.dados.dropna(subset=[col_to_correct])
+                    removed_count = initial_count - len(st.session_state.dados)
                     
                     # Registrar ação
                     action = {
@@ -390,16 +390,16 @@ def main():
                     st.success(f"Removidas {removed_count} linhas com valores faltantes!")
                 
                 elif remove_option == "Linhas com valores específicos" and values_to_remove:
-                    initial_count = len(st.session_state.modified_df)
+                    initial_count = len(st.session_state.dados)
                     
                     if isinstance(values_to_remove, tuple):
-                        mask = (st.session_state.modified_df[col_to_correct] >= values_to_remove[0]) & \
-                               (st.session_state.modified_df[col_to_correct] <= values_to_remove[1])
+                        mask = (st.session_state.dados[col_to_correct] >= values_to_remove[0]) & \
+                               (st.session_state.dados[col_to_correct] <= values_to_remove[1])
                     else:
-                        mask = st.session_state.modified_df[col_to_correct].isin(values_to_remove)
+                        mask = st.session_state.dados[col_to_correct].isin(values_to_remove)
                     
-                    st.session_state.modified_df = st.session_state.modified_df[~mask]
-                    removed_count = initial_count - len(st.session_state.modified_df)
+                    st.session_state.dados = st.session_state.dados[~mask]
+                    removed_count = initial_count - len(st.session_state.dados)
                     
                     # Registrar ação
                     action = {
@@ -413,20 +413,20 @@ def main():
         elif correction_type == "Substituir Valores":
             st.subheader("Substituição de Valores")
             
-            if st.session_state.modified_df[col_to_correct].dtype == 'object':
+            if st.session_state.dados[col_to_correct].dtype == 'object':
                 old_value = st.selectbox(
                     "Valor a ser substituído:", 
-                    st.session_state.modified_df[col_to_correct].unique()
+                    st.session_state.dados[col_to_correct].unique()
                 )
                 new_value = st.text_input("Novo valor:")
             else:
                 old_value = st.number_input("Valor a ser substituído:", 
-                    value=float(st.session_state.modified_df[col_to_correct].iloc[0]))
+                    value=float(st.session_state.dados[col_to_correct].iloc[0]))
                 new_value = st.number_input("Novo valor:")
             
             if st.button("Aplicar Substituição") and str(new_value):
-                count = (st.session_state.modified_df[col_to_correct] == old_value).sum()
-                st.session_state.modified_df[col_to_correct] = st.session_state.modified_df[col_to_correct].replace(old_value, new_value)
+                count = (st.session_state.dados[col_to_correct] == old_value).sum()
+                st.session_state.dados[col_to_correct] = st.session_state.dados[col_to_correct].replace(old_value, new_value)
                 
                 # Registrar ação
                 action = {
@@ -447,14 +447,14 @@ def main():
             ])
             
             if fill_method == "Valor Fixo":
-                if st.session_state.modified_df[col_to_correct].dtype == 'object':
+                if st.session_state.dados[col_to_correct].dtype == 'object':
                     fill_value = st.text_input("Valor para preenchimento:")
                 else:
                     fill_value = st.number_input("Valor para preenchimento:")
                 
                 if st.button("Aplicar Preenchimento") and fill_value is not None:
-                    count = st.session_state.modified_df[col_to_correct].isnull().sum()
-                    st.session_state.modified_df[col_to_correct] = st.session_state.modified_df[col_to_correct].fillna(fill_value)
+                    count = st.session_state.dados[col_to_correct].isnull().sum()
+                    st.session_state.dados[col_to_correct] = st.session_state.dados[col_to_correct].fillna(fill_value)
                     
                     # Registrar ação
                     action = {
@@ -467,14 +467,14 @@ def main():
             
             elif fill_method == "Média/Moda":
                 if st.button("Aplicar Preenchimento"):
-                    count = st.session_state.modified_df[col_to_correct].isnull().sum()
+                    count = st.session_state.dados[col_to_correct].isnull().sum()
                     
-                    if st.session_state.modified_df[col_to_correct].dtype == 'object':
-                        fill_value = st.session_state.modified_df[col_to_correct].mode()[0]
+                    if st.session_state.dados[col_to_correct].dtype == 'object':
+                        fill_value = st.session_state.dados[col_to_correct].mode()[0]
                     else:
-                        fill_value = st.session_state.modified_df[col_to_correct].mean()
+                        fill_value = st.session_state.dados[col_to_correct].mean()
                     
-                    st.session_state.modified_df[col_to_correct] = st.session_state.modified_df[col_to_correct].fillna(fill_value)
+                    st.session_state.dados[col_to_correct] = st.session_state.dados[col_to_correct].fillna(fill_value)
                     
                     # Registrar ação
                     action = {
@@ -487,7 +487,7 @@ def main():
         
         # Visualização após correções
         st.subheader("Visualização após Correções")
-        st.dataframe(st.session_state.modified_df.head(), use_container_width=True)
+        st.dataframe(st.session_state.dados.head(), use_container_width=True)
     
     with tab3:
         st.header("Resumo das Ações Realizadas")
@@ -520,11 +520,11 @@ def main():
         st.header("Exportar Dados Limpos")
         
         st.subheader("Dataset Modificado")
-        st.dataframe(st.session_state.modified_df.head(), use_container_width=True)
+        st.dataframe(st.session_state.dados.head(), use_container_width=True)
         
         st.download_button(
             label="📥 Baixar Dataset Limpo como CSV",
-            data=convert_df_to_csv(st.session_state.modified_df),
+            data=convert_df_to_csv(st.session_state.dados),
             file_name='dados_limpos.csv',
             mime='text/csv'
         )
