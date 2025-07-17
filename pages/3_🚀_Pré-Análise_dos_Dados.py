@@ -155,25 +155,35 @@ with st.expander("📊 Identificar Outliers", expanded=False):
                 st.success("✅ Nenhum outlier detectado nessa coluna.")
 
 #Expander 4: Manual
-with st.expander("🧹 Exclusão Manual de Linhas", expanded=True):
-    st.markdown("### Selecione as linhas que deseja excluir manualmente")
-
+with st.expander("🧹 Exclusão Manual de Linhas", expanded=False):
+    
+    # Garantir que os dados existam
+    if 'dados' not in st.session_state or st.session_state.dados.empty:
+        st.warning("⚠️ Nenhum dado carregado.")
+        st.stop()
+    
+    # Copiar dados para manipulação
     df = st.session_state.dados.copy()
-
-    # Adicionar coluna de seleção
-    df.insert(0, "Selecionar", False)
-
-    # Permitir edição com checkboxes
-    edited_df = st.data_editor(
-        df,
-        hide_index=False,
-        column_config={
-            "Selecionar": st.column_config.CheckboxColumn("Selecionar", default=False)
-        },
-        disabled=df.columns.tolist(),  # Desativa edição das outras colunas
-        use_container_width=True
-    )
-
+    
+    # Seleção manual de linhas
+    indices = df.index.tolist()
+    indices_selecionados = st.multiselect("Índices", options=indices, default=indices)
+    
+    # Botão para aplicar exclusão
+    if st.button("🗑️ Excluir Linhas Selecionadas", key="excluir_linhas"):
+        if indices_selecionados:
+            # Excluir linhas
+            df = df.drop(index=indices_selecionados).reset_index(drop=True)
+            # Atualizar session_state
+            st.session_state.dados = df
+            st.success(f"{len(indices_selecionados)} linha(s) excluída(s) com sucesso!")
+            st.rerun()
+        else:
+            st.warning("⚠️ Nenhuma linha selecionada.")
+    
+    # Mostrar DataFrame atualizado
+    st.dataframe(df, use_container_width=True)
+    
     # Campo para justificativa da exclusão
     reason = st.text_input("Informe o motivo da exclusão:")
 
@@ -182,7 +192,7 @@ with st.expander("🧹 Exclusão Manual de Linhas", expanded=True):
         if not reason.strip():
             st.warning("⚠️ Por favor, informe o motivo da exclusão.")
         else:
-            selected_rows = edited_df[edited_df["Selecionar"]]
+            selected_rows = df[df["Selecionar"]]
             if not selected_rows.empty:
                 indices_to_remove = selected_rows.index.tolist()
                 count_removed = len(indices_to_remove)
