@@ -118,7 +118,6 @@ def executar_pipeline_seed(base, seed):
 
     combinado = pd.concat([sub, ruido], ignore_index=True)
     combinado = tratar_categorias(combinado)
-    combinado = corrigir_tipos_numericos(combinado)
 
     if not verificar_integridade(combinado, sub):
         print("Atenção: Alguma inconsistência foi detectada na geração dos dados")
