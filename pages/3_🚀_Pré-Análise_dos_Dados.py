@@ -32,6 +32,75 @@ def registrar_acao(tipo, acao, removidos):
         'removed': removidos
     })
 
+# Expander: Identificar e Remover Linhas Duplicadas
+with st.expander("🔍 Identificar e Remover Linhas Duplicadas", expanded=False):
+    st.markdown("### Resumo de Dados Duplicados")
+
+    df = st.session_state.dados.copy()
+    
+    # Identificar linhas duplicadas (considerando todas as colunas)
+    duplicatas = df[df.duplicated(keep=False)]  # keep=False marca todas as duplicatas
+    total_linhas = len(df)
+    total_duplicatas = len(duplicatas)
+
+    if not duplicatas.empty:
+        # Agrupar duplicatas para melhor visualização
+        duplicatas_agrupadas = duplicatas.groupby(list(df.columns)).size().reset_index(name='Contagem')
+        
+        st.warning(f"⚠️ Foram encontradas **{total_duplicatas} linhas duplicadas** (grupos repetidos) em **{total_linhas} linhas totais**.")
+        
+        st.markdown("### Visualização dos Grupos de Duplicatas")
+        st.write("Cada grupo mostra linhas idênticas e quantas vezes aparecem:")
+        st.dataframe(duplicatas_agrupadas.sort_values(by='Contagem', ascending=False), use_container_width=True)
+
+        st.markdown("### Ação: Remover Linhas Duplicadas")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            # Opção para manter a primeira ou última ocorrência
+            keep_option = st.radio(
+                "Manter:",
+                options=('Primeira ocorrência', 'Última ocorrência'),
+                index=0,
+                help="Qual versão da duplicata deve ser mantida?"
+            )
+        
+        with col2:
+            # Opção para considerar apenas algumas colunas
+            colunas_considerar = st.multiselect(
+                "Considerar apenas estas colunas:",
+                options=df.columns.tolist(),
+                default=df.columns.tolist(),
+                help="Selecione as colunas que definem uma duplicata"
+            )
+        
+        if st.button("🗑️ Remover Linhas Duplicadas"):
+            # Determinar qual ocorrência manter
+            keep = 'first' if keep_option == 'Primeira ocorrência' else 'last'
+            
+            # Remover duplicatas
+            df_sem_duplicatas = df.drop_duplicates(subset=colunas_considerar if colunas_considerar else None, keep=keep)
+            
+            # Calcular quantas linhas foram removidas
+            linhas_removidas = len(df) - len(df_sem_duplicatas)
+            
+            # Atualizar dados na sessão
+            st.session_state.dados = df_sem_duplicatas.reset_index(drop=True)
+
+            # Registrar ação
+            action = {
+                'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'action': f"Removidas {linhas_removidas} linhas duplicadas (mantendo {keep_option.lower()})",
+                'type': "Remoção de Duplicatas",
+                'removed': linhas_removidas
+            }
+            st.session_state.actions_log.append(action)
+
+            st.success(f"{linhas_removidas} linhas duplicadas foram removidas com sucesso!")
+            st.rerun()
+    else:
+        st.success("✅ Nenhuma linha duplicada encontrada.")
+        
 # Expander: Identificar e Remover Linhas com Dados Faltantes
 with st.expander("🔎 Identificar e Remover Linhas com Dados Faltantes", expanded=False):
     st.markdown("### Resumo de Dados Faltantes")
