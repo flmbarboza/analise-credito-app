@@ -7,111 +7,127 @@ from io import BytesIO
 from io import StringIO
 from datetime import datetime
 
-def gerar_subamostra(base, percentual=0.2, seed=42):
-    return base.sample(frac=percentual, random_state=seed).copy()
+import pandas as pd
+import numpy as np
+import random
 
-def executar_pipeline_seed(base, seed):
-    """
-    Pipeline completo para preparação de dados com problemas simulados
-    
-    Parâmetros:
-    base -- DataFrame original
-    seed -- Semente para reprodutibilidade
-    
-    Retorna:
-    DataFrame com dados originais + amostras simuladas com problemas
-    """
-    # Configuração de sementes para reprodutibilidade
-    random.seed(seed)
+# --------------------------------------------
+# Funções auxiliares para pré e pós-processamento
+# --------------------------------------------
+
+def corrigir_tipos_numericos(df):
+    """Força numéricos para Int64 (suporta NaN)"""
+    for col in df.select_dtypes(include=['number']).columns:
+        df[col] = df[col].astype('Int64')
+    return df
+
+def tratar_categorias(df):
+    """Agrupa categorias raras em 'Others' nas variáveis categóricas"""
+    for col in df.select_dtypes(include=['object', 'category']).columns:
+        counts = df[col].value_counts()
+        raras = counts[counts < 5].index
+        df[col] = df[col].replace(raras, 'Others')
+    return df
+
+def obter_valor_normal(df, coluna):
+    """Retorna um valor plausível da coluna"""
+    if pd.api.types.is_numeric_dtype(df[coluna]):
+        valores = df[coluna].dropna()
+        if len(valores) == 0:
+            return 0
+        return int(random.choice(valores.values))
+    else:
+        valores = df[coluna].dropna()
+        if len(valores) == 0:
+            return 'Others'
+        return random.choice(valores.values)
+
+# --------------------------------------------
+# Funções principais
+# --------------------------------------------
+
+def gerar_subamostra(base, seed, percentual=0.2):
     np.random.seed(seed)
-    
-    # 1. Pré-processamento inicial
-    base = base.copy()
-    base = corrigir_tipos_numericos(base)  # Converte numéricos para Int64
-    
-    # 2. Cria subamostra dos dados originais
-    sub = gerar_subamostra(base, seed=seed)
-    
-    # 3. Gera dados problemáticos
-    n_instancias_fake = random.randint(60, 120)
-    ruido = simular_dados_problematicos(sub, n_instancias_fake)
-    
-    # 4. Combina os dados
-    combinado = pd.concat([sub, ruido], ignore_index=True)
-    
-    # 5. Pós-processamento
-    combinado = tratar_categorias(combinado)  # Agrupa categorias raras em 'Others'
-    combinado = corrigir_tipos_numericos(combinado)  # Garante tipos finais
-    
-    # 6. Verificação de qualidade
-    if not verificar_integridade(combinado, sub):
-        st.warning("Atenção: Alguma inconsistência foi detectada na geração dos dados")
-    
-    return combinado
+    amostra = base.sample(frac=percentual, random_state=seed)
+    return amostra.reset_index(drop=True)
 
 def simular_dados_problematicos(df, n_amostras):
-    """Versão adaptada da função de simulação que mantém seus requisitos"""
     df_simulado = pd.DataFrame(columns=df.columns)
-    
+
     for _ in range(n_amostras):
-        # Decidir se será uma linha duplicada (20% chance)
         if random.random() < 0.2 and len(df) > 0:
             linha_original = df.iloc[random.randint(0, len(df)-1)].copy()
             df_simulado = pd.concat([df_simulado, linha_original.to_frame().T], ignore_index=True)
             continue
-        
+
         nova_linha = {}
         for coluna in df.columns:
-            # 30% chance de problema em cada coluna
             if random.random() < 0.3:
                 problema = random.choices(
                     ['faltante', 'inconsistencia', 'outlier', 'categoria_nova'],
-                    weights=[0.4, 0.3, 0.2, 0.1],  # Probabilidades ajustadas
+                    weights=[0.4, 0.3, 0.2, 0.1],
                     k=1
                 )[0]
-                
+
                 if problema == 'faltante':
                     nova_linha[coluna] = np.nan
-                
+
                 elif problema == 'inconsistencia':
                     if pd.api.types.is_numeric_dtype(df[coluna]):
                         valor = random.choice(df[coluna].dropna().values)
                         nova_linha[coluna] = -abs(int(valor))
                     else:
                         nova_linha[coluna] = f"INVALID_{random.randint(1, 100)}"
-                
+
                 elif problema == 'outlier' and pd.api.types.is_numeric_dtype(df[coluna]):
                     mediana = df[coluna].median()
                     iqr = df[coluna].quantile(0.75) - df[coluna].quantile(0.25)
                     nova_linha[coluna] = int(mediana + (random.uniform(5, 10) * iqr))
-                
+
                 elif problema == 'categoria_nova' and pd.api.types.is_string_dtype(df[coluna]):
                     nova_linha[coluna] = 'Others'
-                
+
                 else:
                     nova_linha[coluna] = obter_valor_normal(df, coluna)
             else:
                 nova_linha[coluna] = obter_valor_normal(df, coluna)
-        
+
+            if pd.api.types.is_numeric_dtype(df[coluna]) and pd.notna(nova_linha[coluna]):
+                nova_linha[coluna] = int(nova_linha[coluna])
+
         df_simulado = pd.concat([df_simulado, pd.DataFrame([nova_linha])], ignore_index=True)
-    
+
     return df_simulado
 
 def verificar_integridade(df_completo, df_original):
-    """Verifica se os dados simulados mantêm a integridade dos originais"""
-    # Verifica se todas as colunas originais estão presentes
     if not set(df_original.columns).issubset(set(df_completo.columns)):
         return False
-    
-    # Verifica se os valores originais não foram alterados
     for col in df_original.columns:
         original_values = set(df_original[col].dropna().unique())
         completo_values = set(df_completo[col].dropna().unique())
-        
         if not original_values.issubset(completo_values):
             return False
-    
     return True
+
+def executar_pipeline_seed(base, seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    
+    base = base.copy()
+    base = corrigir_tipos_numericos(base)
+    sub = gerar_subamostra(base, seed=seed, percentual=0.2)
+
+    n_instancias_fake = random.randint(60, 120)
+    ruido = simular_dados_problematicos(sub, n_instancias_fake)
+
+    combinado = pd.concat([sub, ruido], ignore_index=True)
+    combinado = tratar_categorias(combinado)
+    combinado = corrigir_tipos_numericos(combinado)
+
+    if not verificar_integridade(combinado, sub):
+        print("Atenção: Alguma inconsistência foi detectada na geração dos dados")
+    
+    return combinado
     
 def main():
     st.title("🚀 Coleta de Dados")
