@@ -95,21 +95,70 @@ def main():
                     st.balloons()
                 except Exception as e:
                     st.error(f"Erro ao baixar dados: {str(e)}")
+    
+
     else:  # Upload de arquivo
+        # Adicionar seleção de delimitador
+        col1, col2 = st.columns(2)
+        with col1:
+            delimiter = st.selectbox(
+                "Delimitador do arquivo CSV",
+                options=[",", ";", "\t", "|", "outro"],
+                index=0,
+                help="Selecione o caractere usado para separar as colunas no arquivo CSV"
+            )
+            
+            if delimiter == "outro":
+                delimiter = st.text_input("Especifique o delimitador", value=",")
+        
+        with col2:
+            # Opção para remover espaços em branco
+            auto_trim = st.checkbox(
+                "Remover espaços em branco automaticamente",
+                value=True,
+                help="Remove espaços extras no início/fim de textos e nomes de colunas"
+            )
+        
         arquivo = st.file_uploader(
             "Carregue seu arquivo CSV",
-            type=["csv"],
+            type=["csv", "txt"],
             accept_multiple_files=False
         )
         
         if arquivo is not None:
             try:
-                dados = pd.read_csv(arquivo)
+                # Ler o arquivo com o delimitador especificado
+                dados = pd.read_csv(arquivo, delimiter=delimiter)
+                
+                # Aplicar trim automático se selecionado
+                if auto_trim:
+                    # Trim em nomes de colunas
+                    dados.columns = dados.columns.str.strip()
+                    
+                    # Trim em valores de texto
+                    for col in dados.select_dtypes(include=['object']).columns:
+                        dados[col] = dados[col].apply(lambda x: x.strip() if isinstance(x, str) else x)
+                
                 st.session_state.dados = dados
+                
+                # Mostrar pré-visualização
                 st.success("Arquivo carregado com sucesso!")
+                st.write("Pré-visualização dos dados (5 primeiras linhas):")
+                st.dataframe(dados.head())
+                
+                # Mostrar estatísticas básicas
+                with st.expander("📊 Estatísticas básicas do arquivo"):
+                    st.write(f"Total de linhas: {len(dados)}")
+                    st.write(f"Total de colunas: {len(dados.columns)}")
+                    st.write("Tipos de dados:")
+                    st.write(dados.dtypes)
+                    
+            except pd.errors.ParserError as e:
+                st.error(f"Erro ao ler arquivo com o delimitador '{delimiter}'. Tente outro delimitador.")
+                st.error(f"Detalhes do erro: {str(e)}")
             except Exception as e:
-                st.error(f"Erro ao ler arquivo: {str(e)}")
-
+                st.error(f"Erro inesperado ao processar o arquivo: {str(e)}")
+                st.error("Verifique se o arquivo está no formato correto e tente novamente.")
     
    # Seção para ajuste de nomes de variáveis
     if st.session_state.dados is not None:
