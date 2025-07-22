@@ -7,10 +7,8 @@ from io import BytesIO
 from io import StringIO
 from datetime import datetime
 
-def gerar_subamostra(base, percentual=0.2, seed=42):
+def gerar_subamostra(base, percentual=0.2, seed):
     return base.sample(frac=percentual, random_state=seed).copy()
-
-from faker import Faker
 
 def executar_pipeline_seed(base, seed):
     """
