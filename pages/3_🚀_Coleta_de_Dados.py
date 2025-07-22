@@ -43,12 +43,12 @@ def gerar_subamostra(base, seed, percentual=0.2):
     return amostra.reset_index(drop=True)
 
 def simular_dados_problematicos(df, n_amostras):
-    df_simulado = pd.DataFrame(columns=df.columns)
+    df_simulado = []
 
     for _ in range(n_amostras):
         if random.random() < 0.2 and len(df) > 0:
             linha_original = df.iloc[random.randint(0, len(df) - 1)].copy()
-            df_simulado = pd.concat([df_simulado, linha_original.to_frame().T], ignore_index=True)
+            df_simulado.append(linha_original)
             continue
 
         nova_linha = {}
@@ -79,17 +79,17 @@ def simular_dados_problematicos(df, n_amostras):
                         nova_linha[coluna] = int(round(outlier_val))
                     else:
                         nova_linha[coluna] = f"INVALID_{random.randint(101, 200)}"
-
             else:
                 nova_linha[coluna] = obter_valor_normal(df, coluna)
 
-            # ✅ Garante que se for numérico, não seja float disfarçado
             if pd.api.types.is_numeric_dtype(df[coluna]) and pd.notna(nova_linha.get(coluna)):
                 nova_linha[coluna] = int(round(nova_linha[coluna]))
 
-        df_simulado = pd.concat([df_simulado, pd.DataFrame([nova_linha])], ignore_index=True)
+        df_simulado.append(pd.Series(nova_linha, index=df.columns, dtype=df.dtypes))
 
-    return df_simulado
+    # 🔧 Corrige: gera o DataFrame mantendo os tipos da base original
+    df_simulado = pd.DataFrame(df_simulado).astype(df.dtypes.to_dict())
+    return df_simulado.reset_index(drop=True)
 
 def verificar_integridade(df_completo, df_original):
     if not set(df_original.columns).issubset(set(df_completo.columns)):
