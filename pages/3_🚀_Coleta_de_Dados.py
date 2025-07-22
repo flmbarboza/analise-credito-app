@@ -60,7 +60,7 @@ def simular_dados_problematicos(df, n_amostras):
                     else:
                         nova_linha[coluna] = f"INVALID_{random.randint(1, 100)}"
 
-                else problema == 'outlier' and pd.api.types.is_numeric_dtype(df[coluna]):
+                else:
                     mediana = df[coluna].median()
                     iqr = df[coluna].quantile(0.75) - df[coluna].quantile(0.25)
                     outlier_val = mediana + (random.uniform(5, 10) * iqr)
