@@ -13,14 +13,6 @@ def gerar_subamostra(base, percentual=0.2, seed=42):
 import random
 import numpy as np
 
-def corrigir_tipos_numericos(df):
-    """Garante que todas as colunas numéricas do DataFrame mantenham seu tipo inteiro"""
-    for col in df.select_dtypes(include=np.number).columns:
-        # Verifica se todos os valores (não nulos) são inteiros
-        if (df[col].dropna() % 1 == 0).all():
-            df[col] = pd.to_numeric(df[col], errors='coerce').astype('Int64')
-    return df
-    
 def simular_instancias_problema(df, n_instancias):
     # Primeiro corrige os tipos numéricos
     df = corrigir_tipos_numericos(df.copy())
@@ -36,29 +28,39 @@ def simular_instancias_problema(df, n_instancias):
         for col in df.columns:
             if col in int_cols:
                 # Lógica específica para colunas inteiras
-                tipo_problema = random.choice(["duplicata", "novo_valor", "faltante", "inconsistencia"])
+                tipo_problema = random.choices(
+                    ["duplicata", "novo_valor", "faltante", "inconsistencia"],
+                    weights=[0.4, 0.3, 0.2, 0.1],  # Probabilidades ajustadas
+                    k=1
+                )[0]
                 
                 if tipo_problema == "duplicata":
                     nova_linha[col] = int(random.choice(df[col].dropna().values))
                 elif tipo_problema == "novo_valor":
-                    # Gera valores dentro de 3 desvios padrão da média (como inteiro)
                     media = int(df[col].mean())
                     std = int(df[col].std())
                     nova_linha[col] = random.randint(media - 3*std, media + 3*std)
                 elif tipo_problema == "inconsistencia":
                     nova_linha[col] = -abs(int(random.choice(df[col].dropna().values)))
                 else:  # faltante
-                    nova_linha[col] = np.nan
+                    nova_linha[col] = pd.NA  # Usar pd.NA para Int64
                     
             elif df[col].dtype == 'object':
-                # Lógica para colunas categóricas
                 if random.random() < 0.2:
                     nova_linha[col] = "Categoria_Inédita_" + str(random.randint(1, 5))
                 else:
                     nova_linha[col] = random.choice(df[col].dropna().unique())
             else:
-                # Outros tipos (deveria ser apenas colunas já convertidas)
-                nova_linha[col] = None
+                # Para outros tipos numéricos não-inteiros
+                tipo_problema = random.choice(["outlier", "inconsistencia", "faltante", "normal"])
+                if tipo_problema == "outlier":
+                    nova_linha[col] = df[col].mean() * random.uniform(5, 10)
+                elif tipo_problema == "inconsistencia":
+                    nova_linha[col] = -abs(df[col].mean())
+                elif tipo_problema == "faltante":
+                    nova_linha[col] = np.nan
+                else:
+                    nova_linha[col] = df[col].mean() + np.random.randn()
                 
         df_fake = pd.concat([df_fake, pd.DataFrame([nova_linha])], ignore_index=True)
     
@@ -74,6 +76,15 @@ def simular_instancias_problema(df, n_instancias):
         df_fake = pd.concat([df_fake, duplicata], ignore_index=True)
     
     return df_fake
+
+def corrigir_tipos_numericos(df):
+    """Garante que todas as colunas numéricas do DataFrame mantenham seu tipo inteiro"""
+    for col in df.select_dtypes(include=np.number).columns:
+        # Verifica se todos os valores (não nulos) são inteiros
+        if (df[col].dropna() % 1 == 0).all():
+            # Usar pd.NA para valores faltantes em Int64
+            df[col] = df[col].astype('float').where(df[col].notna(), pd.NA).astype('Int64')
+    return df
     
 def tratar_categorias(df):
     # Aplicar apenas em colunas do tipo object que representam categorias
