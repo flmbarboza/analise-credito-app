@@ -15,12 +15,6 @@ import random
 # Funções auxiliares para pré e pós-processamento
 # --------------------------------------------
 
-def corrigir_tipos_numericos(df):
-    """Força numéricos para Int64 (suporta NaN)"""
-    for col in df.select_dtypes(include=['number']).columns:
-        df[col] = df[col].astype('Int64')
-    return df
-
 def tratar_categorias(df):
     """Agrupa categorias raras em 'Others' nas variáveis categóricas"""
     for col in df.select_dtypes(include=['object', 'category']).columns:
@@ -117,7 +111,6 @@ def executar_pipeline_seed(base, seed):
     np.random.seed(seed)
     
     base = base.copy()
-    base = corrigir_tipos_numericos(base)
     sub = gerar_subamostra(base, seed=seed, percentual=0.2)
 
     n_instancias_fake = random.randint(60, 120)
