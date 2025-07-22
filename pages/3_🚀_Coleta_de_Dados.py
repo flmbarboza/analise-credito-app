@@ -116,9 +116,9 @@ def main():
                     st.session_state.dados = dados
                     st.success("Dados baixados com sucesso!")
                 
-                    st.success(f"Executando pipeline com seed escolhida: {seed_escolhida}")
+                    #st.success(f"Executando pipeline com seed escolhida: {seed_escolhida}")
                     st.session_state.dados = executar_pipeline_seed(dados, seed_escolhida)
-                    st.write(f"Subamostra Selecionada (marcador {seed_escolhida}) - Dimensões: {st.session_state.dados.shape}")
+                    st.write(f"A critério de exemplo, veja um subconjunto dos seus dados - Dimensões (número de amostras, quantidade de variáveis): {st.session_state.dados.shape}")
                     st.dataframe(st.session_state.dados.head())
                     st.balloons()
                 except Exception as e:
