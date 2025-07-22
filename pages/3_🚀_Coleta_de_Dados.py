@@ -52,12 +52,15 @@ def simular_instancias_problema(df, n_instancias):
     return df_fake
     
 def tratar_categorias(df):
+    # Aplicar apenas em colunas do tipo object que representam categorias
     for col in df.select_dtypes(include='object').columns:
-        freq = df[col].value_counts(normalize=True)
-        categorias_frequentes = freq[freq > 0.01].index
-        df[col] = df[col].apply(lambda x: x if x in categorias_frequentes else 'Others')
+        # Verificar se a coluna parece ser categórica (não é uma string livre)
+        if df[col].nunique() < len(df) * 0.5:  # Se menos que 50% dos valores são únicos
+            freq = df[col].value_counts(normalize=True)
+            categorias_frequentes = freq[freq > 0.01].index
+            df[col] = df[col].apply(lambda x: x if x in categorias_frequentes else 'Others')
     return df
-
+    
 def executar_pipeline_seed(base, seed):
     # Garante que tudo seja reproduzível
     random.seed(seed)
