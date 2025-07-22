@@ -23,20 +23,6 @@ def tratar_categorias(df):
         df[col] = df[col].replace(raras, 'Others')
     return df
 
-def obter_valor_normal(df, coluna):
-    """Retorna valor plausível da coluna"""
-    if pd.api.types.is_numeric_dtype(df[coluna]):
-        valores = df[coluna].dropna()
-        if len(valores) == 0:
-            return 0
-        return int(round(random.choice(valores.values)))
-    else:
-        valores = df[coluna].dropna()
-        if len(valores) == 0:
-            return 'Others'
-        return random.choice(valores.values)
-
-
 # --------------------------------------------
 # Funções principais
 # --------------------------------------------
@@ -80,13 +66,11 @@ def simular_dados_problematicos(df, n_amostras):
                     outlier_val = mediana + (random.uniform(5, 10) * iqr)
                     nova_linha[coluna] = int(round(outlier_val))
 
-                elif problema == 'categoria_nova' and pd.api.types.is_string_dtype(df[coluna]):
+                else problema == 'categoria_nova' and pd.api.types.is_string_dtype(df[coluna]):
                     nova_linha[coluna] = 'Others'
 
-                else:
-                    nova_linha[coluna] = obter_valor_normal(df, coluna)
             else:
-                nova_linha[coluna] = obter_valor_normal(df, coluna)
+                
 
             # ✅ Garante inteiro para numéricos, arredondando
             if pd.api.types.is_numeric_dtype(df[coluna]) and pd.notna(nova_linha[coluna]):
