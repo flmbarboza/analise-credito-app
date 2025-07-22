@@ -10,7 +10,11 @@ from datetime import datetime
 def gerar_subamostra(base, percentual=0.2, seed=42):
     return base.sample(frac=percentual, random_state=seed).copy()
 
+import random
+import numpy as np
+
 def simular_instancias_problema(df, n_instancias):
+    # Primeiro, geramos as instâncias de problemas normalmente
     df_fake = pd.DataFrame(columns=df.columns)
     for _ in range(n_instancias):
         nova_linha = {}
@@ -21,20 +25,44 @@ def simular_instancias_problema(df, n_instancias):
                 else:
                     nova_linha[col] = random.choice(df[col].dropna().unique())
             elif np.issubdtype(df[col].dtype, np.number):
-                tipo_problema = random.choice(["outlier", "inconsistencia", "faltante", "normal"])
+                tipo_problema = random.choice(["outlier", "inconsistencia", "faltante", "normal", "duplicata"])
                 if tipo_problema == "outlier":
                     nova_linha[col] = df[col].mean() * random.uniform(5, 10)
                 elif tipo_problema == "inconsistencia":
                     nova_linha[col] = -abs(df[col].mean())
                 elif tipo_problema == "faltante":
                     nova_linha[col] = np.nan
+                elif tipo_problema == "duplicata":
+                    # Pega um valor existente aleatório para duplicar
+                    nova_linha[col] = random.choice(df[col].dropna().values)
                 else:
                     nova_linha[col] = df[col].mean() + np.random.randn()
             else:
                 nova_linha[col] = None
         df_fake = pd.concat([df_fake, pd.DataFrame([nova_linha])], ignore_index=True)
+    
+    # Agora adicionamos duplicatas completas de linhas existentes
+    n_duplicatas = random.randint(4, 15)  # Entre 4 e 15 duplicatas
+    linhas_originais = df.sample(n=min(n_duplicatas, len(df)), replace=False)
+    
+    # Modificamos algumas duplicatas para parecerem naturais
+    for i in range(n_duplicatas):
+        duplicata = linhas_originais.iloc[[i % len(linhas_originais)]].copy()
+        
+        # 30% de chance de modificar algum campo (para simular duplicatas imperfeitas)
+        if random.random() < 0.3:
+            col_modificar = random.choice(df.columns)
+            if df[col_modificar].dtype == 'object':
+                duplicata[col_modificar] = duplicata[col_modificar].astype(str) + "_mod"
+            elif np.issubdtype(df[col_modificar].dtype, np.number):
+                duplicata[col_modificar] = duplicata[col_modificar] * random.uniform(0.9, 1.1)
+        
+        df_fake = pd.concat([df_fake, duplicata], ignore_index=True)
+    
+    # Embaralhamos tudo
+    df_fake = df_fake.sample(frac=1).reset_index(drop=True)
+    
     return df_fake
-
 def tratar_categorias(df):
     for col in df.select_dtypes(include='object').columns:
         freq = df[col].value_counts(normalize=True)
