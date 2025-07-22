@@ -30,17 +30,18 @@ def tratar_categorias(df):
     return df
 
 def obter_valor_normal(df, coluna):
-    """Retorna um valor plausível da coluna"""
+    """Retorna valor plausível da coluna"""
     if pd.api.types.is_numeric_dtype(df[coluna]):
         valores = df[coluna].dropna()
         if len(valores) == 0:
             return 0
-        return int(random.choice(valores.values))
+        return int(round(random.choice(valores.values)))
     else:
         valores = df[coluna].dropna()
         if len(valores) == 0:
             return 'Others'
         return random.choice(valores.values)
+
 
 # --------------------------------------------
 # Funções principais
@@ -75,14 +76,15 @@ def simular_dados_problematicos(df, n_amostras):
                 elif problema == 'inconsistencia':
                     if pd.api.types.is_numeric_dtype(df[coluna]):
                         valor = random.choice(df[coluna].dropna().values)
-                        nova_linha[coluna] = -abs(int(valor))
+                        nova_linha[coluna] = -abs(int(round(valor)))
                     else:
                         nova_linha[coluna] = f"INVALID_{random.randint(1, 100)}"
 
                 elif problema == 'outlier' and pd.api.types.is_numeric_dtype(df[coluna]):
                     mediana = df[coluna].median()
                     iqr = df[coluna].quantile(0.75) - df[coluna].quantile(0.25)
-                    nova_linha[coluna] = int(mediana + (random.uniform(5, 10) * iqr))
+                    outlier_val = mediana + (random.uniform(5, 10) * iqr)
+                    nova_linha[coluna] = int(round(outlier_val))
 
                 elif problema == 'categoria_nova' and pd.api.types.is_string_dtype(df[coluna]):
                     nova_linha[coluna] = 'Others'
@@ -92,8 +94,9 @@ def simular_dados_problematicos(df, n_amostras):
             else:
                 nova_linha[coluna] = obter_valor_normal(df, coluna)
 
+            # ✅ Garante inteiro para numéricos, arredondando
             if pd.api.types.is_numeric_dtype(df[coluna]) and pd.notna(nova_linha[coluna]):
-                nova_linha[coluna] = int(nova_linha[coluna])
+                nova_linha[coluna] = int(round(nova_linha[coluna]))
 
         df_simulado = pd.concat([df_simulado, pd.DataFrame([nova_linha])], ignore_index=True)
 
