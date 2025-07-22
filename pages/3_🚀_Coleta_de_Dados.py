@@ -45,8 +45,8 @@ def simular_dados_problematicos(df, n_amostras):
         for coluna in df.columns:
             if random.random() < 0.3:
                 problema = random.choices(
-                    ['faltante', 'inconsistencia', 'outlier', 'categoria_nova'],
-                    weights=[0.4, 0.3, 0.2, 0.1],
+                    ['faltante', 'inconsistencia', 'outlier'],
+                    weights=[0.4, 0.3, 0.3],
                     k=1
                 )[0]
 
@@ -60,16 +60,11 @@ def simular_dados_problematicos(df, n_amostras):
                     else:
                         nova_linha[coluna] = f"INVALID_{random.randint(1, 100)}"
 
-                elif problema == 'outlier' and pd.api.types.is_numeric_dtype(df[coluna]):
+                else problema == 'outlier' and pd.api.types.is_numeric_dtype(df[coluna]):
                     mediana = df[coluna].median()
                     iqr = df[coluna].quantile(0.75) - df[coluna].quantile(0.25)
                     outlier_val = mediana + (random.uniform(5, 10) * iqr)
                     nova_linha[coluna] = int(round(outlier_val))
-
-                else problema == 'categoria_nova' and pd.api.types.is_string_dtype(df[coluna]):
-                    nova_linha[coluna] = 'Others'
-
-            else:
                 
 
             # ✅ Garante inteiro para numéricos, arredondando
