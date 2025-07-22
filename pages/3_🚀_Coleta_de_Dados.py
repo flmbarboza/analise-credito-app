@@ -67,7 +67,7 @@ def simular_dados_problematicos(df, n_amostras):
                 elif problema == 'inconsistencia':
                     if pd.api.types.is_numeric_dtype(df[coluna]):
                         valor = random.choice(df[coluna].dropna().values)
-                        nova_linha[coluna] = -abs(int(round(valor)))
+                        nova_linha[coluna] = -abs(valor)
                     else:
                         nova_linha[coluna] = f"INVALID_{random.randint(1, 100)}"
 
@@ -76,20 +76,20 @@ def simular_dados_problematicos(df, n_amostras):
                         mediana = df[coluna].median()
                         iqr = df[coluna].quantile(0.75) - df[coluna].quantile(0.25)
                         outlier_val = mediana + (random.uniform(5, 10) * iqr)
-                        nova_linha[coluna] = int(round(outlier_val))
+                        nova_linha[coluna] = outlier_val
                     else:
                         nova_linha[coluna] = f"INVALID_{random.randint(101, 200)}"
             else:
                 nova_linha[coluna] = obter_valor_normal(df, coluna)
 
-            if pd.api.types.is_numeric_dtype(df[coluna]) and pd.notna(nova_linha.get(coluna)):
-                nova_linha[coluna] = int(round(nova_linha[coluna]))
+        df_simulado.append(pd.Series(nova_linha, index=df.columns))
 
-        df_simulado.append(pd.Series(nova_linha, index=df.columns, dtype=df.dtypes))
-
-    # 🔧 Corrige: gera o DataFrame mantendo os tipos da base original
     df_simulado = pd.DataFrame(df_simulado)
-    df_simulado = df_simulado.astype(df.dtypes.to_dict())
+
+    # ✅ Apenas para colunas numéricas: garante inteiro
+    for coluna in df.select_dtypes(include=[np.number]).columns:
+        df_simulado[coluna] = df_simulado[coluna].round().astype(int)
+
     return df_simulado.reset_index(drop=True)
 
 def verificar_integridade(df_completo, df_original):
