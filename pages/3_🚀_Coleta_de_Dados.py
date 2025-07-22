@@ -49,15 +49,13 @@ def simular_instancias_problema(df, n_instancias):
         duplicata = linhas_originais.iloc[[i % len(linhas_originais)]].copy()
         df_fake = pd.concat([df_fake, duplicata], ignore_index=True)
     
-    # Embaralhamos tudo
-    df_fake = df_fake.sample(frac=1).reset_index(drop=True)
-    
     return df_fake
+    
 def tratar_categorias(df):
     for col in df.select_dtypes(include='object').columns:
         freq = df[col].value_counts(normalize=True)
         categorias_frequentes = freq[freq > 0.01].index
-        df[col] = df[col].apply(lambda x: x if x in categorias_frequentes else 'Outros')
+        df[col] = df[col].apply(lambda x: x if x in categorias_frequentes else 'Others')
     return df
 
 def executar_pipeline_seed(base, seed):
