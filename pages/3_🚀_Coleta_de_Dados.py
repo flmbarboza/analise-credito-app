@@ -13,36 +13,60 @@ def gerar_subamostra(base, percentual=0.2, seed=42):
 import random
 import numpy as np
 
+def corrigir_tipos_numericos(df):
+    """Garante que todas as colunas numéricas do DataFrame mantenham seu tipo inteiro"""
+    for col in df.select_dtypes(include=np.number).columns:
+        # Verifica se todos os valores (não nulos) são inteiros
+        if (df[col].dropna() % 1 == 0).all():
+            df[col] = pd.to_numeric(df[col], errors='coerce').astype('Int64')
+    return df
+    
 def simular_instancias_problema(df, n_instancias):
-    # Primeiro, geramos as instâncias de problemas normalmente
+    # Primeiro corrige os tipos numéricos
+    df = corrigir_tipos_numericos(df.copy())
+    
+    # Identifica colunas que devem ser tratadas como inteiras
+    int_cols = [col for col in df.columns if pd.api.types.is_integer_dtype(df[col])]
+    
+    # DataFrame para armazenar as instâncias problemáticas
     df_fake = pd.DataFrame(columns=df.columns)
+    
     for _ in range(n_instancias):
         nova_linha = {}
         for col in df.columns:
-            if df[col].dtype == 'object':
+            if col in int_cols:
+                # Lógica específica para colunas inteiras
+                tipo_problema = random.choice(["duplicata", "novo_valor", "faltante", "inconsistencia"])
+                
+                if tipo_problema == "duplicata":
+                    nova_linha[col] = int(random.choice(df[col].dropna().values))
+                elif tipo_problema == "novo_valor":
+                    # Gera valores dentro de 3 desvios padrão da média (como inteiro)
+                    media = int(df[col].mean())
+                    std = int(df[col].std())
+                    nova_linha[col] = random.randint(media - 3*std, media + 3*std)
+                elif tipo_problema == "inconsistencia":
+                    nova_linha[col] = -abs(int(random.choice(df[col].dropna().values)))
+                else:  # faltante
+                    nova_linha[col] = np.nan
+                    
+            elif df[col].dtype == 'object':
+                # Lógica para colunas categóricas
                 if random.random() < 0.2:
                     nova_linha[col] = "Categoria_Inédita_" + str(random.randint(1, 5))
                 else:
                     nova_linha[col] = random.choice(df[col].dropna().unique())
-            elif np.issubdtype(df[col].dtype, np.number):
-                tipo_problema = random.choice(["outlier", "inconsistencia", "faltante", "normal", "duplicata"])
-                if tipo_problema == "outlier":
-                    nova_linha[col] = df[col].mean() * random.uniform(5, 10)
-                elif tipo_problema == "inconsistencia":
-                    nova_linha[col] = -abs(df[col].mean())
-                elif tipo_problema == "faltante":
-                    nova_linha[col] = np.nan
-                elif tipo_problema == "duplicata":
-                    # Pega um valor existente aleatório para duplicar
-                    nova_linha[col] = random.choice(df[col].dropna().values)
-                else:
-                    nova_linha[col] = df[col].mean() + np.random.randn()
             else:
+                # Outros tipos (deveria ser apenas colunas já convertidas)
                 nova_linha[col] = None
+                
         df_fake = pd.concat([df_fake, pd.DataFrame([nova_linha])], ignore_index=True)
     
-    # Agora adicionamos duplicatas completas de linhas existentes
-    n_duplicatas = random.randint(4, 15)  # Entre 4 e 15 duplicatas
+    # Garante tipos corretos nas colunas numéricas
+    df_fake = corrigir_tipos_numericos(df_fake)
+    
+    # Adiciona duplicatas completas
+    n_duplicatas = random.randint(4, 15)
     linhas_originais = df.sample(n=min(n_duplicatas, len(df)), replace=False)
     
     for i in range(n_duplicatas):
@@ -66,13 +90,20 @@ def executar_pipeline_seed(base, seed):
     random.seed(seed)
     np.random.seed(seed)
 
+    # Garante tipos corretos antes de qualquer operação
+    base = corrigir_tipos_numericos(base.copy())
+    
     sub = gerar_subamostra(base, seed=seed)
     n_instancias_fake = random.randint(60, 120)
-    ruído = simular_instancias_problema(sub, n_instancias_fake)
-    combinado = pd.concat([sub, ruído], ignore_index=True)
+    ruido = simular_instancias_problema(sub, n_instancias_fake)
+    
+    # Combina os dados mantendo os tipos
+    combinado = pd.concat([sub, ruido], ignore_index=True)
     combinado = tratar_categorias(combinado)
-    return combinado
-
+    
+    # Verificação final de tipos
+    return corrigir_tipos_numericos(combinado)
+    
 def main():
     st.title("🚀 Coleta de Dados")
     st.balloons()  # Efeito visual para confirmar o carregamento
