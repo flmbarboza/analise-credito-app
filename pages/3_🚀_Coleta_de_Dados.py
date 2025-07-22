@@ -15,6 +15,16 @@ import random
 # Funções auxiliares para pré e pós-processamento
 # --------------------------------------------
 
+def obter_valor_normal(df, coluna):
+    """Retorna um valor plausível e já existente da coluna"""
+    valores = df[coluna].dropna()
+    if len(valores) == 0:
+        if pd.api.types.is_numeric_dtype(df[coluna]):
+            return 0
+        else:
+            return 'Others'
+    return random.choice(valores.values)
+
 def tratar_categorias(df):
     """Agrupa categorias raras em 'Others' nas variáveis categóricas"""
     for col in df.select_dtypes(include=['object', 'category']).columns:
@@ -37,11 +47,12 @@ def simular_dados_problematicos(df, n_amostras):
 
     for _ in range(n_amostras):
         if random.random() < 0.2 and len(df) > 0:
-            linha_original = df.iloc[random.randint(0, len(df)-1)].copy()
+            linha_original = df.iloc[random.randint(0, len(df) - 1)].copy()
             df_simulado = pd.concat([df_simulado, linha_original.to_frame().T], ignore_index=True)
             continue
 
         nova_linha = {}
+
         for coluna in df.columns:
             if random.random() < 0.3:
                 problema = random.choices(
@@ -60,15 +71,20 @@ def simular_dados_problematicos(df, n_amostras):
                     else:
                         nova_linha[coluna] = f"INVALID_{random.randint(1, 100)}"
 
-                else:
-                    mediana = df[coluna].median()
-                    iqr = df[coluna].quantile(0.75) - df[coluna].quantile(0.25)
-                    outlier_val = mediana + (random.uniform(5, 10) * iqr)
-                    nova_linha[coluna] = int(round(outlier_val))
-                
+                elif problema == 'outlier':
+                    if pd.api.types.is_numeric_dtype(df[coluna]):
+                        mediana = df[coluna].median()
+                        iqr = df[coluna].quantile(0.75) - df[coluna].quantile(0.25)
+                        outlier_val = mediana + (random.uniform(5, 10) * iqr)
+                        nova_linha[coluna] = int(round(outlier_val))
+                    else:
+                        nova_linha[coluna] = f"INVALID_{random.randint(101, 200)}"
 
-            # ✅ Garante inteiro para numéricos, arredondando
-            if pd.api.types.is_numeric_dtype(df[coluna]) and pd.notna(nova_linha[coluna]):
+            else:
+                nova_linha[coluna] = obter_valor_normal(df, coluna)
+
+            # ✅ Garante que se for numérico, não seja float disfarçado
+            if pd.api.types.is_numeric_dtype(df[coluna]) and pd.notna(nova_linha.get(coluna)):
                 nova_linha[coluna] = int(round(nova_linha[coluna]))
 
         df_simulado = pd.concat([df_simulado, pd.DataFrame([nova_linha])], ignore_index=True)
