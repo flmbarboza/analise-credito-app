@@ -86,9 +86,10 @@ def simular_dados_problematicos(df, n_amostras):
 
     df_simulado = pd.DataFrame(df_simulado)
 
-    # ✅ Apenas para colunas numéricas: garante inteiro
+    # Para colunas numéricas: arredonda e converte para nullable Int64, mantendo NaNs
     for coluna in df.select_dtypes(include=[np.number]).columns:
-        df_simulado[coluna] = df_simulado[coluna].round().astype(int)
+        df_simulado[coluna] = df_simulado[coluna].round()
+        df_simulado[coluna] = df_simulado[coluna].astype("Int64")
 
     return df_simulado.reset_index(drop=True)
 
