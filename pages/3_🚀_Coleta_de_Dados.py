@@ -45,18 +45,8 @@ def simular_instancias_problema(df, n_instancias):
     n_duplicatas = random.randint(4, 15)  # Entre 4 e 15 duplicatas
     linhas_originais = df.sample(n=min(n_duplicatas, len(df)), replace=False)
     
-    # Modificamos algumas duplicatas para parecerem naturais
     for i in range(n_duplicatas):
         duplicata = linhas_originais.iloc[[i % len(linhas_originais)]].copy()
-        
-        # 30% de chance de modificar algum campo (para simular duplicatas imperfeitas)
-        if random.random() < 0.3:
-            col_modificar = random.choice(df.columns)
-            if df[col_modificar].dtype == 'object':
-                duplicata[col_modificar] = duplicata[col_modificar].astype(str) + "_mod"
-            elif np.issubdtype(df[col_modificar].dtype, np.number):
-                duplicata[col_modificar] = duplicata[col_modificar] * random.uniform(0.9, 1.1)
-        
         df_fake = pd.concat([df_fake, duplicata], ignore_index=True)
     
     # Embaralhamos tudo
