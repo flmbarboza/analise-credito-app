@@ -88,7 +88,8 @@ def simular_dados_problematicos(df, n_amostras):
         df_simulado.append(pd.Series(nova_linha, index=df.columns, dtype=df.dtypes))
 
     # 🔧 Corrige: gera o DataFrame mantendo os tipos da base original
-    df_simulado = pd.DataFrame(df_simulado).astype(df.dtypes.to_dict())
+    df_simulado = pd.DataFrame(df_simulado)
+    df_simulado = df_simulado.astype(df.dtypes.to_dict())
     return df_simulado.reset_index(drop=True)
 
 def verificar_integridade(df_completo, df_original):
