@@ -9,7 +9,7 @@ import base64
 def main():
     st.title("📊 Análise Univariada")
 
-    with st.expander("🔍 Sugestões de Informações que pode extrair destes dados:", expanded=False):
+    with st.expander("🔍 Explore cada variável individualmente para entender suas características básicas", expanded=False):
 
         st.markdown("Explore cada variável individualmente para entender suas características básicas")
     
@@ -22,7 +22,7 @@ def main():
         
         # Seletor de variável
         variavel = st.selectbox("Selecione a variável para análise:", dados.columns,
-                               index=None, placeholder="Clique aqui para escolher")
+                               index=0, placeholder="Clique aqui para escolher")
         
         col1, col2 = st.columns(2)
         
