@@ -50,8 +50,7 @@ def main():
     st.markdown("### 🔍 Defina a Variável-Alvo (Default)")
     target = st.selectbox(
         "Selecione a coluna que indica **inadimplência**:",
-        options=dados.columns,
-        index=0
+        options=dados.columns
     )
 
     if target not in dados.columns:
@@ -124,7 +123,7 @@ def main():
 
     # --- 3. PRÉ-SELEÇÃO (com expander) ---
     st.markdown("---")
-    with st.expander("🔧 Pré-seleção de Variáveis", expanded=True):
+    with st.expander("🔧 Pré-seleção de Variáveis", expanded=False):
         st.session_state.variaveis_ativas = dados.columns.tolist()
         numericas = dados.select_dtypes(include=[np.number]).columns.tolist()
         categoricas = dados.select_dtypes(include='object').columns.tolist()
