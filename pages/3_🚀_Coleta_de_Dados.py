@@ -131,7 +131,9 @@ def main():
     """)
 
     seeds_disponiveis = [42, 7, 13, 21, 99, 123, 456, 789, 1010, 2025]
-    seed_escolhida = st.selectbox("Escolha a seed para subamostragem:", seeds_disponiveis)
+    seed_escolhida = st.selectbox("Escolha a seed para subamostragem:", seeds_disponiveis,
+                                 index=None,
+                                 placeholder="Clique aqui para escolher")
         
     # Container para os dados
     if 'dados' not in st.session_state:
