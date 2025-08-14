@@ -124,59 +124,6 @@ def main():
         st.success(f"✅ `{target}` já está no formato 0/1.")
         st.session_state.target = target
     
-    
-    
-    
-    
-    # --- 1. SELEÇÃO E VALIDAÇÃO DA VARIÁVEL-ALVO (Y) ---
-    st.markdown("### 🔍 Defina a Variável-Alvo (Default)")
-    target = st.selectbox(
-        "Selecione a coluna que indica **inadimplência**:",
-        options=dados.columns,
-        index=None,
-        placeholder="Escolha a variável de default"
-    )
-
-    if target not in dados.columns:
-        st.error("ALERTA: variável-alvo inválida ou indefinida.")
-        return
-
-    y_data = dados[target].dropna()
-    if len(y_data) == 0:
-        st.error(f"A coluna `{target}` está vazia.")
-        return
-
-    valores_unicos = pd.Series(y_data.unique()).dropna().tolist()
-    try:
-        valores_unicos = sorted([x for x in valores_unicos if isinstance(x, (int, float))])
-    except:
-        pass
-
-    # Verificar se é binária (0/1)
-    if set(valores_unicos) != {0, 1}:
-        st.warning(f"""
-        ⚠️ A variável `{target}` não está no formato 0/1.  
-        Valores encontrados: {valores_unicos}
-        """)
-        st.markdown("#### 🔧 Mapeie os valores para 0 (adimplente) e 1 (inadimplente)")
-        col1, col2 = st.columns(2)
-        with col1:
-            valor_bom = st.selectbox("Valor que representa **adimplente (0)**", options=valores_unicos, key="bom")
-        with col2:
-            valor_mau = st.selectbox("Valor que representa **inadimplente (1)**", options=[v for v in valores_unicos if v != valor_bom], key="mau")
-        if st.button("✅ Aplicar Mapeamento"):
-            try:
-                y_mapped = dados[target].map({valor_bom: 0, valor_mau: 1})
-                dados[target] = y_mapped
-                st.success(f"✅ `{target}` convertida para 0 (adimplente) e 1 (inadimplente).")
-                st.session_state.dados = dados
-            except Exception as e:
-                st.error(f"Erro ao mapear: {e}")
-    else:
-        st.success(f"✅ `{target}` já está no formato 0/1.")
-
-    st.session_state.target = target
-
     # --- DEFINIÇÃO INICIAL DE VARIÁVEIS ATIVAS ---
     if 'variaveis_ativas' not in st.session_state:
         st.session_state.variaveis_ativas = [col for col in dados.columns if col != target]
