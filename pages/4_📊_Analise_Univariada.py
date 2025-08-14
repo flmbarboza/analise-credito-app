@@ -160,19 +160,6 @@ def main():
         st.markdown("##### **Tente! Investigue! Navegue pelos dados! Be curious!!!**")
 
     # ========================================================
-    # ✅ SELEÇÃO DE MÚLTIPLAS VARIÁVEIS PARA RELATÓRIO
-    # ========================================================
-    if dados_disponiveis:
-        st.markdown("### 🔍 Selecione as variáveis para gerar um relatório preliminar:")
-        colunas_selecionadas = st.multiselect(
-            "Selecione as colunas",
-            dados.columns.tolist(),
-            default=dados.columns.tolist()
-        )
-    else:
-        colunas_selecionadas = []
-
-    # ========================================================
     # ✅ FUNÇÕES DE INSIGHTS E GRÁFICOS
     # ========================================================
     def gerar_insights(variavel):
@@ -222,6 +209,20 @@ def main():
     # ✅ EXPANDER 5: EXPORTAR RELATÓRIO
     # ========================================================
     with st.expander("📤 Exportar Análises"):
+        # ========================================================
+        # ✅ SELEÇÃO DE MÚLTIPLAS VARIÁVEIS PARA RELATÓRIO
+        # ========================================================
+        if dados_disponiveis:
+            st.markdown("### 🔍 Selecione as variáveis para gerar um relatório preliminar:")
+            colunas_selecionadas = st.multiselect(
+                "Selecione as colunas",
+                dados.columns.tolist(),
+                default=dados.columns.tolist()
+            )
+        else:
+            colunas_selecionadas = []
+
+        
         if not dados_disponiveis:
             st.warning("Carregue os dados para habilitar exportação.")
         else:
