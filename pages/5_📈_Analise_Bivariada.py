@@ -121,6 +121,46 @@ def main():
         corr = dados[[var_x, var_y]].corr().iloc[0, 1]
         st.metric("Correlação", f"{corr:.3f}")
 
+    # --- Correlação ---
+    with st.expander("Correlação de Variáveis", expanded=False):
+        st.markdown("#### 🧩 1. Análise de Correlação (evitar multicolinearidade)")
+        st.info("A correlação identifica variáveis redundantes. Alta correlação (>0.7) pode indicar multicolinearidade, prejudicando o modelo.")
+
+        corr_threshold = st.slider("Defina o limite de correlação para alerta:", 0.1, 0.95, 0.7, 0.05)
+        
+        if len(numericas) > 1:
+            corr_matrix = dados[numericas].corr().abs()
+            upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
+            high_corr = [(i, j) for i in upper.columns for j in upper.columns if upper.loc[i, j] > corr_threshold]
+
+            if high_corr:
+                st.warning(f"⚠️ {len(high_corr)} pares com correlação > {corr_threshold}")
+                for i, j in high_corr[:10]:
+                    st.caption(f"`{i}` vs `{j}`: {upper.loc[i, j]:.2f}")
+
+                fig_corr, ax_corr = plt.subplots(figsize=(6, 4))
+                sns.heatmap(corr_matrix, annot=False, cmap='coolwarm', center=0, ax=ax_corr)
+                ax_corr.set_title("Mapa de Calor de Correlação")
+                st.pyplot(fig_corr)
+
+                remover_corr = st.multiselect(
+                    "Aponte as variáveis que deseja remover por alta correlação:",
+                    options=[f"{i} vs {j}" for i, j in high_corr],
+                    key="remove_corr"
+                )
+                if st.button("✅ Remover selecionadas"):
+                    vars_para_remover = set()
+                    for par in remover_corr:
+                        i, j = par.split(" vs ")
+                        vars_para_remover.add(i.strip())
+                    st.session_state.variaveis_ativas = [v for v in st.session_state.variaveis_ativas if v not in vars_para_remover]
+                    st.success(f"Variáveis removidas: {list(vars_para_remover)}")
+                    st.rerun()
+            else:
+                st.success("✅ Nenhuma correlação alta encontrada.")
+        else:
+            st.info("Nenhuma variável numérica suficiente para análise de correlação.")
+            
     # --- 3. PRÉ-SELEÇÃO (com expander) ---
     st.markdown("---")
     with st.expander("🔧 Pré-seleção de Variáveis", expanded=False):
