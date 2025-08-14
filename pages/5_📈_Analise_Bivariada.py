@@ -158,45 +158,31 @@ def main():
                 corr_list = "\n".join([f"- `{i}` vs `{j}`: {upper.loc[i, j]:.2f}" for i, j in high_corr_pairs[:10]])
                 st.markdown(f"**Pares com alta correlação:**\n{corr_list}")
     
-                # Opção 1: Remoção manual
-                st.markdown("##### 🛠️ Remoção Manual")
-                remover_manual = st.multiselect(
-                    "Selecione os pares para remover (a primeira variável do par será removida):",
-                    options=[f"{i} vs {j}" for i, j in high_corr_pairs],
-                    key="remove_corr_manual"
-                )
+                # Extrair todas as variáveis envolvidas em pares de alta correlação
+                vars_envolvidas = list(set([i for i, j in high_corr_pairs] + [j for i, j in high_corr_pairs]))
+                vars_envolvidas = [v for v in vars_envolvidas if v in st.session_state.variaveis_ativas]
     
-                # Opção 2: Remoção automática
-                st.markdown("##### ⚡ Remoção Automática")
-                auto_remove = st.checkbox(
-                    f"Remover automaticamente **todas** as variáveis com correlação > {corr_threshold}",
-                    help="A primeira variável de cada par será removida sequencialmente."
-                )
+                if not vars_envolvidas:
+                    st.info("Nenhuma variável disponível para remoção.")
+                else:
+                    st.markdown("##### 🧾 Selecione quais variáveis deseja remover (pode escolher qualquer uma dos pares acima):")
+                    vars_para_remover = st.multiselect(
+                        "Variáveis a remover",
+                        options=sorted(vars_envolvidas),
+                        default=[],
+                        key="multiselect_vars_correlacao"
+                    )
     
-                if st.button("✅ Aplicar Remoção"):
-                    vars_para_remover = set()
-    
-                    if remover_manual:
-                        for par in remover_manual:
-                            i, j = par.split(" vs ")
-                            vars_para_remover.add(i.strip())
-    
-                    if auto_remove:
-                        # Adiciona a primeira variável de cada par
-                        for i, j in high_corr_pairs:
-                            vars_para_remover.add(i.strip())
-    
-                    # Atualiza a lista de variáveis ativas
-                    st.session_state.variaveis_ativas = [
-                        v for v in st.session_state.variaveis_ativas if v not in vars_para_remover
-                    ]
-    
-                    if vars_para_remover:
-                        st.success(f"✅ Variáveis removidas: `{list(vars_para_remover)}`")
-                        st.rerun()
-                    else:
-                        st.info("Nenhuma variável selecionada para remoção.")
-
+                    if st.button("✅ Aplicar Remoção"):
+                        if vars_para_remover:
+                            # Remove as selecionadas da lista ativa
+                            st.session_state.variaveis_ativas = [
+                                v for v in st.session_state.variaveis_ativas if v not in vars_para_remover
+                            ]
+                            st.success(f"✅ Variáveis removidas: `{vars_para_remover}`")
+                            st.rerun()
+                        else:
+                            st.info("Nenhuma variável selecionada para remoção.")
     # --- ATUALIZAR LISTAS APÓS REMOÇÃO ---
     # Isso é essencial: recarregar as listas com base na versão atualizada de variaveis_ativas
     variaveis_ativas = st.session_state.variaveis_ativas
