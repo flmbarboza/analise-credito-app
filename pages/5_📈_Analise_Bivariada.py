@@ -549,47 +549,6 @@ def main():
     # --- EXPORTAÇÃO PERSONALIZADA ---
     st.markdown("---")
     with st.expander("💾 Exportar Outputs", expanded=False):
-         st.markdown("### 📥 Selecione os itens que deseja salvar:")
-
-        opcoes_exportacao = [
-            "Mapa de Correlação",
-            "Gráfico de IV",
-            "Gráfico de KS",
-            "Gráficos de WOE",
-            "Tabelas de WOE",
-            "Relatório de Análise"
-            ]
-    
-        selecionados = st.multiselect(
-            "Itens para exportar",
-            options=opcoes_exportacao,
-            default=opcoes_exportacao
-            )
-    
-        if st.button("📦 Gerar ZIP com seleção"):
-            if not selecionados:
-                st.warning("Selecione pelo menos um item para exportar.")
-            else:
-                # Recupera dados necessários
-                iv_df = st.session_state.iv_df if 'iv_df' in st.session_state else pd.DataFrame()
-                ks_df = st.session_state.ks_df if 'ks_df' in st.session_state else pd.DataFrame()
-                woe_tables = st.session_state.woe_tables if 'woe_tables' in st.session_state else {}
-                numericas = dados.select_dtypes(include=[np.number]).columns.tolist()
-                corr_matrix = dados[numericas].corr().abs() if len(numericas) > 1 else pd.DataFrame()
-    
-                # Cria o ZIP
-                try:
-                    zip_buffer = criar_zip_exportacao(selecionados, dados, target, iv_df, ks_df, woe_tables, corr_matrix, st)
-                    b64 = base64.b64encode(zip_buffer.getvalue()).decode()
-                    href = f'<a href="data:application/zip;base64,{b64}" download="exportacao_analise_bivariada.zip">📥 Baixar ZIP com seleção</a>'
-                    st.markdown(href, unsafe_allow_html=True)
-                    st.success("✅ Exportação concluída!")
-                except Exception as e:
-                    st.error(f"Erro ao gerar exportação: {e}")
-
-
-
-        
         st.markdown("### 📥 Escolha o que deseja incluir no relatório")
     
         # Opções de seleção
