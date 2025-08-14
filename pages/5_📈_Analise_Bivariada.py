@@ -54,7 +54,7 @@ def main():
     )
 
     if target not in dados.columns:
-        st.error("Erro: variável-alvo inválida.")
+        st.error("ALERTA: variável-alvo inválida ou indefinida.")
         return
 
     y_data = dados[target].dropna()
