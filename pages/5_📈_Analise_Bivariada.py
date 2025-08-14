@@ -341,7 +341,7 @@ def main():
                     tmp['%_não_default'] = tmp['%_não_default'].replace(0, 1e-6)
         
                     tmp['woe'] = np.log(tmp['%_não_default'] / tmp['%_default'])
-                    tmp['iv'] = (tmp['%_não_default'] - tmp['%_default']) * tmp['woe']
+                    #tmp['iv'] = (tmp['%_não_default'] - tmp['%_default']) * tmp['woe']
         
                     # Armazena tabela
                     woe_tables = {}
