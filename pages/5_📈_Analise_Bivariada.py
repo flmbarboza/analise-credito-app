@@ -50,7 +50,7 @@ def main():
     st.markdown("### 🔍 Defina a Variável-Alvo (Default)")
     target = st.selectbox(
         "Selecione a coluna que indica **inadimplência**:",
-        options=dados.columns
+        options=dados.columns, index=None
     )
 
     if target not in dados.columns:
