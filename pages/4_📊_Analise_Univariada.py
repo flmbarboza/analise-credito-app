@@ -8,30 +8,34 @@ import base64
 
 def main():
     st.title("📊 Análise Univariada")
-    st.markdown("Explore cada variável individualmente para entender suas características básicas")
 
-    if 'dados' not in st.session_state:
-        st.warning("Carregue os dados na página de Coleta primeiro!")
-        st.page_link("pages/2_📊_Coleta_de_Dados.py", label="→ Ir para Coleta de Dados")
-        return
+    with st.expander("🔍 Sugestões de Informações que pode extrair destes dados:"):
 
-    dados = st.session_state.dados
+        st.markdown("Explore cada variável individualmente para entender suas características básicas")
     
-    # Seletor de variável
-    variavel = st.selectbox("Selecione a variável para análise:", dados.columns)
+        if 'dados' not in st.session_state:
+            st.warning("Carregue os dados na página de Coleta primeiro!")
+            st.page_link("pages/2_📊_Coleta_de_Dados.py", label="→ Ir para Coleta de Dados")
+            return
     
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.subheader("Estatísticas Descritivas")
-        st.write(dados[variavel].describe())
+        dados = st.session_state.dados
         
-    with col2:
-        st.subheader("Gráfico de Barras/Histograma")
-        fig, ax = plt.subplots()
-        ax.set_ylabel("Quantidade")
-        sns.histplot(data=dados, x=variavel, ax=ax)
-        st.pyplot(fig)
+        # Seletor de variável
+        variavel = st.selectbox("Selecione a variável para análise:", dados.columns,
+                               index=None, placeholder="Clique aqui para escolher")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.subheader("Estatísticas Descritivas")
+            st.write(dados[variavel].describe())
+            
+        with col2:
+            st.subheader("Gráfico de Barras/Histograma")
+            fig, ax = plt.subplots()
+            ax.set_ylabel("Quantidade")
+            sns.histplot(data=dados, x=variavel, ax=ax)
+            st.pyplot(fig)
     
     # Análise automática
     with st.expander("🔍 Sugestões de Informações que pode extrair destes dados:"):
@@ -45,6 +49,7 @@ def main():
         else:
             st.write(f"🔹 **Tipo:** Variável numérica")
             st.write(f"🔹 **Média:** {dados[variavel].mean():.2f}")
+            st.write(f"🔹 **Mediana:** {dados[variavel].median():.2f}")
             st.write(f"🔹 **Desvio padrão:** {dados[variavel].std():.2f}")
         
         # 2. Valores faltantes
