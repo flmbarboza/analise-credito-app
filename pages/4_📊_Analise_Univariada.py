@@ -9,10 +9,7 @@ import base64
 def main():
     st.title("📊 Análise Univariada")
 
-    with st.expander("🔍 Explore cada variável individualmente para entender suas características básicas", expanded=True):
-
-        st.markdown("Explore cada variável individualmente para entender suas características básicas")
-    
+    with st.expander("🔍 Explore cada variável individualmente para entender suas características básicas", expanded=True):    
         if 'dados' not in st.session_state:
             st.warning("Carregue os dados na página de Coleta primeiro!")
             st.page_link("pages/2_📊_Coleta_de_Dados.py", label="→ Ir para Coleta de Dados")
