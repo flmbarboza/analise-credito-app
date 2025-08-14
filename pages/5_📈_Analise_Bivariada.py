@@ -558,13 +558,13 @@ def main():
             "Gráficos de WOE",
             "Tabelas de WOE",
             "Relatório de Análise"
-        ]
+            ]
     
         selecionados = st.multiselect(
             "Itens para exportar",
             options=opcoes_exportacao,
             default=opcoes_exportacao
-        )
+            )
     
         if st.button("📦 Gerar ZIP com seleção"):
             if not selecionados:
