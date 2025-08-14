@@ -175,13 +175,15 @@ def main():
             st.info("Nenhuma variável numérica suficiente para análise.")
 
     # --- ATUALIZAR LISTAS APÓS REMOÇÃO ---
+    # Isso é essencial: recarregar as listas com base na versão atualizada de variaveis_ativas
     variaveis_ativas = st.session_state.variaveis_ativas
     numericas = dados[variaveis_ativas].select_dtypes(include=[np.number]).columns.tolist()
     categoricas = dados[variaveis_ativas].select_dtypes(include='object').columns.tolist()
     features = [c for c in (numericas + categoricas) if c != target]
 
+
     # --- PRÉ-SELEÇÃO DE VARIÁVEIS (com IV, WOE, KS usando apenas variáveis ativas) ---
-    with st.expander("🔧 Pré-seleção de Variáveis", expanded=True):
+    with st.expander("🔧 Pré-seleção de Variáveis", expanded=False):
         st.markdown("### Etapas com base nas variáveis **ativas** (após remoção por correlação)")
 
         # --- IV ---
