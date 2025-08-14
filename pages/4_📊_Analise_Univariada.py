@@ -38,7 +38,7 @@ def main():
             st.pyplot(fig)
     
     # Análise automática
-    with st.expander("🔍 Sugestões de Informações que pode extrair destes dados:"):
+    with st.expander("🔍 Sugestões de Informações que pode extrair destes dados:", expanded=False):
     # Análise automática
         st.markdown("##### 📊 Análise da variável selecionada: `{}`".format(variavel))
     
