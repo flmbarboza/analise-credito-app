@@ -424,22 +424,100 @@ def main():
             st.write("- **Top 3 por KS:** N/A")
 
 
-    # --- EXPORTAÇÃO ---
-    with st.expander("💾 Exportar Outputs"):
-        st.markdown("Salve os dados e resultados para a modelagem.")
-        if st.button("💾 Salvar dados ativos"):
-            dados_modelagem = dados[variaveis_ativas + [target]]
-            st.session_state.dados_modelagem = dados_modelagem
-            st.session_state.woe_tables = woe_tables
-            st.success("✅ Dados salvos para modelagem!")
-
-        st.download_button(
-            "📥 Exportar dados ativos (CSV)",
-            data=dados[variaveis_ativas + [target]].to_csv(index=False),
-            file_name="dados_ativos.csv",
-            mime="text/csv"
-        )
-
+    # --- EXPORTAÇÃO PERSONALIZADA ---
+    st.markdown("---")
+    with st.expander("💾 Exportar Outputs", expanded=False):
+        st.markdown("### 📥 Escolha o que deseja incluir no relatório")
+    
+        # Opções de seleção
+        incluir_graficos = st.checkbox("✅ Incluir gráficos (IV, KS, WOE)")
+        incluir_tabelas = st.checkbox("✅ Incluir tabelas de WOE")
+        incluir_relatorio = st.checkbox("✅ Incluir relatório de análise (txt)")
+    
+        if st.button("📦 Gerar Relatório ZIP"):
+            zip_buffer = io.BytesIO()
+            with zipfile.ZipFile(zip_buffer, "w") as zip_file:
+                # 1. Incluir gráficos
+                if incluir_graficos:
+                    # Gráfico de IV
+                    if 'iv_df' in st.session_state and not st.session_state.iv_df.empty:
+                        fig_iv, ax_iv = plt.subplots(figsize=(6, 0.35 * len(st.session_state.iv_df)))
+                        iv_df = st.session_state.iv_df.sort_values("IV", ascending=True)
+                        bars = ax_iv.barh(iv_df['Variável'], iv_df['IV'], color='skyblue', edgecolor='darkblue')
+                        ax_iv.set_title("Information Value (IV)")
+                        for i, bar in enumerate(bars):
+                            width = bar.get_width()
+                            ax_iv.text(width + 0.005, bar.get_y() + bar.get_height()/2, f"{width:.3f}", va='center', fontsize=9)
+                        img_data = io.BytesIO()
+                        fig_iv.savefig(img_data, format='png', dpi=100, bbox_inches='tight')
+                        plt.close(fig_iv)
+                        zip_file.writestr("grafico_iv.png", img_data.getvalue())
+    
+                    # Gráfico de KS
+                    if 'ks_df' in st.session_state and not st.session_state.ks_df.empty:
+                        fig_ks, ax_ks = plt.subplots(figsize=(6, 0.35 * len(st.session_state.ks_df)))
+                        ks_df = st.session_state.ks_df.sort_values("KS", ascending=True)
+                        bars = ax_ks.barh(ks_df['Variável'], ks_df['KS'], color='lightcoral', edgecolor='darkred')
+                        ax_ks.set_title("Kolmogorov-Smirnov (KS)")
+                        for i, bar in enumerate(bars):
+                            width = bar.get_width()
+                            ax_ks.text(width + 0.005, bar.get_y() + bar.get_height()/2, f"{width:.3f}", va='center', fontsize=9)
+                        img_data = io.BytesIO()
+                        fig_ks.savefig(img_data, format='png', dpi=100, bbox_inches='tight')
+                        plt.close(fig_ks)
+                        zip_file.writestr("grafico_ks.png", img_data.getvalue())
+    
+                    # Gráficos de WOE
+                    if 'woe_tables' in st.session_state:
+                        for var, table in st.session_state.woe_tables.items():
+                            if 'woe' in table.columns:
+                                fig, ax = plt.subplots(figsize=(6, 3))
+                                table['woe'].plot(kind='barh', ax=ax, color='teal', edgecolor='black')
+                                ax.set_title(f"WOE - {var}")
+                                img_data = io.BytesIO()
+                                fig.savefig(img_data, format='png', dpi=100, bbox_inches='tight')
+                                plt.close(fig)
+                                zip_file.writestr(f"woe_{var}.png", img_data.getvalue())
+    
+                # 2. Incluir tabelas de WOE
+                if incluir_tabelas and 'woe_tables' in st.session_state:
+                    for var, table in st.session_state.woe_tables.items():
+                        if 'erro' not in table.columns:
+                            csv_data = table.to_csv(index=True)
+                            zip_file.writestr(f"woe_{var}.csv", csv_data)
+    
+                # 3. Incluir relatório de análise
+                if incluir_relatorio:
+                    # Recuperar top IV e KS
+                    top_iv = []
+                    if 'iv_df' in st.session_state and not st.session_state.iv_df.empty:
+                        top_iv = st.session_state.iv_df.sort_values("IV", ascending=False).head(3)['Variável'].tolist()
+    
+                    top_ks = []
+                    if 'ks_df' in st.session_state and not st.session_state.ks_df.empty:
+                        top_ks = st.session_state.ks_df.sort_values("KS", ascending=False).head(3)['Variável'].tolist()
+    
+                    relatorio_txt = f"""
+                        Relatório de Pré-Seleção de Variáveis
+                        =====================================
+                        Variável-alvo: {target}
+                        Formato: 0/1 (adimplente/inadimplente)
+                        
+                        Resumo:
+                        - Total de variáveis ativas: {len(st.session_state.variaveis_ativas)}
+                        - Top 3 por IV: {', '.join(top_iv) if top_iv else 'N/A'}
+                        - Top 3 por KS: {', '.join(top_ks) if top_ks else 'N/A'}
+                        
+                        Data: {pd.Timestamp.now().strftime('%d/%m/%Y %H:%M')}
+                                        """.strip()
+                                        zip_file.writestr("relatorio_analise.txt", relatorio_txt)
+                        
+            zip_buffer.seek(0)
+            b64 = base64.b64encode(zip_buffer.getvalue()).decode()
+            href = f'<a href="data:application/zip;base64,{b64}" download="relatorio_analise_bivariada.zip">📥 Baixar Relatório ZIP</a>'
+            st.markdown(href, unsafe_allow_html=True)
+            st.success("✅ Relatório personalizado gerado com sucesso!")
+            
     # --- NAVEGAÇÃO ---
     st.markdown("---")
     st.page_link("pages/6_🤖_Modelagem.py", label="➡️ Ir para Modelagem", icon="🤖")
