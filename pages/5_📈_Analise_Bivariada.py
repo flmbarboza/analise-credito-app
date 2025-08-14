@@ -512,12 +512,12 @@ def main():
                                         """.strip()
                                         zip_file.writestr("relatorio_analise.txt", relatorio_txt)
                         
-            zip_buffer.seek(0)
-            b64 = base64.b64encode(zip_buffer.getvalue()).decode()
-            href = f'<a href="data:application/zip;base64,{b64}" download="relatorio_analise_bivariada.zip">📥 Baixar Relatório ZIP</a>'
-            st.markdown(href, unsafe_allow_html=True)
-            st.success("✅ Relatório personalizado gerado com sucesso!")
-            
+        zip_buffer.seek(0)
+        b64 = base64.b64encode(zip_buffer.getvalue()).decode()
+        href = f'<a href="data:application/zip;base64,{b64}" download="relatorio_analise_bivariada.zip">📥 Baixar Relatório ZIP</a>'
+        st.markdown(href, unsafe_allow_html=True)
+        st.success("✅ Relatório personalizado gerado com sucesso!")
+        
     # --- NAVEGAÇÃO ---
     st.markdown("---")
     st.page_link("pages/6_🤖_Modelagem.py", label="➡️ Ir para Modelagem", icon="🤖")
