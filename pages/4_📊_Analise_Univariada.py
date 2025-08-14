@@ -44,9 +44,20 @@ def main():
     # Análise automática
         st.markdown("##### 📊 Análise da variável selecionada: `{}`".format(variavel))
 
+        # --- SELEÇÃO DE VARIÁVEL ---
+        variavel = st.selectbox(
+        "Selecione uma variável para análise univariada:",
+        options=dados.columns,
+        index=None,
+        placeholder="Escolha uma variável",
+        key="variavel_uni"  # opcional: mantém estado
+        )
+
+        # --- MENSAGEM INICIAL (opcional) ---
         if variavel is None:
-            st.markdown("Selecione uma variável para ver detalhes técnicos.")
+            st.info("👆 Por favor, selecione uma variável acima para ver as análises detalhadas.")
         else:
+
             # 1. Tipo da variável
             if dados[variavel].dtype == 'object':
                 st.write(f"🔹 **Tipo:** Variável categórica")
