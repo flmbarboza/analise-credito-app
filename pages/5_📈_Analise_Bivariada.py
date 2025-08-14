@@ -496,27 +496,29 @@ def main():
                     top_ks = []
                     if 'ks_df' in st.session_state and not st.session_state.ks_df.empty:
                         top_ks = st.session_state.ks_df.sort_values("KS", ascending=False).head(3)['Variável'].tolist()
+
     
                     relatorio_txt = f"""
-                        Relatório de Pré-Seleção de Variáveis
-                        =====================================
-                        Variável-alvo: {target}
-                        Formato: 0/1 (adimplente/inadimplente)
-                        
-                        Resumo:
-                        - Total de variáveis ativas: {len(st.session_state.variaveis_ativas)}
-                        - Top 3 por IV: {', '.join(top_iv) if top_iv else 'N/A'}
-                        - Top 3 por KS: {', '.join(top_ks) if top_ks else 'N/A'}
-                        
-                        Data: {pd.Timestamp.now().strftime('%d/%m/%Y %H:%M')}
-                                        """.strip()
-                                        zip_file.writestr("relatorio_analise.txt", relatorio_txt)
-                        
-        zip_buffer.seek(0)
-        b64 = base64.b64encode(zip_buffer.getvalue()).decode()
-        href = f'<a href="data:application/zip;base64,{b64}" download="relatorio_analise_bivariada.zip">📥 Baixar Relatório ZIP</a>'
-        st.markdown(href, unsafe_allow_html=True)
-        st.success("✅ Relatório personalizado gerado com sucesso!")
+                            Relatório de Análise Bivariada
+                            ==============================
+                            Variável-alvo: {target}
+                            
+                            Resumo:
+                            - Total de variáveis ativas: {len(st.session_state.variaveis_ativas)}
+                            - Top 3 por IV: {', '.join(top_iv) if top_iv else 'N/A'}
+                            - Top 3 por KS: {', '.join(top_ks) if top_ks else 'N/A'}
+                            
+                            Data: {pd.Timestamp.now().strftime('%d/%m/%Y %H:%M')}
+                                            """.strip()
+                    zip_file.writestr("relatorio_analise.txt", relatorio_txt)
+    
+            # Finaliza o buffer e cria o link de download
+            zip_buffer.seek(0)
+            b64 = base64.b64encode(zip_buffer.getvalue()).decode()
+            href = f'<a href="data:application/zip;base64,{b64}" download="relatorio_analise_bivariada.zip">📥 Baixar Relatório ZIP</a>'
+            st.markdown(href, unsafe_allow_html=True)
+            st.success("✅ Relatório personalizado gerado com sucesso!")
+    
         
     # --- NAVEGAÇÃO ---
     st.markdown("---")
