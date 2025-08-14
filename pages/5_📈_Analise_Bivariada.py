@@ -344,6 +344,7 @@ def main():
                     tmp['iv'] = (tmp['%_não_default'] - tmp['%_default']) * tmp['woe']
         
                     # Armazena tabela
+                    woe_tables = {}
                     if 'woe_tables' not in st.session_state:
                         st.session_state.woe_tables = {}
                     st.session_state.woe_tables[var_selecionada] = tmp
