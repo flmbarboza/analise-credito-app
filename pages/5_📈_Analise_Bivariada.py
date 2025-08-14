@@ -36,7 +36,10 @@ def main():
     Defina a variável-alvo, corrija seu formato, e realize análises preditivas:  
     **IV, WOE, KS** – tudo em um só lugar.
     """)
-
+    
+    if 'variaveis_ativas' not in st.session_state:
+    st.session_state.variaveis_ativas = [col for col in dados.columns if col != target]
+    
     if 'dados' not in st.session_state:
         st.warning("Dados não carregados! Acesse a página de Coleta primeiro.")
         st.page_link("pages/2_📊_Coleta_de_Dados.py", label="→ Ir para Coleta")
