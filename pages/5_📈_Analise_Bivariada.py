@@ -50,6 +50,90 @@ def main():
         "Selecione a coluna que indica **inadimplência**:",
         options=dados.columns,
         index=None,
+        placeholder="Escolha a variável de default",
+        key="target_select"  # ← mantém estado
+    )
+    
+    if target not in dados.columns:
+        st.error("ALERTA: variável-alvo inválida ou indefinida.")
+        return
+    
+    y_data = dados[target].dropna()
+    if len(y_data) == 0:
+        st.error(f"A coluna `{target}` está vazia.")
+        return
+    
+    valores_unicos = pd.Series(y_data.unique()).dropna().tolist()
+    try:
+        # Tenta ordenar apenas valores numéricos
+        valores_numericos = [x for x in valores_unicos if isinstance(x, (int, float))]
+        valores_unicos = sorted(valores_numericos) if valores_numericos else valores_unicos
+    except:
+        pass
+    
+    # Verificar se é binária (0/1)
+    if set(valores_unicos) != {0, 1}:
+        st.warning(f"""
+        ⚠️ A variável `{target}` não está no formato 0/1.  
+        Valores encontrados: {valores_unicos}
+        """)
+    
+        st.markdown("#### 🔧 Mapeie os valores para 0 (adimplente) e 1 (inadimplente)")
+        col1, col2 = st.columns(2)
+    
+        with col1:
+            valor_bom = st.selectbox(
+                "Valor que representa **adimplente (0)**",
+                options=valores_unicos,
+                key="valor_bom_select"  # ← estado persistente
+            )
+    
+        with col2:
+            # Remove o valor escolhido como "bom" das opções para "mau"
+            opcoes_maus = [v for v in valores_unicos if v != valor_bom]
+            valor_mau = st.selectbox(
+                "Valor que representa **inadimplente (1)**",
+                options=opcoes_maus,
+                key="valor_mau_select"  # ← estado persistente
+            )
+    
+        # Botão para aplicar o mapeamento
+        if st.button("✅ Aplicar Mapeamento", key="btn_aplicar_mapeamento"):
+            if valor_bom == valor_mau:
+                st.error("Erro: os valores para 'bom' e 'mau' devem ser diferentes.")
+            else:
+                try:
+                    # Mapeia os valores
+                    y_mapped = dados[target].map({valor_bom: 0, valor_mau: 1})
+                    
+                    # Verifica se houve falha no mapeamento (valores não mapeados)
+                    if y_mapped.isnull().any():
+                        st.error(f"Erro: alguns valores não foram mapeados corretamente. Verifique os dados.")
+                    else:
+                        # Atualiza os dados
+                        dados_atualizados = dados.copy()
+                        dados_atualizados[target] = y_mapped
+                        st.session_state.dados = dados_atualizados
+                        st.session_state.target = target
+                        st.success(f"✅ `{target}` foi convertida para 0 (adimplente) e 1 (inadimplente).")
+                        st.rerun()  # ← recarrega para refletir a mudança
+                except Exception as e:
+                    st.error(f"Erro ao aplicar mapeamento: {e}")
+    
+    else:
+        st.success(f"✅ `{target}` já está no formato 0/1.")
+        st.session_state.target = target
+    
+    
+    
+    
+    
+    # --- 1. SELEÇÃO E VALIDAÇÃO DA VARIÁVEL-ALVO (Y) ---
+    st.markdown("### 🔍 Defina a Variável-Alvo (Default)")
+    target = st.selectbox(
+        "Selecione a coluna que indica **inadimplência**:",
+        options=dados.columns,
+        index=None,
         placeholder="Escolha a variável de default"
     )
 
