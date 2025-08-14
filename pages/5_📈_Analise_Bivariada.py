@@ -271,8 +271,7 @@ def main():
                     bins = pd.cut(dados_var, bins=n_bins, retbins=True)[1].tolist()
                 else:
                     st.markdown(f"**Defina os limites das {n_bins} faixas:**")
-                    st.caption(f"Valores válidos: de `{min_val:.2f}` a `{max_val:.2f}`")
-        
+                    
                     # Inicializa limites se ainda não existirem
                     if var not in st.session_state.woe_binning:
                         st.session_state.woe_binning[var] = {
@@ -281,7 +280,8 @@ def main():
                         }
         
                     limits = st.session_state.woe_binning[var]['limits']
-        
+
+                    st.caption(f"Valores válidos: de `{min_val:.2f}` a `{max_val:.2f}`")
                     # Garante que o número de limites corresponda ao número de bins + 1
                     if len(limits) != n_bins + 1:
                         limits = np.linspace(min_val, max_val, n_bins + 1).tolist()
