@@ -281,7 +281,6 @@ def main():
         
                     limits = st.session_state.woe_binning[var]['limits']
 
-                    st.caption(f"Valores válidos: de `{min_val:.2f}` a `{max_val:.2f}`")
                     # Garante que o número de limites corresponda ao número de bins + 1
                     if len(limits) != n_bins + 1:
                         limits = np.linspace(min_val, max_val, n_bins + 1).tolist()
@@ -307,7 +306,9 @@ def main():
                     else:
                         bins = new_limits
                         st.session_state.woe_binning[var] = {'n_bins': n_bins, 'limits': new_limits}
-        
+
+                    st.caption(f"Valores válidos: de `{min_val:.2f}` a `{max_val:.2f}`")
+                
                 if bins is not None:
                     try:
                         df_temp = dados[[var, target]].dropna()
