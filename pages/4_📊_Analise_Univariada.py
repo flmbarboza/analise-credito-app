@@ -25,8 +25,8 @@ def main():
                                index=None, placeholder="Clique aqui para escolher")
         # ✅ Validação: só continua se o usuário escolheu algo
         if variavel is None:
-        st.info("👆 Por favor, escolha uma variável acima para iniciar a análise.")
-        return
+            st.info("👆 Por favor, escolha uma variável acima para iniciar a análise.")
+            return
 
         
         col1, col2 = st.columns(2)
