@@ -9,7 +9,7 @@ import base64
 def main():
     st.title("📊 Análise Univariada")
 
-    with st.expander("🔍 Sugestões de Informações que pode extrair destes dados:"):
+    with st.expander("🔍 Sugestões de Informações que pode extrair destes dados:", expanded=False):
 
         st.markdown("Explore cada variável individualmente para entender suas características básicas")
     
