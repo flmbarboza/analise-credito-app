@@ -117,6 +117,8 @@ def main():
         st.error("Não foi possível gerar o gráfico com essas variáveis.")
 
     # Correlação
+    numericas = dados.select_dtypes(include=[np.number]).columns.tolist()
+
     if pd.api.types.is_numeric_dtype(dados[var_x]) and pd.api.types.is_numeric_dtype(dados[var_y]):
         corr = dados[[var_x, var_y]].corr().iloc[0, 1]
         st.metric("Correlação", f"{corr:.3f}")
