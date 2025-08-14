@@ -188,7 +188,12 @@ def main():
                 # Exibir pares
                 corr_list = "\n".join([f"- `{i}` vs `{j}`: {upper.loc[i, j]:.2f}" for i, j in high_corr_pairs[:10]])
                 st.markdown(f"**Pares com alta correlação:**\n{corr_list}")
-    
+
+                fig_corr, ax_corr = plt.subplots(figsize=(6, 4))
+                sns.heatmap(corr_matrix, annot=False, cmap='coolwarm', center=0, ax=ax_corr)
+                ax_corr.set_title("Mapa de Calor de Correlação")
+                st.pyplot(fig_corr)
+                
                 # Extrair todas as variáveis envolvidas em pares de alta correlação
                 vars_envolvidas = list(set([i for i, j in high_corr_pairs] + [j for i, j in high_corr_pairs]))
                 vars_envolvidas = [v for v in vars_envolvidas if v in st.session_state.variaveis_ativas]
