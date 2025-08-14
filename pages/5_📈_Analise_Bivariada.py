@@ -183,6 +183,7 @@ def main():
                             st.rerun()
                         else:
                             st.info("Nenhuma variável selecionada para remoção.")
+    
     # --- ATUALIZAR LISTAS APÓS REMOÇÃO ---
     # Isso é essencial: recarregar as listas com base na versão atualizada de variaveis_ativas
     variaveis_ativas = st.session_state.variaveis_ativas
@@ -225,47 +226,139 @@ def main():
         st.markdown("#### 🔎 Weight of Evidence (WOE)")
         st.info("WOE transforma variáveis numéricas em escores de risco. Ajuste o número de faixas.")
 
-        n_bins = st.slider("Número de faixas (bins) para WOE:", min_value=2, max_value=20, value=10, key="n_bins_woe")
-
-        woe_tables = {}
-        for col in numericas:
-            if col == target:
-                continue
-            try:
-                df_temp = dados[[col, target]].dropna()
-                df_temp['bin'] = pd.cut(df_temp[col], bins=n_bins, duplicates='drop')
-                tmp = pd.crosstab(df_temp['bin'], df_temp[target])
-                tmp.columns = ['não_default', 'default']
-                total_bons = tmp['não_default'].sum()
-                total_maus = tmp['default'].sum()
-                tmp['%_não_default'] = tmp['não_default'] / total_bons
-                tmp['%_default'] = tmp['default'] / total_maus
-                tmp['%_default'] = tmp['%_default'].replace(0, 1e-6)
-                tmp['%_não_default'] = tmp['%_não_default'].replace(0, 1e-6)
-                tmp['woe'] = np.log(tmp['%_não_default'] / tmp['%_default'])
-                tmp['iv'] = (tmp['%_não_default'] - tmp['%_default']) * tmp['woe']
-                woe_tables[col] = tmp
-            except Exception as e:
-                woe_tables[col] = pd.DataFrame({'erro': [str(e)]})
-
-        for var, table in woe_tables.items():
-            with st.expander(f"WOE – {var}", expanded=False):
-                if 'erro' in table.columns:
-                    st.error(table['erro'].iloc[0])
+        # Filtrar variáveis numéricas ativas
+        numericas_ativas = [col for col in numericas if col != target]
+        if not numericas_ativas:
+            st.warning("Nenhuma variável numérica disponível para análise de WOE.")
+        else:
+            # Seleção múltipla de variáveis para análise
+            vars_para_woe = st.multiselect(
+                "Selecione as variáveis para ajustar o binning e calcular WOE:",
+                options=numericas_ativas,
+                default=numericas_ativas[:3]  # Sugere até 3 variáveis
+            )
+        
+            # Armazenar configurações de binning no session_state
+            if 'woe_binning' not in st.session_state:
+                st.session_state.woe_binning = {}
+        
+            woe_tables = {}
+        
+            for var in vars_para_woe:
+                st.markdown(f"---")
+                st.subheader(f"🔧 WOE e Binning: `{var}`")
+        
+                dados_var = dados[var].dropna()
+                min_val, max_val = float(dados_var.min()), float(dados_var.max())
+                default_bins = min(10, int(len(dados_var.unique()) / 2) or 1)
+        
+                # Configuração do número de classes
+                n_bins = st.slider(
+                    f"Número de faixas (bins) para `{var}`:",
+                    min_value=2, max_value=20, value=default_bins,
+                    key=f"n_bins_{var}"
+                )
+        
+                # Opção: usar faixas automáticas ou manuais
+                tipo_binning = st.radio(
+                    f"Tipo de binning para `{var}`:",
+                    options=["Automático (intervalos iguais)", "Manual (definir limites)"],
+                    key=f"tipo_binning_{var}"
+                )
+        
+                bins = None
+                if tipo_binning == "Automático (intervalos iguais)":
+                    bins = pd.cut(dados_var, bins=n_bins, retbins=True)[1].tolist()
                 else:
-                    st.dataframe(table.style.format({
-                        'não_default': '{:.0f}',
-                        'default': '{:.0f}',
-                        '%_não_default': '{:.4f}',
-                        '%_default': '{:.4f}',
-                        'woe': '{:.3f}',
-                        'iv': '{:.3f}'
-                    }))
-                    fig, ax = plt.subplots(figsize=(5, 2))
-                    table['woe'].plot(kind='barh', ax=ax, color='teal')
-                    ax.set_title(f"WOE por faixa – {var}")
-                    st.pyplot(fig)
-
+                    st.markdown(f"**Defina os limites das {n_bins} faixas:**")
+                    st.caption(f"Valores válidos: de `{min_val:.2f}` a `{max_val:.2f}`")
+        
+                    # Inicializa limites se ainda não existirem
+                    if var not in st.session_state.woe_binning:
+                        st.session_state.woe_binning[var] = {
+                            'n_bins': n_bins,
+                            'limits': np.linspace(min_val, max_val, n_bins + 1).tolist()
+                        }
+        
+                    limits = st.session_state.woe_binning[var]['limits']
+        
+                    # Garante que o número de limites corresponda ao número de bins + 1
+                    if len(limits) != n_bins + 1:
+                        limits = np.linspace(min_val, max_val, n_bins + 1).tolist()
+        
+                    cols = st.columns(n_bins + 1)
+                    new_limits = []
+                    for i in range(n_bins + 1):
+                        with cols[i]:
+                            label = "Limite inferior" if i == 0 else f"Limite {i}" if i < n_bins else "Limite superior"
+                            new_val = st.number_input(
+                                label,
+                                min_value=float(min_val - (max_val - min_val)),
+                                max_value=float(max_val + (max_val - min_val)),
+                                value=float(limits[i]),
+                                step=0.01,
+                                key=f"lim_{var}_{i}"
+                            )
+                            new_limits.append(new_val)
+        
+                    # Validar ordem dos limites
+                    if new_limits != sorted(new_limits):
+                        st.warning(f"⚠️ Os limites para `{var}` devem estar em ordem crescente.")
+                    else:
+                        bins = new_limits
+                        st.session_state.woe_binning[var] = {'n_bins': n_bins, 'limits': new_limits}
+        
+                if bins is not None:
+                    try:
+                        df_temp = dados[[var, target]].dropna()
+                        df_temp['bin'] = pd.cut(df_temp[var], bins=bins, include_lowest=True, duplicates='drop')
+                        tmp = pd.crosstab(df_temp['bin'], df_temp[target])
+                        tmp.columns = ['não_default', 'default']
+        
+                        total_bons = tmp['não_default'].sum()
+                        total_maus = tmp['default'].sum()
+        
+                        tmp['%_não_default'] = tmp['não_default'] / total_bons
+                        tmp['%_default'] = tmp['default'] / total_maus
+        
+                        # Evitar divisão por zero
+                        tmp['%_default'] = tmp['%_default'].replace(0, 1e-6)
+                        tmp['%_não_default'] = tmp['%_não_default'].replace(0, 1e-6)
+        
+                        tmp['woe'] = np.log(tmp['%_não_default'] / tmp['%_default'])
+                        tmp['iv'] = (tmp['%_não_default'] - tmp['%_default']) * tmp['woe']
+        
+                        woe_tables[var] = tmp
+        
+                        # Exibir tabela de forma limpa
+                        st.markdown(f"##### 📊 Tabela de WOE para `{var}`")
+                        st.dataframe(
+                            tmp.style.format({
+                                'não_default': '{:,.0f}',
+                                'default': '{:,.0f}',
+                                '%_não_default': '{:.4f}',
+                                '%_default': '{:.4f}',
+                                'woe': '{:.3f}',
+                                'iv': '{:.3f}'
+                            }).background_gradient(cmap='RdYlGn', subset=['woe'], low=1, high=1)
+                        )
+        
+                        # Gráfico WOE
+                        fig, ax = plt.subplots(figsize=(6, 2.5))
+                        tmp['woe'].plot(kind='barh', ax=ax, color='teal', edgecolor='black')
+                        ax.set_title(f"WOE por Faixa - {var}", fontsize=10)
+                        ax.set_xlabel("Weight of Evidence", fontsize=9)
+                        ax.tick_params(axis='both', which='major', labelsize=8)
+                        plt.tight_layout()
+                        st.pyplot(fig)
+        
+                    except Exception as e:
+                        st.error(f"Erro ao calcular WOE para `{var}`: {e}")
+        
+            # Armazenar para uso futuro
+            st.session_state.woe_tables = woe_tables
+        
+    
         # --- KS ---
         st.markdown("#### 📊 Kolmogorov-Smirnov (KS)")
         st.info("KS > 0.3: bom | > 0.4: excelente. Mede a separação entre bons e maus.")
