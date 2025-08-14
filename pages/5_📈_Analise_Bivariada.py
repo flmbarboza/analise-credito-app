@@ -410,9 +410,19 @@ def main():
         st.write(f"- **Variável-alvo:** `{target}`")
         st.write(f"- **Variáveis ativas:** {len(variaveis_ativas)}")
         st.write(f"- **Numéricas:** {len(numericas)} | **Categóricas:** {len(categoricas)}")
+        
         if 'iv_df' in st.session_state and not st.session_state.iv_df.empty:
             top_iv = st.session_state.iv_df.sort_values("IV", ascending=False).head(3)['Variável'].tolist()
             st.write(f"- **Top 3 por IV:** {', '.join(top_iv)}")
+        else:
+            st.write("- **Top 3 por IV:** N/A")
+    
+        if 'ks_df' in st.session_state and not st.session_state.ks_df.empty:
+            top_ks = st.session_state.ks_df.sort_values("KS", ascending=False).head(3)['Variável'].tolist()
+            st.write(f"- **Top 3 por KS:** {', '.join(top_ks)}")
+        else:
+            st.write("- **Top 3 por KS:** N/A")
+
 
     # --- EXPORTAÇÃO ---
     with st.expander("💾 Exportar Outputs"):
