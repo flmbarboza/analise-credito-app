@@ -30,6 +30,92 @@ def calcular_ks(dados, coluna, target):
     ks_stat, _ = ks_2samp(bons, maus)
     return ks_stat
 
+def criar_zip_exportacao(selecionados, dados, target, iv_df, ks_df, woe_tables, corr_matrix, st):
+    """Cria um buffer ZIP com os itens selecionados pelo usuário."""
+    import io
+    import zipfile
+    import base64
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w") as zip_file:
+        # 1. Mapa de calor de correlação
+        if "Mapa de Correlação" in selecionados:
+            fig, ax = plt.subplots(figsize=(6, 4))
+            sns.heatmap(corr_matrix, annot=False, cmap='coolwarm', center=0, ax=ax)
+            ax.set_title("Mapa de Calor de Correlação")
+            img_data = io.BytesIO()
+            fig.savefig(img_data, format='png', dpi=100, bbox_inches='tight')
+            plt.close(fig)
+            zip_file.writestr("mapa_correlacao.png", img_data.getvalue())
+
+        # 2. Gráfico de IV
+        if "Gráfico de IV" in selecionados and not iv_df.empty:
+            fig, ax = plt.subplots(figsize=(6, 0.35 * len(iv_df)))
+            bars = ax.barh(iv_df['Variável'], iv_df['IV'], color='skyblue', edgecolor='darkblue', height=0.7)
+            ax.set_title("Information Value (IV)")
+            for i, bar in enumerate(bars):
+                width = bar.get_width()
+                ax.text(width + 0.005, bar.get_y() + bar.get_height()/2, f"{width:.3f}", va='center', fontsize=9)
+            img_data = io.BytesIO()
+            fig.savefig(img_data, format='png', dpi=100, bbox_inches='tight')
+            plt.close(fig)
+            zip_file.writestr("iv.png", img_data.getvalue())
+
+        # 3. Gráfico de KS
+        if "Gráfico de KS" in selecionados and not ks_df.empty:
+            fig, ax = plt.subplots(figsize=(6, 0.35 * len(ks_df)))
+            bars = ax.barh(ks_df['Variável'], ks_df['KS'], color='lightcoral', edgecolor='darkred', height=0.7)
+            ax.set_title("Kolmogorov-Smirnov (KS)")
+            for i, bar in enumerate(bars):
+                width = bar.get_width()
+                ax.text(width + 0.005, bar.get_y() + bar.get_height()/2, f"{width:.3f}", va='center', fontsize=9)
+            img_data = io.BytesIO()
+            fig.savefig(img_data, format='png', dpi=100, bbox_inches='tight')
+            plt.close(fig)
+            zip_file.writestr("ks.png", img_data.getvalue())
+
+        # 4. Gráficos de WOE
+        if "Gráficos de WOE" in selecionados and woe_tables:
+            for var, table in woe_tables.items():
+                if 'woe' in table.columns:
+                    fig, ax = plt.subplots(figsize=(5, 2))
+                    table['woe'].plot(kind='barh', ax=ax, color='teal', edgecolor='black')
+                    ax.set_title(f"WOE – {var}")
+                    img_data = io.BytesIO()
+                    fig.savefig(img_data, format='png', dpi=100, bbox_inches='tight')
+                    plt.close(fig)
+                    zip_file.writestr(f"woe_{var}.png", img_data.getvalue())
+
+        # 5. Tabelas de WOE
+        if "Tabelas de WOE" in selecionados and woe_tables:
+            for var, table in woe_tables.items():
+                if 'erro' not in table.columns:
+                    csv_data = table.to_csv(index=True)
+                    zip_file.writestr(f"woe_{var}.csv", csv_data)
+
+        # 6. Relatório de análise
+        if "Relatório de Análise" in selecionados:
+            top_iv = iv_df.sort_values("IV", ascending=False).head(3)['Variável'].tolist() if not iv_df.empty else []
+            top_ks = ks_df.sort_values("KS", ascending=False).head(3)['Variável'].tolist() if not ks_df.empty else []
+            relatorio = f"""
+                        Relatório de Pré-Seleção de Variáveis
+                        =====================================
+                        Variável-alvo: {target}
+                        
+                        Resumo:
+                        - Total de variáveis ativas: {len(iv_df)}
+                        - Top 3 por IV: {', '.join(top_iv) if top_iv else 'N/A'}
+                        - Top 3 por KS: {', '.join(top_ks) if top_ks else 'N/A'}
+                        
+                        Data: {pd.Timestamp.now().strftime('%d/%m/%Y %H:%M')}
+                                    """.strip()
+            zip_file.writestr("relatorio_analise.txt", relatorio)
+
+    zip_buffer.seek(0)
+    return zip_buffer
+    
 def main():
     st.title("📈 Análise Bivariada e Pré-Seleção de Variáveis")
     st.markdown("""
@@ -463,6 +549,47 @@ def main():
     # --- EXPORTAÇÃO PERSONALIZADA ---
     st.markdown("---")
     with st.expander("💾 Exportar Outputs", expanded=False):
+         st.markdown("### 📥 Selecione os itens que deseja salvar:")
+
+        opcoes_exportacao = [
+            "Mapa de Correlação",
+            "Gráfico de IV",
+            "Gráfico de KS",
+            "Gráficos de WOE",
+            "Tabelas de WOE",
+            "Relatório de Análise"
+        ]
+    
+        selecionados = st.multiselect(
+            "Itens para exportar",
+            options=opcoes_exportacao,
+            default=opcoes_exportacao
+        )
+    
+        if st.button("📦 Gerar ZIP com seleção"):
+            if not selecionados:
+                st.warning("Selecione pelo menos um item para exportar.")
+            else:
+                # Recupera dados necessários
+                iv_df = st.session_state.iv_df if 'iv_df' in st.session_state else pd.DataFrame()
+                ks_df = st.session_state.ks_df if 'ks_df' in st.session_state else pd.DataFrame()
+                woe_tables = st.session_state.woe_tables if 'woe_tables' in st.session_state else {}
+                numericas = dados.select_dtypes(include=[np.number]).columns.tolist()
+                corr_matrix = dados[numericas].corr().abs() if len(numericas) > 1 else pd.DataFrame()
+    
+                # Cria o ZIP
+                try:
+                    zip_buffer = criar_zip_exportacao(selecionados, dados, target, iv_df, ks_df, woe_tables, corr_matrix, st)
+                    b64 = base64.b64encode(zip_buffer.getvalue()).decode()
+                    href = f'<a href="data:application/zip;base64,{b64}" download="exportacao_analise_bivariada.zip">📥 Baixar ZIP com seleção</a>'
+                    st.markdown(href, unsafe_allow_html=True)
+                    st.success("✅ Exportação concluída!")
+                except Exception as e:
+                    st.error(f"Erro ao gerar exportação: {e}")
+
+
+
+        
         st.markdown("### 📥 Escolha o que deseja incluir no relatório")
     
         # Opções de seleção
