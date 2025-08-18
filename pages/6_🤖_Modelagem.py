@@ -105,6 +105,7 @@ def main():
         st.session_state.target = target
 
     # --- 2. Seleção de variáveis preditoras ---
+    st.markdown("### 📊 Dados que serão usados no modelo")
     features = st.multiselect(
         "Variáveis Preditivas:",
         options=[col for col in dados.columns if col != target],
@@ -116,7 +117,6 @@ def main():
         st.stop()
 
     # --- 3. Mostrar DataFrame antes do modelo ---
-    st.markdown("### 📊 Dados que serão usados no modelo")
     st.info("Abaixo estão as variáveis preditoras (X) e a variável-alvo (y) que serão usadas no treinamento.")
     X_preview = dados[features].head(10)
     y_preview = dados[target].head(10)
