@@ -55,13 +55,13 @@ def main():
     )
     st.info("""🔹 **Regressão Logística**: Interpretação clara, bom para modelos regulatórios.  
             🔹 **Random Forest**: Alta performance, menos interpretável.""")
-    
+        
     # --- TRATAMENTO DE VARIÁVEIS CATEGÓRICAS ---
     st.markdown("#### 🧱 Tratamento de Variáveis Categóricas")
     st.info("""
     Defina como cada variável categórica será tratada:
     - **One-Hot Encoding**: cria colunas binárias (recomendado para poucas categorias).
-    - **Label Encoding**: converte em números (use com cuidado).
+    - **Label Encoding**: converte em números (use com cautela).
     - **Remover**: exclui a variável.
     """)
     
@@ -81,7 +81,7 @@ def main():
         for var in cat_vars:
             choice = st.session_state.encoding_choice.get(var, "One-Hot Encoding")
             st.markdown(f"**Variável:** `{var}`")
-            st.caption(f"Valores únicos: {sorted(dados[var].dropna().unique().astype(str))[:10]}{'...' if dados[var].nunique() > 10 else ''}")
+            st.caption(f"Valores únicos (amostra): {sorted(dados[var].dropna().astype(str).unique())[:10]}")
     
             opcao = st.radio(
                 f"Tratamento para `{var}`:",
@@ -102,17 +102,38 @@ def main():
                     if opcao == "One-Hot Encoding":
                         dummies = pd.get_dummies(X[var], prefix=var, drop_first=True)
                         X = pd.concat([X.drop(columns=[var]), dummies], axis=1)
-                        st.success(f"✅ `{var}`: One-Hot Encoding aplicado.")
+                        st.success(f"✅ `{var}`: One-Hot Encoding aplicado ({dummies.shape[1]} colunas criadas).")
                     elif opcao == "Label Encoding":
                         X[var] = X[var].astype('category').cat.codes
-                        st.success(f"✅ `{var}`: Label Encoding aplicado.")
+                        st.success(f"✅ `{var}`: Label Encoding aplicado (0, 1, 2...).")
                     elif opcao == "Remover":
                         X = X.drop(columns=[var])
-                        st.info(f"ℹ️ `{var}`: Removida do modelo.")
+                        st.info(f"ℹ️ `{var}`: Variável removida do modelo.")
+    
+                # ✅ CONVERSÃO FINAL PARA NUMÉRICO
+                for col in X.columns:
+                    if X[col].dtype == 'object':
+                        try:
+                            X[col] = pd.to_numeric(X[col], errors='coerce')
+                            st.warning(f"⚠️ Coluna `{col}` convertida de object para numérico (com coerção).")
+                        except:
+                            st.error(f"Erro ao converter `{col}` para numérico. Verifique os dados.")
+                            st.stop()
+    
+                # ✅ Remove linhas com NaN (ou preenche)
+                if X.isnull().any().any():
+                    st.warning("⚠️ Dados faltantes encontrados. Preenchendo com média (numéricas).")
+                    X = X.fillna(X.select_dtypes(include=[np.number]).mean(numeric_only=True))
+    
+                # ✅ Garante que tudo é float64
+                X = X.astype(float)
+    
                 # Salva no estado
                 st.session_state.X_processed = X
                 st.session_state.tratamento_feito = True
-                st.success("✅ Tratamento concluído! Você pode treinar o modelo agora.")
+                st.success("✅ Tratamento concluído! Todas as colunas são numéricas.")
+                st.info(f"➡️ Shape final: {X.shape} (linhas x colunas)")
+    
             except Exception as e:
                 st.error(f"Erro ao aplicar tratamento: {e}")
     
@@ -127,6 +148,11 @@ def main():
             X = st.session_state.X_processed
             y = dados[target]
     
+            # Validação extra: checa tipo
+            if X.dtypes.isin(['object']).any():
+                st.error("❌ Ainda há colunas do tipo 'object'. Verifique o tratamento.")
+                st.stop()
+    
             # Divisão treino/teste
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
     
@@ -139,7 +165,7 @@ def main():
                 # Statsmodels para p-valores
                 X_train_sm = sm.add_constant(X_train)
                 model_sm = sm.Logit(y_train, X_train_sm).fit(disp=False)
-                p_values = model_sm.pvalues[1:]  # remove const
+                p_values = model_sm.pvalues[1:]
     
                 st.session_state.modelo = model
                 st.session_state.model_sm = model_sm
@@ -155,7 +181,6 @@ def main():
     
                 # Matriz de confusão
                 st.markdown("### 📊 Matriz de Confusão")
-                st.info("Mostra VP, VN, FP, FN. Ajuda a entender os erros do modelo.")
                 fig, ax = plt.subplots()
                 sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax,
                             xticklabels=['Adimplente', 'Inadimplente'],
@@ -166,7 +191,6 @@ def main():
     
                 # Expressão algébrica
                 st.markdown("### 🧮 Expressão do Modelo")
-                st.info("O modelo calcula a probabilidade de inadimplência com base nos coeficientes.")
                 coef_intercept = model.intercept_[0]
                 terms = [f"{coef_intercept:.4f}"]
                 for feat, coef in zip(X.columns, model.coef_[0]):
@@ -177,7 +201,6 @@ def main():
     
                 # Tabela de coeficientes
                 st.markdown("### 📋 Coeficientes e Significância")
-                st.info("Coeficiente: impacto no log-odds. P-valor: significância estatística.")
                 coef_df = pd.DataFrame({
                     'Variável': X.columns,
                     'Coeficiente': model.coef_[0],
@@ -207,7 +230,6 @@ def main():
                 st.success("✅ Modelo Random Forest treinado!")
     
                 st.markdown("### 📊 Matriz de Confusão")
-                st.info("Mesma interpretação que na regressão logística.")
                 fig, ax = plt.subplots()
                 sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax,
                             xticklabels=['Adimplente', 'Inadimplente'],
@@ -223,11 +245,11 @@ def main():
                 ax.barh(importance_df['Variável'], importance_df['Importância'], color='teal')
                 ax.set_title("Importância das Variáveis")
                 st.pyplot(fig)
+    
                 st.metric("Acurácia no Teste", f"{acuracia:.1%}")
     
         except Exception as e:
-            st.error(f"Erro ao treinar o modelo: {e}")
-    
+            st.error(f"Erro ao treinar o modelo: {e}")    
                
     # --- NAVEGAÇÃO ---
     st.markdown("---")
