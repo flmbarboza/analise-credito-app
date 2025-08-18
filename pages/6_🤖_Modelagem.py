@@ -190,7 +190,9 @@ def main():
                         "Símbolo": [f"$X_{{{i+1}}}$" for i in range(len(X.columns))],
                         "Variável": X.columns.tolist()
                     })
-                    st.dataframe(legenda, use_container_width=True)
+                    #st.dataframe(legenda, use_container_width=True)
+                    st.markdown(legenda.to_markdown(index=False), unsafe_allow_html=True)
+
                     
                     # --- TABELA DE COEFICIENTES ---
                     st.markdown("### 📋 Coeficientes e Significância")
