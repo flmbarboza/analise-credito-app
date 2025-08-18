@@ -503,7 +503,68 @@ def main():
                     ax.tick_params(axis='both', which='major', labelsize=8)
                     plt.tight_layout()
                     st.pyplot(fig)
-        
+
+                    # --- CRIAÇÃO DA VARIÁVEL CATEGÓRICA ---
+                    st.markdown("### 🔧 Criar Variável Categórica a partir dos Bins")
+                    
+                    # Sugerir nome padrão com base na variável original
+                    nome_sugerido = f"{var_selecionada}_cat"
+                    
+                    col1, col2 = st.columns([3, 1])
+                    with col1:
+                        nome_nova_var = st.text_input(
+                            "Nome da nova variável categórica:",
+                            value=nome_sugerido,
+                            help="Escolha um nome descritivo para a nova coluna gerada a partir dos intervalos."
+                        )
+                    with col2:
+                        st.write("")  # Espaço vertical
+                        criar_var = st.button("➕ Criar Variável", key=f"criar_var_{var_selecionada}")
+                    
+                    if criar_var:
+                        # Validação de nome
+                        if nome_nova_var in dados.columns:
+                            st.warning(f"❌ Já existe uma coluna chamada `{nome_nova_var}`. Escolha outro nome.")
+                        elif not nome_nova_var.strip():
+                            st.warning("❌ O nome da variável não pode estar vazio.")
+                        else:
+                            try:
+                                # Aplica o binning no dataset completo
+                                dados_novo = dados[[var_selecionada]].copy()
+                                # Garante que os valores estejam no intervalo
+                                dados_novo['interval'] = pd.cut(
+                                    dados_novo[var_selecionada],
+                                    bins=bins,
+                                    labels=bin_labels,
+                                    include_lowest=True,
+                                    right=False
+                                )
+                                # Renomeia para o nome escolhido
+                                dados_novo[nome_nova_var] = dados_novo['interval'].astype("category")
+                                
+                                # Remove coluna auxiliar
+                                dados_novo = dados_novo.drop(columns=['interval'])
+                                
+                                # Salva no session_state
+                                if 'dados_transformados' not in st.session_state:
+                                    st.session_state.dados_transformados = dados.copy()
+                                
+                                # Adiciona ou sobrescreve a nova coluna no dataset transformado
+                                st.session_state.dados_transformados[nome_nova_var] = dados_novo[nome_nova_var]
+                                
+                                # Atualiza lista de variáveis ativas (opcional)
+                                if 'variaveis_ativas' in st.session_state and nome_nova_var not in st.session_state.variaveis_ativas:
+                                    st.session_state.variaveis_ativas.append(nome_nova_var)
+                                
+                                st.success(f"✅ Variável categórica `{nome_nova_var}` criada com sucesso!")
+                                st.info(f"🔹 A nova variável tem `{len(bin_labels)}` categorias, baseadas nos intervalos definidos.")
+                                
+                                # Mostra preview
+                                st.dataframe(dados_novo[[var_selecionada, nome_nova_var]].head(10))
+                    
+                            except Exception as e:
+                                st.error(f"Erro ao criar a variável: {e}")
+                                
                 except Exception as e:
                     st.error(f"Erro ao calcular WOE: {e}")
         
