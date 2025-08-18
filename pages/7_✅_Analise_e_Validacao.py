@@ -13,6 +13,8 @@ def main():
     Entenda **como o seu modelo se comporta na prática** com métricas essenciais para credit scoring.  
     Aqui você vai aprender o que cada indicador significa — e por que ele importa.
     """)
+    
+    modelo_tipo = st.session_state.get('modelo_tipo', 'Desconhecido')
 
     if 'modelo' not in st.session_state:
         st.warning("Nenhum modelo treinado! Construa um modelo primeiro.")
@@ -150,7 +152,6 @@ def main():
     Se a curva de treino continua melhorando, mas a do teste estabiliza ou piora, é sinal de overfitting.
     """)
 
-    modelo_tipo = st.session_state.get('modelo_tipo', 'Desconhecido')
     # Simulação de curva de perda (já que sklearn não fornece diretamente)
     try:
         # Usamos um modelo similar para simular a curva (apenas para fins didáticos)
