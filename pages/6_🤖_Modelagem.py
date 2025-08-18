@@ -145,7 +145,14 @@ def main():
 
                     # --- MATRIZ DE CONFUSÃO ---
                     st.markdown("### 📊 Matriz de Confusão")
-                    st.info("Mostra VP, VN, FP, FN. Ajuda a entender os erros do modelo.")
+                    st.info("""Ajuda a entender os erros do modelo.
+                    Mostra quantos casos foram classificados correta e incorretamente:
+                    - **Verdadeiros Positivos (VP)**: Inadimplentes corretamente identificados.
+                    - **Falsos Positivos (FP)**: Adimplentes classificados como inadimplentes.
+                    - **Verdadeiros Negativos (VN)**: Adimplentes corretamente identificados.
+                    - **Falsos Negativos (FN)**: Inadimplentes não detectados (pior erro).
+                    """)
+                    
                     fig, ax = plt.subplots(figsize=(5, 4))
                     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax,
                                 xticklabels=['Adimplente', 'Inadimplente'],
@@ -166,7 +173,8 @@ def main():
 
                     # --- TABELA DE COEFICIENTES ---
                     st.markdown("### 📋 Coeficientes e Significância")
-                    st.info("Coeficiente: impacto no log-odds. P-valor: significância estatística.")
+                    st.info("""Coeficiente: impacto no log-odds. P-valor: significância estatística. 
+                            Nota: Níveis de Significância são importantes para validar estatisticamente a importância da variável no modelo. No caso, *** é muito alta (praticamente 0%), ** é alta (1%) e * é significante a 5%) """)
                     coef_df = pd.DataFrame({
                         'Variável': X.columns,
                         'Coeficiente': model.coef_[0],
