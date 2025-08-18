@@ -223,6 +223,10 @@ def main():
                 ax.barh(importance_df['Variável'], importance_df['Importância'], color='teal')
                 ax.set_title("Importância das Variáveis")
                 st.pyplot(fig)
+                st.metric("Acurácia no Teste", f"{acuracia:.1%}")
+    
+        except Exception as e:
+            st.error(f"Erro ao treinar o modelo: {e}")
     
                
     # --- NAVEGAÇÃO ---
