@@ -45,7 +45,7 @@ def main():
     """)
 
     cm = confusion_matrix(y_test, y_pred)
-    fig, ax = plt.subplots(figsize=(5, 4))
+    fig, ax = plt.subplots(figsize=(2.5, 2))
     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax,
                 xticklabels=['Adimplente (0)', 'Inadimplente (1)'],
                 yticklabels=['Adimplente (0)', 'Inadimplente (1)'])
