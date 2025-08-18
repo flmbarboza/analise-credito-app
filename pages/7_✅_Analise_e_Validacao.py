@@ -265,7 +265,7 @@ def main():
 
     📉 Overfitting
     -------------
-    {'Possível overfitting detectado.' if np.argmax(test_mean) < len(test_mean) - 1 and test_mean[-1] < test_mean[np.argmax(test_mean)] else 'Sem sinais claros de overfitting.'}
+    {overfit_msg}    
     
     📅 Data: {pd.Timestamp.now().strftime('%d/%m/%Y %H:%M')}
     """
