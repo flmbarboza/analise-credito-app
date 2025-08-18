@@ -122,7 +122,21 @@ def main():
     y_preview = dados[target].head(10)
     preview = pd.concat([X_preview, y_preview], axis=1)
     st.dataframe(preview)
-
+    
+    # --- 4. Análise de variáveis categóricas (antes do treinamento) ---
+    st.markdown("#### 🔍 Resumo das Variáveis Preditivas")
+    num_vars = [col for col in features if pd.api.types.is_numeric_dtype(dados[col])]
+    cat_vars = [col for col in features if dados[col].dtype == 'object']
+    
+    st.write(f"- **Total de variáveis preditoras:** {len(features)}")
+    st.write(f"- **Numéricas:** {len(num_vars)}")
+    st.write(f"- **Categóricas:** {len(cat_vars)}")
+    
+    if len(cat_vars) > 0:
+        st.info(f"📌 Variáveis categóricas: `{', '.join(cat_vars)}` serão tratadas durante o treinamento.")
+    else:
+        st.success("✅ Nenhuma variável categórica encontrada.")
+        
     # --- 4. Escolha do modelo ---
     modelo_tipo = st.radio(
         "Escolha o modelo:",
