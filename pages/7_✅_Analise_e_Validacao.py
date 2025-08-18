@@ -1,9 +1,11 @@
 import streamlit as st
-from sklearn.metrics import classification_report, confusion_matrix, roc_curve, auc, roc_auc_score
 import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+from sklearn.metrics import classification_report, confusion_matrix, roc_curve, auc, roc_auc_score
+from sklearn.model_selection import validation_curve
+from sklearn.linear_model import LogisticRegression
 
 def main():
     st.title("✅ Análise e Validação do Modelo")
@@ -147,13 +149,10 @@ def main():
     A **curva de perda** mostra o desempenho do modelo no treino e no teste ao longo do tempo (ou de iterações).  
     Se a curva de treino continua melhorando, mas a do teste estabiliza ou piora, é sinal de overfitting.
     """)
-    
+
+    modelo_tipo = st.session_state.get('modelo_tipo', 'Desconhecido')
     # Simulação de curva de perda (já que sklearn não fornece diretamente)
     try:
-        from sklearn.model_selection import validation_curve
-        from sklearn.linear_model import LogisticRegression
-        import numpy as np
-    
         # Usamos um modelo similar para simular a curva (apenas para fins didáticos)
         if modelo_tipo == "Random Forest":
             from sklearn.ensemble import RandomForestClassifier
