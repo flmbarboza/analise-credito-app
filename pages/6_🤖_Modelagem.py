@@ -321,6 +321,131 @@ def main():
             except Exception as e:
                 st.error(f"Erro ao treinar o modelo: {e}")
 
+    # --- RELATÓRIO DAS AÇÕES REALIZADAS ---
+    st.markdown("### 📝 Relatório das Ações Realizadas")
+    st.info("Veja abaixo um resumo detalhado de todas as etapas executadas nesta modelagem.")
+    
+    # Armazena o relatório para exportação
+    relatorio_acoes = []
+    
+    # 1. Variável-alvo
+    relatorio_acoes.append(f"🎯 **Variável-alvo definida:** `{target}` (formato 0/1)")
+    st.markdown(f"**Variável-alvo:** `{target}`")
+    
+    # 2. Tratamento de variáveis categóricas
+    if len(cat_vars) > 0:
+        tratamentos_aplicados = []
+        for var in cat_vars:
+            if encoding_choice[var] == "One-Hot Encoding":
+                n_dummies = pd.get_dummies(dados[var], prefix=var, drop_first=True).shape[1]
+                tratamentos_aplicados.append(f"`{var}` → One-Hot Encoding ({n_dummies} colunas geradas)")
+            else:
+                tratamentos_aplicados.append(f"`{var}` → Label Encoding")
+        st.markdown(f"**Tratamento de variáveis categóricas:**")
+        for t in tratamentos_aplicados:
+            st.markdown(f"- {t}")
+        relatorio_acoes.append("🔧 **Tratamento de categóricas:**")
+        relatorio_acoes.extend([f"   - {t}" for t in tratamentos_aplicados])
+    else:
+        st.markdown("**Tratamento de variáveis categóricas:** Nenhuma variável categórica encontrada.")
+        relatorio_acoes.append("🔧 **Tratamento de categóricas:** Nenhuma variável categórica presente.")
+    
+    # 3. Conversão e limpeza
+    st.markdown("**Conversão e limpeza de dados:**")
+    if 'object' in X.dtypes.values:
+        st.markdown("- Conversão de colunas object → numérico (com coerção)")
+        relatorio_acoes.append("🧹 **Conversão de tipos:** Colunas object convertidas para numérico com coerção.")
+    if X.isnull().any().any():
+        st.markdown("- Preenchimento de valores faltantes com a média")
+        relatorio_acoes.append("🧹 **Tratamento de missing:** Valores faltantes preenchidos com a média das colunas.")
+    else:
+        st.markdown("- Nenhum valor faltante encontrado")
+        relatorio_acoes.append("🧹 **Tratamento de missing:** Nenhum valor faltante encontrado.")
+    
+    # 4. Modelo treinado
+    relatorio_acoes.append(f"🧠 **Modelo escolhido:** {modelo_tipo}")
+    relatorio_acoes.append(f"📊 **Variáveis preditoras ({len(features)}):** {', '.join(features)}")
+    st.markdown(f"**Modelo treinado:** {modelo_tipo}")
+    st.markdown(f"**Número de variáveis preditoras:** {len(features)}")
+    
+    # 5. Métricas
+    if 'acuracia' in locals():
+        st.markdown(f"**Acurácia no teste:** {acuracia:.1%}")
+        relatorio_acoes.append(f"📈 **Acurácia no teste:** {acuracia:.1%}")
+    
+    # --- EXPORTAÇÃO DO RELATÓRIO ---
+    with st.expander("📤 Exportar Relatório Personalizado", expanded=False):
+        st.markdown("#### Selecione os itens que deseja incluir no relatório final:")
+        
+        opcoes_relatorio = [
+            "Variável-alvo",
+            "Tratamento de variáveis categóricas",
+            "Conversão e limpeza de dados",
+            "Modelo escolhido",
+            "Variáveis preditoras",
+            "Acurácia no teste",
+            "Matriz de Confusão",
+            "Expressão do Modelo",
+            "Tabela de Coeficientes"
+        ]
+        
+        itens_selecionados = st.multiselect(
+            "Itens do relatório",
+            options=opcoes_relatorio,
+            default=opcoes_relatorio
+        )
+        
+        if st.button("📄 Gerar Relatório"):
+            relatorio_final = []
+            for item in itens_selecionados:
+                if item == "Variável-alvo":
+                    relatorio_final.append(f"🎯 Variável-alvo: {target}")
+                elif item == "Tratamento de variáveis categóricas":
+                    relatorio_final.append("🔧 Tratamento de variáveis categóricas:")
+                    if len(cat_vars) > 0:
+                        for var in cat_vars:
+                            relatorio_final.append(f"   - {var}: {encoding_choice[var]}")
+                    else:
+                        relatorio_final.append("   - Nenhuma variável categórica.")
+                elif item == "Conversão e limpeza de dados":
+                    relatorio_final.append("🧹 Conversão e limpeza:")
+                    if 'object' in X.dtypes.values:
+                        relatorio_final.append("   - Colunas object convertidas para numérico.")
+                    if X.isnull().any().any():
+                        relatorio_final.append("   - Missing preenchidos com média.")
+                    else:
+                        relatorio_final.append("   - Nenhum dado faltante ou problema de tipo.")
+                elif item == "Modelo escolhido":
+                    relatorio_final.append(f"🧠 Modelo: {modelo_tipo}")
+                elif item == "Variáveis preditoras":
+                    relatorio_final.append(f"📊 Variáveis preditoras ({len(features)}): {', '.join(features)}")
+                elif item == "Acurácia no teste" and 'acuracia' in locals():
+                    relatorio_final.append(f"📈 Acurácia no teste: {acuracia:.1%}")
+                elif item == "Matriz de Confusão" and 'cm' in locals():
+                    relatorio_final.append("🔢 Matriz de Confusão:")
+                    relatorio_final.append(f"   Verdadeiros Positivos: {cm[1,1]}")
+                    relatorio_final.append(f"   Falsos Positivos: {cm[0,1]}")
+                    relatorio_final.append(f"   Verdadeiros Negativos: {cm[0,0]}")
+                    relatorio_final.append(f"   Falsos Negativos: {cm[1,0]}")
+                elif item == "Expressão do Modelo" and modelo_tipo == "Regressão Logística":
+                    relatorio_final.append(f"🧮 Expressão do Modelo: logit = {formula}")
+                elif item == "Tabela de Coeficientes" and modelo_tipo == "Regressão Logística":
+                    relatorio_final.append("📋 Coeficientes:")
+                    for var, coef, pval in zip(X.columns, model.coef_[0], p_values.values):
+                        sig = '***' if pval < 0.001 else '**' if pval < 0.01 else '*' if pval < 0.05 else ''
+                        relatorio_final.append(f"   - {var}: {coef:.4f} (p={pval:.4f}) {sig}")
+            
+            # Gera o conteúdo do relatório
+            relatorio_texto = "\n".join(relatorio_final)
+            
+            # Botão de download
+            st.download_button(
+                label="⬇️ Baixar Relatório (TXT)",
+                data=relatorio_texto,
+                file_name="relatorio_modelagem.txt",
+                mime="text/plain"
+            )
+            
     # --- NAVEGAÇÃO ---
     st.markdown("---")
     st.page_link("pages/7_✅_Analise_e_Validacao.py", label="➡️ Ir para Análise e Validação", icon="✅")
