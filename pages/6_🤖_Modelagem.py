@@ -55,238 +55,176 @@ def main():
     )
     st.info("""🔹 **Regressão Logística**: Interpretação clara, bom para modelos regulatórios.  
             🔹 **Random Forest**: Alta performance, menos interpretável.""")
-
-    # --- TRATAMENTO DE VARIÁVEIS CATEGÓRICAS (Manual por Variável) ---
+    
+    # --- TRATAMENTO DE VARIÁVEIS CATEGÓRICAS ---
     st.markdown("#### 🧱 Tratamento de Variáveis Categóricas")
     st.info("""
-    Defina como cada variável categórica será tratada antes da modelagem:
-    - **One-Hot Encoding**: cria uma coluna binária para cada categoria (recomendado para poucas categorias).
-    - **Label Encoding**: converte categorias em números (0, 1, 2, ...). Use com cautela em modelos lineares.
-    - **Remover**: exclui a variável do modelo.
+    Defina como cada variável categórica será tratada:
+    - **One-Hot Encoding**: cria colunas binárias (recomendado para poucas categorias).
+    - **Label Encoding**: converte em números (use com cuidado).
+    - **Remover**: exclui a variável.
     """)
     
-    # Identifica variáveis categóricas entre as preditoras
-    cat_vars = X[features].select_dtypes(include='object').columns.tolist()
+    # Identifica variáveis categóricas
+    cat_vars = [col for col in features if dados[col].dtype == 'object']
     
     if len(cat_vars) == 0:
         st.success("✅ Nenhuma variável categórica encontrada.")
+        # Define X diretamente
+        X = dados[features]
+        st.session_state.X_processed = X
+        st.session_state.tratamento_feito = True
     else:
-        # Armazena as decisões do usuário
         if 'encoding_choice' not in st.session_state:
             st.session_state.encoding_choice = {}
     
         for var in cat_vars:
-            # Recupera escolha anterior ou define padrão
             choice = st.session_state.encoding_choice.get(var, "One-Hot Encoding")
-    
             st.markdown(f"**Variável:** `{var}`")
-            st.caption(f"Valores únicos: {sorted(X[var].dropna().unique().astype(str))}")
+            st.caption(f"Valores únicos: {sorted(dados[var].dropna().unique().astype(str))[:10]}{'...' if dados[var].nunique() > 10 else ''}")
     
-            col1, col2 = st.columns([3, 1])
-            with col1:
-                opcao = st.radio(
-                    f"Tratamento para `{var}`:",
-                    options=["One-Hot Encoding", "Label Encoding", "Remover"],
-                    key=f"encoding_{var}",
-                    horizontal=True,
-                    index=["One-Hot Encoding", "Label Encoding", "Remover"].index(choice) if choice in ["One-Hot Encoding", "Label Encoding", "Remover"] else 0
-                )
+            opcao = st.radio(
+                f"Tratamento para `{var}`:",
+                options=["One-Hot Encoding", "Label Encoding", "Remover"],
+                key=f"encoding_{var}",
+                horizontal=True,
+                index=["One-Hot Encoding", "Label Encoding", "Remover"].index(choice) if choice in ["One-Hot Encoding", "Label Encoding", "Remover"] else 0
+            )
             st.session_state.encoding_choice[var] = opcao
             st.markdown("---")
     
-        # Botão para confirmar tratamento
-        if st.button("✅ Confirmar Tratamento das Variáveis Categóricas"):
+        # Botão para aplicar tratamento
+        if st.button("✅ Aplicar Tratamento de Variáveis Categóricas"):
             try:
-                X_processed = X.copy()
-    
+                X = dados[features].copy()
                 for var in cat_vars:
                     opcao = st.session_state.encoding_choice[var]
-    
                     if opcao == "One-Hot Encoding":
-                        dummies = pd.get_dummies(X_processed[var], prefix=var, drop_first=True)
-                        X_processed = pd.concat([X_processed.drop(columns=[var]), dummies], axis=1)
-                        st.success(f"✅ `{var}`: One-Hot Encoding aplicado (criadas {dummies.shape[1]} colunas).")
-    
+                        dummies = pd.get_dummies(X[var], prefix=var, drop_first=True)
+                        X = pd.concat([X.drop(columns=[var]), dummies], axis=1)
+                        st.success(f"✅ `{var}`: One-Hot Encoding aplicado.")
                     elif opcao == "Label Encoding":
-                        le = LabelEncoder()
-                        X_processed[var] = le.fit_transform(X_processed[var].astype(str))
+                        X[var] = X[var].astype('category').cat.codes
                         st.success(f"✅ `{var}`: Label Encoding aplicado.")
-    
                     elif opcao == "Remover":
-                        X_processed = X_processed.drop(columns=[var])
-                        st.info(f"ℹ️ `{var}`: Variável removida do modelo.")
-    
-                # Salva o X processado
-                st.session_state.X_processed = X_processed
-                st.success("✅ Tratamento de variáveis categóricas concluído!")
+                        X = X.drop(columns=[var])
+                        st.info(f"ℹ️ `{var}`: Removida do modelo.")
+                # Salva no estado
+                st.session_state.X_processed = X
                 st.session_state.tratamento_feito = True
-    
+                st.success("✅ Tratamento concluído! Você pode treinar o modelo agora.")
             except Exception as e:
                 st.error(f"Erro ao aplicar tratamento: {e}")
-            
-    # Botão de treinamento
+    
+    # --- TREINAMENTO DO MODELO ---
     if st.button("🚀 Treinar Modelo", type="primary"):
-        with st.spinner("Treinando e avaliando o modelo..."):
-            try:
-                #X = dados[features].copy()
-                if 'X_processed' not in st.session_state or not st.session_state.get('tratamento_feito'):
-                    st.warning("Por favor, confirme o tratamento das variáveis categóricas.")
-                    st.stop()    
-                X = st.session_state.X_processed
-                y = dados[target]
-
-                # Aplica encoding
-                if encoding == "One-Hot Encoding (dummy)" and len(cat_vars) > 0:
-                    X = pd.get_dummies(X, columns=cat_vars, drop_first=True)
-                elif encoding == "Label Encoding (numérico)" and len(cat_vars) > 0:
-                    from sklearn.preprocessing import LabelEncoder
-                    le = LabelEncoder()
-                    for col in cat_vars:
-                        X[col] = le.fit_transform(X[col].astype(str))
-
-                # Divisão treino/teste
-                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-
-                # Treina o modelo
-                if modelo_tipo == "Regressão Logística":
-                    model = LogisticRegression(max_iter=1000, solver='liblinear')
-                    model.fit(X_train, y_train)
-                    y_pred = model.predict(X_test)
-
-                    # Usar statsmodels para p-valores
-                    X_train_sm = sm.add_constant(X_train)
-                    model_sm = sm.Logit(y_train, X_train_sm).fit(disp=False)
-                    p_values = model_sm.pvalues
-                    significancia = p_values.reindex(X.columns, fill_value=np.nan)
-
-                    # Armazena modelo e resultados
-                    st.session_state.modelo = model
-                    st.session_state.model_sm = model_sm
-                    st.session_state.X_test = X_test
-                    st.session_state.y_test = y_test
-                    st.session_state.y_pred = y_pred
-                    st.session_state.features = X.columns.tolist()
-
-                    # Métricas
-                    acuracia = model.score(X_test, y_test)
-                    cm = confusion_matrix(y_test, y_pred)
-
-                    st.success("✅ Modelo de Regressão Logística treinado com sucesso!")
-
-                    # --- MATRIZ DE CONFUSÃO ---
-                    st.markdown("### 📊 Matriz de Confusão")
-                    st.info("""
-                    Mostra quantos casos foram classificados correta e incorretamente:
-                    - **Verdadeiros Positivos (VP)**: Inadimplentes corretamente identificados.
-                    - **Falsos Positivos (FP)**: Adimplentes classificados como inadimplentes.
-                    - **Verdadeiros Negativos (VN)**: Adimplentes corretamente identificados.
-                    - **Falsos Negativos (FN)**: Inadimplentes não detectados (pior erro).
-                    """)
-                    fig, ax = plt.subplots(figsize=(5, 4))
-                    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax,
-                                xticklabels=['Adimplente (0)', 'Inadimplente (1)'],
-                                yticklabels=['Adimplente (0)', 'Inadimplente (1)'])
-                    ax.set_ylabel('Real')
-                    ax.set_xlabel('Previsto')
-                    ax.set_title('Matriz de Confusão')
-                    st.pyplot(fig)
-
-                    # --- EXPRESSÃO ALGÉBRICA ---
-                    st.markdown("### 🧮 Expressão do Modelo (Score Linear)")
-                    st.info("""
-                    O modelo calcula um **logit** (score bruto) com base nos coeficientes:
-                    `logit = β₀ + β₁·x₁ + β₂·x₂ + ...`
-                    Depois converte para probabilidade com a função logística:
-                    `P(default) = 1 / (1 + e^(-logit))`
-                    """)
-                    coef_intercept = model.intercept_[0]
-                    terms = [f"{coef_intercept:.4f}"]
-                    for feat, coef in zip(X.columns, model.coef_[0]):
-                        sign = "+" if coef >= 0 else "-"
-                        terms.append(f"{sign} {abs(coef):.4f}·{feat}")
-                    formula = " + ".join(terms)
-                    st.latex(f"\\text{{logit}} = {formula}")
-
-                    # --- TABELA DE COEFICIENTES ---
-                    st.markdown("### 📋 Tabela de Coeficientes e Significância")
-                    st.info("""
-                    - **Coeficiente**: impacto da variável no log-odds.
-                    - **P-valor**: indica se o efeito é estatisticamente significativo (geralmente < 0.05).
-                    - **Significância**: *** (p<0.001), ** (p<0.01), * (p<0.05), . (p<0.1)
-                    """)
-                    coef_df = pd.DataFrame({
-                        'Variável': ['Intercept'] + X.columns.tolist(),
-                        'Coeficiente': [model.intercept_[0]] + model.coef_[0].tolist(),
-                        'P-valor': [p_values['const']] + significancia.tolist()
-                    })
-                    coef_df['Significância'] = coef_df['P-valor'].apply(
-                        lambda p: '***' if p < 0.001 else '**' if p < 0.01 else '*' if p < 0.05 else '.' if p < 0.1 else ''
-                    )
-                    coef_df['Coeficiente'] = coef_df['Coeficiente'].round(4)
-                    coef_df['P-valor'] = coef_df['P-valor'].round(4)
-
-                    st.dataframe(
-                        coef_df.style.format({
-                            'Coeficiente': '{:.4f}',
-                            'P-valor': '{:.4f}'
-                        }).background_gradient(cmap='RdYlGn', subset=['Coeficiente'], low=1, high=1)
-                    )
-
-                    # Métrica final
-                    st.metric("Acurácia no Teste", f"{acuracia:.1%}")
-
-                elif modelo_tipo == "Random Forest":
-                    model = RandomForestClassifier(n_estimators=100, random_state=42)
-                    model.fit(X_train, y_train)
-                    y_pred = model.predict(X_test)
-
-                    st.session_state.modelo = model
-                    st.session_state.X_test = X_test
-                    st.session_state.y_test = y_test
-                    st.session_state.y_pred = y_pred
-                    st.session_state.features = X.columns.tolist()
-
-                    acuracia = model.score(X_test, y_test)
-                    cm = confusion_matrix(y_test, y_pred)
-
-                    st.success("✅ Modelo Random Forest treinado com sucesso!")
-
-                    # --- MATRIZ DE CONFUSÃO ---
-                    st.markdown("### 📊 Matriz de Confusão")
-                    st.info("""
-                    Mesma interpretação que na regressão logística. Avalia a qualidade das previsões.
-                    """)
-                    fig, ax = plt.subplots(figsize=(5, 4))
-                    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax,
-                                xticklabels=['Adimplente (0)', 'Inadimplente (1)'],
-                                yticklabels=['Adimplente (0)', 'Inadimplente (1)'])
-                    ax.set_ylabel('Real')
-                    ax.set_xlabel('Previsto')
-                    ax.set_title('Matriz de Confusão')
-                    st.pyplot(fig)
-
-                    # --- IMPORTÂNCIA DAS VARIÁVEIS ---
-                    st.markdown("### 🔍 Importância das Variáveis")
-                    st.info("""
-                    Mostra quais variáveis mais contribuíram para as decisões do modelo.
-                    Útil para explicabilidade, mesmo que o modelo seja menos interpretável.
-                    """)
-                    importances = model.feature_importances_
-                    importance_df = pd.DataFrame({
-                        'Variável': X.columns,
-                        'Importância': importances
-                    }).sort_values('Importância', ascending=True)
-
-                    fig, ax = plt.subplots(figsize=(6, 0.35 * len(importance_df)))
-                    ax.barh(importance_df['Variável'], importance_df['Importância'], color='teal')
-                    ax.set_title("Importância das Variáveis (Random Forest)")
-                    st.pyplot(fig)
-
-                    st.metric("Acurácia no Teste", f"{acuracia:.1%}")
-
-            except Exception as e:
-                st.error(f"Erro ao treinar o modelo: {str(e)}")
-
+        # Verifica se o tratamento foi feito
+        if 'tratamento_feito' not in st.session_state or not st.session_state.tratamento_feito:
+            st.warning("Por favor, clique em 'Aplicar Tratamento' antes de treinar o modelo.")
+            st.stop()
+    
+        try:
+            X = st.session_state.X_processed
+            y = dados[target]
+    
+            # Divisão treino/teste
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+    
+            # Treina o modelo
+            if modelo_tipo == "Regressão Logística":
+                model = LogisticRegression(max_iter=1000, solver='liblinear')
+                model.fit(X_train, y_train)
+                y_pred = model.predict(X_test)
+    
+                # Statsmodels para p-valores
+                X_train_sm = sm.add_constant(X_train)
+                model_sm = sm.Logit(y_train, X_train_sm).fit(disp=False)
+                p_values = model_sm.pvalues[1:]  # remove const
+    
+                st.session_state.modelo = model
+                st.session_state.model_sm = model_sm
+                st.session_state.X_test = X_test
+                st.session_state.y_test = y_test
+                st.session_state.y_pred = y_pred
+                st.session_state.features = X.columns.tolist()
+    
+                acuracia = model.score(X_test, y_test)
+                cm = confusion_matrix(y_test, y_pred)
+    
+                st.success("✅ Modelo de Regressão Logística treinado!")
+    
+                # Matriz de confusão
+                st.markdown("### 📊 Matriz de Confusão")
+                st.info("Mostra VP, VN, FP, FN. Ajuda a entender os erros do modelo.")
+                fig, ax = plt.subplots()
+                sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax,
+                            xticklabels=['Adimplente', 'Inadimplente'],
+                            yticklabels=['Adimplente', 'Inadimplente'])
+                ax.set_xlabel('Previsto')
+                ax.set_ylabel('Real')
+                st.pyplot(fig)
+    
+                # Expressão algébrica
+                st.markdown("### 🧮 Expressão do Modelo")
+                st.info("O modelo calcula a probabilidade de inadimplência com base nos coeficientes.")
+                coef_intercept = model.intercept_[0]
+                terms = [f"{coef_intercept:.4f}"]
+                for feat, coef in zip(X.columns, model.coef_[0]):
+                    sign = "+" if coef >= 0 else "-"
+                    terms.append(f"{sign} {abs(coef):.4f}·{feat}")
+                formula = " + ".join(terms)
+                st.latex(f"\\text{{logit}} = {formula}")
+    
+                # Tabela de coeficientes
+                st.markdown("### 📋 Coeficientes e Significância")
+                st.info("Coeficiente: impacto no log-odds. P-valor: significância estatística.")
+                coef_df = pd.DataFrame({
+                    'Variável': X.columns,
+                    'Coeficiente': model.coef_[0],
+                    'P-valor': p_values.values
+                }).round(4)
+                coef_df['Significância'] = coef_df['P-valor'].apply(
+                    lambda p: '***' if p < 0.001 else '**' if p < 0.01 else '*' if p < 0.05 else ''
+                )
+                st.dataframe(coef_df.style.background_gradient(cmap='RdYlGn', subset=['Coeficiente']))
+    
+                st.metric("Acurácia no Teste", f"{acuracia:.1%}")
+    
+            elif modelo_tipo == "Random Forest":
+                model = RandomForestClassifier(n_estimators=100, random_state=42)
+                model.fit(X_train, y_train)
+                y_pred = model.predict(X_test)
+    
+                st.session_state.modelo = model
+                st.session_state.X_test = X_test
+                st.session_state.y_test = y_test
+                st.session_state.y_pred = y_pred
+                st.session_state.features = X.columns.tolist()
+    
+                acuracia = model.score(X_test, y_test)
+                cm = confusion_matrix(y_test, y_pred)
+    
+                st.success("✅ Modelo Random Forest treinado!")
+    
+                st.markdown("### 📊 Matriz de Confusão")
+                st.info("Mesma interpretação que na regressão logística.")
+                fig, ax = plt.subplots()
+                sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax,
+                            xticklabels=['Adimplente', 'Inadimplente'],
+                            yticklabels=['Adimplente', 'Inadimplente'])
+                ax.set_xlabel('Previsto')
+                ax.set_ylabel('Real')
+                st.pyplot(fig)
+    
+                st.markdown("### 🔍 Importância das Variáveis")
+                importances = model.feature_importances_
+                importance_df = pd.DataFrame({'Variável': X.columns, 'Importância': importances}).sort_values('Importância')
+                fig, ax = plt.subplots()
+                ax.barh(importance_df['Variável'], importance_df['Importância'], color='teal')
+                ax.set_title("Importância das Variáveis")
+                st.pyplot(fig)
+    
+               
     # --- NAVEGAÇÃO ---
     st.markdown("---")
     st.page_link("pages/7_✅_Analise_e_Validacao.py", label="➡️ Ir para Análise e Validação", icon="✅")
