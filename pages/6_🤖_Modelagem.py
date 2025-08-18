@@ -185,9 +185,9 @@ def main():
                     
                     # --- TABELA DE LEGENDA DAS VARIÁVEIS ---
                     st.markdown("#### 🔍 Legenda das Variáveis")
-                    st.caption("Cada símbolo `X_i` representa uma variável preditora do modelo.")
+                    st.caption("Cada símbolo `$X_i$` representa uma variável preditora do modelo.")
                     legenda = pd.DataFrame({
-                        "Símbolo": [f"X_{i+1}" for i in range(len(X.columns))],
+                        "Símbolo": [f"$X_{i+1}$" for i in range(len(X.columns))],
                         "Variável": X.columns.tolist()
                     })
                     st.dataframe(legenda, use_container_width=True)
