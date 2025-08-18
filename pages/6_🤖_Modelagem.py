@@ -11,6 +11,9 @@ from sklearn.preprocessing import LabelEncoder
 import statsmodels.api as sm
 import io
 
+if 'encoding_choice' not in st.session_state:
+    st.session_state.encoding_choice = {}
+    
 def main():
     st.title("🤖 Modelagem Preditiva")
     st.markdown("Construa e avalie modelos de credit scoring com interpretação clara.")
@@ -160,23 +163,26 @@ def main():
                     st.info(f"🔍 Detectadas {len(cat_vars)} variáveis categóricas: `{', '.join(cat_vars)}`. Aplicando tratamento...")
                     
                     # Pergunta como tratar cada uma (pode ser melhorado com interface, mas funcional)
-                    encoding_choice = {}
+                    #encoding_choice = {}
                     for var in cat_vars:
-                        choice = st.radio(
+                        choice = st.session_state.encoding_choice.get(var, "One-Hot Encoding")
+                        opcao = st.radio(
                             f"Tratamento para `{var}`:",
                             options=["One-Hot Encoding", "Label Encoding"],
                             key=f"encoding_{var}",
-                            horizontal=True
+                            horizontal=True,
+                            index=["One-Hot Encoding", "Label Encoding"].index(choice)
                         )
-                        encoding_choice[var] = choice
+                        st.session_state.encoding_choice[var] = opcao  # Salva no estado
 
                     # Aplica tratamento
                     for var in cat_vars:
-                        if encoding_choice[var] == "One-Hot Encoding":
+                        opcao = st.session_state.encoding_choice[var]
+                        if opcao == "One-Hot Encoding":
                             dummies = pd.get_dummies(X[var], prefix=var, drop_first=True)
                             X = pd.concat([X.drop(columns=[var]), dummies], axis=1)
                             st.success(f"✅ `{var}`: One-Hot Encoding aplicado.")
-                        elif encoding_choice[var] == "Label Encoding":
+                        elif opcao == "Label Encoding":
                             X[var] = X[var].astype('category').cat.codes
                             st.success(f"✅ `{var}`: Label Encoding aplicado.")
                 else:
