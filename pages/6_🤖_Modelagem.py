@@ -308,6 +308,7 @@ def main():
                     y_pred = model.predict(X_test)
 
                     st.session_state.modelo = model
+                    st.session_state.modelo_tipo = modelo_tipo
                     st.session_state.X_test = X_test
                     st.session_state.y_test = y_test
                     st.session_state.y_pred = y_pred
