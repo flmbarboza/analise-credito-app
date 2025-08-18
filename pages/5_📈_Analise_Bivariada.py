@@ -558,7 +558,7 @@ def main():
             st.stop()
     
         variaveis_ativas = st.session_state.variaveis_ativas
-        categoricas = [col for col in variaveis_ativas if col != target and dados[col].dtype == 'object']
+        categoricas = [col for col in variaveis_ativas if col != target]# and dados[col].dtype == 'object']
     
         if not categoricas:
             st.info("Nenhuma variável categórica disponível para transformação.")
