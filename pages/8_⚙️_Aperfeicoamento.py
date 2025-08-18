@@ -7,6 +7,15 @@ def main():
     Aqui você encontra **sugestões práticas para melhorar seu modelo** de crédito,
     com base nas métricas de performance que você acabou de analisar.
     """)
+    # Armazena métricas e informações no session_state
+    st.session_state.modelo_tipo = modelo_tipo
+    st.session_state.accuracy = accuracy
+    st.session_state.precision = precision
+    st.session_state.recall = recall
+    st.session_state.f1 = f1
+    st.session_state.ks_max = ks_max
+    st.session_state.y_col = target
+    st.session_state.features = list(features)
 
     if 'modelo' not in st.session_state or 'accuracy' not in st.session_state:
         st.warning("Nenhum modelo treinado ou métricas disponíveis. Construa e valide um modelo primeiro.")
