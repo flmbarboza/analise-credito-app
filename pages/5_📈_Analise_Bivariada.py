@@ -517,9 +517,11 @@ def main():
                             value=nome_sugerido,
                             help="Escolha um nome descritivo para a nova coluna gerada a partir dos intervalos."
                         )
+
                     with col2:
                         st.write("")  # Espaço vertical
                         criar_var = st.button("➕ Criar Variável", key=f"criar_var_{var_selecionada}")
+                        nome_nova_var = nome_nova_var.strip()  # Remove espaços
                     
                     if criar_var:
                         # Validação de nome
