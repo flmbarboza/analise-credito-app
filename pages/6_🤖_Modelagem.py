@@ -16,7 +16,7 @@ def main():
     st.markdown("Construa e avalie modelos de credit scoring com interpretação clara.")
     
     if 'encoding_choice' not in st.session_state:
-    st.session_state.encoding_choice = {}
+        st.session_state.encoding_choice = {}
     
     if 'dados' not in st.session_state:
         st.warning("Dados não encontrados! Complete a coleta primeiro.")
