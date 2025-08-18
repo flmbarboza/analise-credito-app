@@ -24,6 +24,7 @@ def main():
 
     X_test = st.session_state.get('X_test')
     y_test = st.session_state.get('y_test')
+    features = X_test.columns if isinstance(X_test, pd.DataFrame) else range(X_test.shape[1])
 
     if X_test is None or y_test is None:
         st.error("Dados de teste não disponíveis. Treine o modelo novamente.")
