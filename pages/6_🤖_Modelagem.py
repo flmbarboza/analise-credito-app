@@ -165,16 +165,37 @@ def main():
                     st.markdown("### 🧮 Expressão do Modelo (Logit)")
                     coef_intercept = model.intercept_[0]
                     terms = [f"{coef_intercept:.4f}"]
-                    for feat, coef in zip(X.columns, model.coef_[0]):
-                        sign = "+" if coef >= 0 else "-"
-                        terms.append(f"{sign} {abs(coef):.4f}·{feat}")
-                    formula = " + ".join(terms)
+                    symbols = [f"X_{i+1}" for i in range(len(X.columns))]
+                    # --- EXPRESSÃO ALGÉBRICA COM NOTAÇÃO PADRÃO ---
+                    st.info("""
+                    A probabilidade de inadimplência é calculada a partir do **logit**, dado por:
+                    `logit = β₀ + β₁·X₁ + β₂·X₂ + ... + βₖ·Xₖ`
+                    Este score linear é convertido em probabilidade com a função logística:
+                    `P(default) = 1 / (1 + e^(-logit))`
+                    """)
+                                        
+                    # Monta os termos com sinais
+                    for symbols, coef in zip(symbols, model.coef_[0]):
+                        sinal = "+" if coef >= 0 else "-"
+                        terms.append(f"{sinal} {abs(coef):.4f} \\cdot {symbols}")
+                    
+                    # Monta a fórmula em LaTeX
+                    formula = " ".join(terms)
                     st.latex(f"\\text{{logit}} = {formula}")
-
+                    
+                    # --- TABELA DE LEGENDA DAS VARIÁVEIS ---
+                    st.markdown("#### 🔍 Legenda das Variáveis")
+                    st.caption("Cada símbolo `X_i` representa uma variável preditora do modelo.")
+                    legenda = pd.DataFrame({
+                        "Símbolo": [f"X_{i+1}" for i in range(len(X.columns))],
+                        "Variável": X.columns.tolist()
+                    })
+                    st.dataframe(legenda, use_container_width=True)
+                    
                     # --- TABELA DE COEFICIENTES ---
                     st.markdown("### 📋 Coeficientes e Significância")
                     st.info("""Coeficiente: impacto no log-odds. P-valor: significância estatística. 
-                            Nota: Níveis de Significância são importantes para validar estatisticamente a importância da variável no modelo. No caso, *** é muito alta (praticamente 0%), ** é alta (1%) e * é significante a 5%) """)
+                            Nota: Níveis de Significância são importantes para validar estatisticamente a importância da variável no modelo. No caso, *** é muito alta (praticamente 0%), ** é alta (1%) e * é significante a 5%. """)
                     coef_df = pd.DataFrame({
                         'Variável': X.columns,
                         'Coeficiente': model.coef_[0],
