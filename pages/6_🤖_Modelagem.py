@@ -128,7 +128,11 @@ def main():
     if st.button("🚀 Treinar Modelo", type="primary"):
         with st.spinner("Treinando e avaliando o modelo..."):
             try:
-                X = dados[features].copy()
+                #X = dados[features].copy()
+                if 'X_processed' not in st.session_state or not st.session_state.get('tratamento_feito'):
+                    st.warning("Por favor, confirme o tratamento das variáveis categóricas.")
+                    st.stop()    
+                X = st.session_state.X_processed
                 y = dados[target]
 
                 # Aplica encoding
