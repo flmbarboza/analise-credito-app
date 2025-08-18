@@ -253,7 +253,7 @@ def main():
                     st.latex(f"\\text{{logit}} = {formula}")
                     
                     # --- TABELA DE LEGENDA DAS VARIÁVEIS ---
-                    st.warning("Cada símbolo $$X_i$$ representa uma variável preditora do modelo. Mais especificamente:"):
+                    st.caption("Cada símbolo $$X_i$$ representa uma variável preditora do modelo. Mais especificamente:"):
                         # Gera a lista de legenda em LaTeX
                         legenda_latex = []
                         for i, var in enumerate(X.columns):
