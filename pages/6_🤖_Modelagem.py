@@ -177,7 +177,7 @@ def main():
                     # Monta os termos com sinais
                     for symbols, coef in zip(symbols, model.coef_[0]):
                         sinal = "+" if coef >= 0 else "-"
-                        terms.append(f"{sinal} {abs(coef):.4f} \\cdot {symbols}")
+                        terms.append(f"{sinal} {abs(coef):.2f} \\cdot {symbols}")
                     
                     # Monta a fórmula em LaTeX
                     formula = " ".join(terms)
@@ -185,9 +185,9 @@ def main():
                     
                     # --- TABELA DE LEGENDA DAS VARIÁVEIS ---
                     st.markdown("#### 🔍 Legenda das Variáveis")
-                    st.caption("Cada símbolo `$X_i$` representa uma variável preditora do modelo.")
+                    st.caption("Cada símbolo $$X_i$$ representa uma variável preditora do modelo.")
                     legenda = pd.DataFrame({
-                        "Símbolo": [f"$X_{i+1}$" for i in range(len(X.columns))],
+                        "Símbolo": [f"$$X_{i+1}$$" for i in range(len(X.columns))],
                         "Variável": X.columns.tolist()
                     })
                     st.dataframe(legenda, use_container_width=True)
