@@ -551,7 +551,11 @@ def main():
         - 🔗 **Fusão de classes**: agrupar categorias semelhantes ou com baixa frequência.
         - ➕ **Variáveis dummy**: converter categorias em indicadores binários (útil para modelos lineares).
         """)
-    
+
+        st.info("""ALERTA! Esses procedimentos ainda não estão devidamente implementados para a fase seguinte. 
+                  Assim, está presente aqui para suscitar a curiosidade e a possibilidade de serem realizados. 
+                  """)
+
         # Recupera variáveis categóricas ativas
         if 'variaveis_ativas' not in st.session_state:
             st.warning("Nenhuma variável ativa definida. Volte para a análise de correlação.")
@@ -567,7 +571,7 @@ def main():
             iv_data = []
             for col in categoricas:
                 try:
-                    iv = calcular_iv(dados_novo, col, target)
+                    iv = calcular_iv(dados, col, target)
                     iv_data.append({'Variável': col, 'IV': iv})
                 except:
                     iv_data.append({'Variável': col, 'IV': np.nan})
@@ -714,11 +718,8 @@ def main():
                                         st.success(f"✅ {len(dummies_renomeadas.columns)} variáveis dummy salvas com o prefixo `{prefixo}_`")
     
                         except Exception as e:
-                            st.error(f"Erro ao gerar dummies: {e}")    
+                            st.error(f"Erro ao gerar dummies: {e}")
 
-
-
-    
     # --- RELATÓRIO ---
     with st.expander("📋 Relatório de Análise"):
         st.markdown("### ✅ Variáveis Ativas Após Pré-Seleção")
