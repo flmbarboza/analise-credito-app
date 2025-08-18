@@ -167,63 +167,35 @@ def main():
             )
             xlabel = "Profundidade da Árvore (max_depth)"
             title = "Curva de Validação - Random Forest"
-        else:
-            
-            # --- Curva de Loss real usando SGDClassifier (sem scaler) ---
-            sgd = SGDClassifier(loss='log', max_iter=1, learning_rate='optimal', warm_start=True, random_state=42)
-            train_loss_history = []
-            test_loss_history = []
-            epochs = 50
+            # Gráfico
+            fig, ax = plt.subplots(figsize=(7, 5))
+            ax.plot(param_range, train_mean, color='blue', marker='o', markersize=5, label='Treino')
+            ax.fill_between(param_range, train_mean - train_std, train_mean + train_std, alpha=0.15, color='blue')
         
-            for epoch in range(epochs):
-                sgd.fit(X_train, y_train)
-                y_train_proba = sgd.predict_proba(X_train)
-                y_test_proba = sgd.predict_proba(X_test)
-                train_loss_history.append(log_loss(y_train, y_train_proba))
-                test_loss_history.append(log_loss(y_test, y_test_proba))
+            ax.plot(param_range, test_mean, color='red', marker='s', linestyle='--', markersize=5, label='Validação')
+            ax.fill_between(param_range, test_mean - test_std, test_mean + test_std, alpha=0.15, color='red')
         
-            # --- Plot da curva de Loss ---
-            fig, ax = plt.subplots(figsize=(7,5))
-            ax.plot(range(1, epochs+1), train_loss_history, label='Train Loss', color='blue', marker='o')
-            ax.plot(range(1, epochs+1), test_loss_history, label='Test Loss', color='red', marker='s')
-            ax.set_xlabel('Epoch')
-            ax.set_ylabel('Log Loss')
-            ax.set_title('Curva de Loss - Regressão Logística (SGD)')
-            ax.legend()
+            ax.set_xlabel(xlabel)
+            ax.set_ylabel('Acurácia')
+            ax.set_title(title)
+            ax.legend(loc='lower right')
             ax.grid(True)
             st.pyplot(fig)
-                        
-            
-            model_for_curve = LogisticRegression(solver='liblinear', max_iter=1000)
-            param_range = [0.001, 0.01, 0.1, 1, 10]
-            train_scores, test_scores = validation_curve(
-                model_for_curve, X_test, y_test, param_name="C", param_range=param_range,
-                cv=3, scoring="accuracy", n_jobs=-1
-            )
-            xlabel = "Parâmetro de Regularização (C)"
-            title = "Curva de Validação - Regressão Logística"
-    
+
+        else:
+            st.info("""
+                ⚠️ Para modelos de **Regressão Logística**, não geramos a curva de perda.
+                
+                Motivo: O `LogisticRegression` do scikit-learn **não fornece a função de perda por iteração**.  
+                Além disso, como o modelo é relativamente simples e convexamente otimizado, o overfitting pode ser melhor avaliado por métricas de teste (acurácia, KS, AUC) do que por curvas de loss.
+                """) 
+
         # Média e desvio
         train_mean = np.mean(train_scores, axis=1)
         train_std = np.std(train_scores, axis=1)
         test_mean = np.mean(test_scores, axis=1)
         test_std = np.std(test_scores, axis=1)
-    
-        # Gráfico
-        fig, ax = plt.subplots(figsize=(7, 5))
-        ax.plot(param_range, train_mean, color='blue', marker='o', markersize=5, label='Treino')
-        ax.fill_between(param_range, train_mean - train_std, train_mean + train_std, alpha=0.15, color='blue')
-    
-        ax.plot(param_range, test_mean, color='red', marker='s', linestyle='--', markersize=5, label='Validação')
-        ax.fill_between(param_range, test_mean - test_std, test_mean + test_std, alpha=0.15, color='red')
-    
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel('Acurácia')
-        ax.set_title(title)
-        ax.legend(loc='lower right')
-        ax.grid(True)
-        st.pyplot(fig)
-    
+        
         # Interpretação
         if np.argmax(test_mean) < len(test_mean) - 1 and test_mean[-1] < test_mean[np.argmax(test_mean)]:
             st.warning("⚠️ **Possível overfitting**: a performance no conjunto de validação diminui após um certo ponto.")
