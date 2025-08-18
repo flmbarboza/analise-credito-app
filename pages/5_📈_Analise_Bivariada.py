@@ -630,7 +630,7 @@ def main():
             iv_data = []
             for col in categoricas:
                 try:
-                    iv = calcular_iv(dados, col, target)
+                    iv = calcular_iv(dados_novo, col, target)
                     iv_data.append({'Variável': col, 'IV': iv})
                 except:
                     iv_data.append({'Variável': col, 'IV': np.nan})
