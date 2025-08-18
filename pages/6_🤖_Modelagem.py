@@ -56,20 +56,74 @@ def main():
     st.info("""🔹 **Regressão Logística**: Interpretação clara, bom para modelos regulatórios.  
             🔹 **Random Forest**: Alta performance, menos interpretável.""")
 
-    # Tratamento de variáveis categóricas
+    # --- TRATAMENTO DE VARIÁVEIS CATEGÓRICAS (Manual por Variável) ---
     st.markdown("#### 🧱 Tratamento de Variáveis Categóricas")
-    cat_vars = dados[features].select_dtypes(include='object').columns.tolist()
-    if len(cat_vars) > 0:
-        st.write(f"Variáveis categóricas detectadas: `{', '.join(cat_vars)}`")
-        encoding = st.radio(
-            "Como deseja codificar variáveis categóricas?",
-            options=["One-Hot Encoding (dummy)", "Label Encoding (numérico)"],
-            horizontal=True
-        )
+    st.info("""
+    Defina como cada variável categórica será tratada antes da modelagem:
+    - **One-Hot Encoding**: cria uma coluna binária para cada categoria (recomendado para poucas categorias).
+    - **Label Encoding**: converte categorias em números (0, 1, 2, ...). Use com cautela em modelos lineares.
+    - **Remover**: exclui a variável do modelo.
+    """)
+    
+    # Identifica variáveis categóricas entre as preditoras
+    cat_vars = X[features].select_dtypes(include='object').columns.tolist()
+    
+    if len(cat_vars) == 0:
+        st.success("✅ Nenhuma variável categórica encontrada.")
     else:
-        encoding = "Nenhuma"
-        st.info("Nenhuma variável categórica encontrada.")
-
+        # Armazena as decisões do usuário
+        if 'encoding_choice' not in st.session_state:
+            st.session_state.encoding_choice = {}
+    
+        for var in cat_vars:
+            # Recupera escolha anterior ou define padrão
+            choice = st.session_state.encoding_choice.get(var, "One-Hot Encoding")
+    
+            st.markdown(f"**Variável:** `{var}`")
+            st.caption(f"Valores únicos: {sorted(X[var].dropna().unique().astype(str))}")
+    
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                opcao = st.radio(
+                    f"Tratamento para `{var}`:",
+                    options=["One-Hot Encoding", "Label Encoding", "Remover"],
+                    key=f"encoding_{var}",
+                    horizontal=True,
+                    index=["One-Hot Encoding", "Label Encoding", "Remover"].index(choice) if choice in ["One-Hot Encoding", "Label Encoding", "Remover"] else 0
+                )
+            st.session_state.encoding_choice[var] = opcao
+            st.markdown("---")
+    
+        # Botão para confirmar tratamento
+        if st.button("✅ Confirmar Tratamento das Variáveis Categóricas"):
+            try:
+                X_processed = X.copy()
+    
+                for var in cat_vars:
+                    opcao = st.session_state.encoding_choice[var]
+    
+                    if opcao == "One-Hot Encoding":
+                        dummies = pd.get_dummies(X_processed[var], prefix=var, drop_first=True)
+                        X_processed = pd.concat([X_processed.drop(columns=[var]), dummies], axis=1)
+                        st.success(f"✅ `{var}`: One-Hot Encoding aplicado (criadas {dummies.shape[1]} colunas).")
+    
+                    elif opcao == "Label Encoding":
+                        le = LabelEncoder()
+                        X_processed[var] = le.fit_transform(X_processed[var].astype(str))
+                        st.success(f"✅ `{var}`: Label Encoding aplicado.")
+    
+                    elif opcao == "Remover":
+                        X_processed = X_processed.drop(columns=[var])
+                        st.info(f"ℹ️ `{var}`: Variável removida do modelo.")
+    
+                # Salva o X processado
+                st.session_state.X_processed = X_processed
+                st.success("✅ Tratamento de variáveis categóricas concluído!")
+                st.session_state.tratamento_feito = True
+    
+            except Exception as e:
+                st.error(f"Erro ao aplicar tratamento: {e}")
+            
     # Botão de treinamento
     if st.button("🚀 Treinar Modelo", type="primary"):
         with st.spinner("Treinando e avaliando o modelo..."):
