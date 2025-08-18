@@ -3,9 +3,9 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-from sklearn.metrics import classification_report, confusion_matrix, roc_curve, auc, roc_auc_score
+from sklearn.metrics import classification_report, confusion_matrix, roc_curve, auc, roc_auc_score, log_loss
 from sklearn.model_selection import validation_curve
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import LogisticRegression, SGDClassifier
 
 def main():
     st.title("✅ Análise e Validação do Modelo")
@@ -168,6 +168,33 @@ def main():
             xlabel = "Profundidade da Árvore (max_depth)"
             title = "Curva de Validação - Random Forest"
         else:
+            
+            # --- Curva de Loss real usando SGDClassifier (sem scaler) ---
+            sgd = SGDClassifier(loss='log', max_iter=1, learning_rate='optimal', warm_start=True, random_state=42)
+            train_loss_history = []
+            test_loss_history = []
+            epochs = 50
+        
+            for epoch in range(epochs):
+                sgd.fit(X_train, y_train)
+                y_train_proba = sgd.predict_proba(X_train)
+                y_test_proba = sgd.predict_proba(X_test)
+                train_loss_history.append(log_loss(y_train, y_train_proba))
+                test_loss_history.append(log_loss(y_test, y_test_proba))
+        
+            # --- Plot da curva de Loss ---
+            import matplotlib.pyplot as plt
+            fig, ax = plt.subplots(figsize=(7,5))
+            ax.plot(range(1, epochs+1), train_loss_history, label='Train Loss', color='blue', marker='o')
+            ax.plot(range(1, epochs+1), test_loss_history, label='Test Loss', color='red', marker='s')
+            ax.set_xlabel('Epoch')
+            ax.set_ylabel('Log Loss')
+            ax.set_title('Curva de Loss - Regressão Logística (SGD)')
+            ax.legend()
+            ax.grid(True)
+            st.pyplot(fig)
+                        
+            
             model_for_curve = LogisticRegression(solver='liblinear', max_iter=1000)
             param_range = [0.001, 0.01, 0.1, 1, 10]
             train_scores, test_scores = validation_curve(
