@@ -227,54 +227,55 @@ def main():
     """)
 
     # --- 7. RELATÓRIO DA ANÁLISE ---
-st.markdown("### 📄 Relatório da Análise de Validação")
-st.info("Gere um resumo das métricas e insights desta análise para compartilhar ou documentar.")
+    st.markdown("### 📄 Relatório da Análise de Validação")
+    st.info("Gere um resumo das métricas e insights desta análise para compartilhar ou documentar.")
+    
+    # Prepara o conteúdo do relatório
+    relatorio_texto = f"""
+    RELATÓRIO DE VALIDAÇÃO DO MODELO
+    =================================
+    
+    🎯 Modelo: {modelo_tipo}
+    🎯 Variável-alvo: {target}
+    🎯 Número de variáveis preditoras: {len(features)}
+    
+    📊 MÉTRICAS PRINCIPAIS
+    ----------------------
+    Acurácia no Teste: {accuracy:.1%}
+    Precision: {precision:.1%}
+    Recall: {recall:.1%}
+    F1-Score: {f1:.1%}
+    AUC-ROC: {roc_auc:.2f}
+    KS Máximo: {ks_max:.2f}
+    
+    🔍 INTERPRETAÇÃO
+    ----------------
+    - **Precision**: Entre os clientes classificados como inadimplentes, {precision:.1%} realmente são.
+    - **Recall**: O modelo identificou {recall:.1%} dos verdadeiros inadimplentes.
+    - **AUC-ROC**: {'Excelente' if roc_auc > 0.9 else 'Bom' if roc_auc > 0.8 else 'Razoável' if roc_auc > 0.7 else 'Fraco'} poder preditivo.
+    - **KS**: {'Excelente' if ks_max > 0.4 else 'Bom' if ks_max > 0.3 else 'Moderado'} separação entre bons e maus.
 
-# Prepara o conteúdo do relatório
-relatorio_texto = f"""
-RELATÓRIO DE VALIDAÇÃO DO MODELO
-=================================
+    📉 Overfitting
+    -------------
+    {'Possível overfitting detectado.' if np.argmax(test_mean) < len(test_mean) - 1 and test_mean[-1] < test_mean[np.argmax(test_mean)] else 'Sem sinais claros de overfitting.'}
+    
+    📅 Data: {pd.Timestamp.now().strftime('%d/%m/%Y %H:%M')}
+    """
+    
+    # Opções de exportação
+    export_option = st.radio("Escolha o formato de exportação:", ["Texto (.txt)", "Copiar para área de transferência"])
+    
+    if export_option == "Texto (.txt)":
+        st.download_button(
+            label="⬇️ Baixar Relatório (TXT)",
+            data=relatorio_texto,
+            file_name="relatorio_validacao_modelo.txt",
+            mime="text/plain"
+        )
+    else:
+        st.code(relatorio_texto, language="text")
+        st.info("Você pode copiar o texto acima com o botão no canto superior direito.")
 
-🎯 Modelo: {modelo_tipo}
-🎯 Variável-alvo: {target}
-🎯 Número de variáveis preditoras: {len(features)}
-
-📊 MÉTRICAS PRINCIPAIS
-----------------------
-Acurácia no Teste: {accuracy:.1%}
-Precision: {precision:.1%}
-Recall: {recall:.1%}
-F1-Score: {f1:.1%}
-AUC-ROC: {roc_auc:.2f}
-KS Máximo: {ks_max:.2f}
-
-🔍 INTERPRETAÇÃO
-----------------
-- **Precision**: Entre os clientes classificados como inadimplentes, {precision:.1%} realmente são.
-- **Recall**: O modelo identificou {recall:.1%} dos verdadeiros inadimplentes.
-- **AUC-ROC**: {'Excelente' if roc_auc > 0.9 else 'Bom' if roc_auc > 0.8 else 'Razoável' if roc_auc > 0.7 else 'Fraco'} poder preditivo.
-- **KS**: {'Excelente' if ks_max > 0.4 else 'Bom' if ks_max > 0.3 else 'Moderado'} separação entre bons e maus.
-
-📉 Overfitting
--------------
-{'Possível overfitting detectado.' if np.argmax(test_mean) < len(test_mean) - 1 and test_mean[-1] < test_mean[np.argmax(test_mean)] else 'Sem sinais claros de overfitting.'}
-
-📅 Data: {pd.Timestamp.now().strftime('%d/%m/%Y %H:%M')}
-"""
-
-# Opções de exportação
-export_option = st.radio("Escolha o formato de exportação:", ["Texto (.txt)", "Copiar para área de transferência"])
-
-if export_option == "Texto (.txt)":
-    st.download_button(
-        label="⬇️ Baixar Relatório (TXT)",
-        data=relatorio_texto,
-        file_name="relatorio_validacao_modelo.txt",
-        mime="text/plain"
-    )
-else:
-    st.code(relatorio_texto, language="text")
-    st.info("Você pode copiar o texto acima com o botão no canto superior direito.")
     # --- NAVEGAÇÃO ---
     st.markdown("---")
     st.page_link("pages/8_⚙️_Aperfeicoamento.py", label="➡️ Ir para Aperfeiçoamento", icon="⚙️")
