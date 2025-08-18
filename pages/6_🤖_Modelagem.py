@@ -253,7 +253,7 @@ def main():
                     st.latex(f"\\text{{logit}} = {formula}")
                     
                     # --- TABELA DE LEGENDA DAS VARIÁVEIS ---
-                    with st.warning("Cada símbolo $$X_i$$ representa uma variável preditora do modelo. Mais especificamente:"):
+                    st.warning("Cada símbolo $$X_i$$ representa uma variável preditora do modelo. Mais especificamente:"):
                         # Gera a lista de legenda em LaTeX
                         legenda_latex = []
                         for i, var in enumerate(X.columns):
@@ -264,7 +264,17 @@ def main():
                         # Junta com quebra de linha
                         legenda_str = r" \\ ".join(legenda_latex)
                         st.latex(legenda_str)
-                        
+
+
+                    # Monta cada linha com LaTeX ($...$ dá o subscrito)
+                    linhas = [f"$X_{{{i+1}}}$ = {col}" for i, col in enumerate(X.columns)]
+                    
+                    # Junta tudo em um único texto
+                    texto = "Tal que:\n\n" + "\n\n".join(linhas)
+                    
+                    # Exibe dentro do st.warning
+                    st.warning(texto)
+                    
                     # --- TABELA DE COEFICIENTES ---
                     st.markdown("### 📋 Coeficientes e Significância")
                     st.info("""Coeficiente: impacto no log-odds. P-valor: significância estatística. 
