@@ -60,8 +60,8 @@ def main():
         options=["Regressão Logística", "Random Forest"],
         horizontal=True
     )
-    st.info("🔹 **Regressão Logística**: Interpretação clara, ideal para modelos regulatórios.  
-            🔹 **Random Forest**: Alta performance, menos interpretável.")
+    st.info("""🔹 **Regressão Logística**: Interpretação clara, ideal para modelos regulatórios.  
+            🔹 **Random Forest**: Alta performance, menos interpretável.""")
 
     # --- 5. Botão de treinamento ---
     if st.button("🚀 Treinar Modelo", type="primary"):
