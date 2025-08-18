@@ -340,62 +340,75 @@ def main():
 
             except Exception as e:
                 st.error(f"Erro ao treinar o modelo: {e}")
-
-    # --- RELATÓRIO DAS AÇÕES REALIZADAS ---
-    st.markdown("### 📝 Relatório das Ações Realizadas")
-    st.info("Veja abaixo um resumo detalhado de todas as etapas executadas nesta modelagem.")
-    
-    # Armazena o relatório para exportação
-    relatorio_acoes = []
-    
-    # 1. Variável-alvo
-    relatorio_acoes.append(f"🎯 **Variável-alvo definida:** `{target}` (formato 0/1)")
-    st.markdown(f"**Variável-alvo:** `{target}`")
-    
-    # 2. Tratamento de variáveis categóricas
-    if len(cat_vars) > 0:
-        tratamentos_aplicados = []
-        for var in cat_vars:
-            if encoding_choice[var] == "One-Hot Encoding":
-                n_dummies = pd.get_dummies(dados[var], prefix=var, drop_first=True).shape[1]
-                tratamentos_aplicados.append(f"`{var}` → One-Hot Encoding ({n_dummies} colunas geradas)")
-            else:
-                tratamentos_aplicados.append(f"`{var}` → Label Encoding")
-        st.markdown(f"**Tratamento de variáveis categóricas:**")
-        for t in tratamentos_aplicados:
-            st.markdown(f"- {t}")
-        relatorio_acoes.append("🔧 **Tratamento de categóricas:**")
-        relatorio_acoes.extend([f"   - {t}" for t in tratamentos_aplicados])
-    else:
-        st.markdown("**Tratamento de variáveis categóricas:** Nenhuma variável categórica encontrada.")
-        relatorio_acoes.append("🔧 **Tratamento de categóricas:** Nenhuma variável categórica presente.")
-    
-    # 3. Conversão e limpeza
-    st.markdown("**Conversão e limpeza de dados:**")
-    if 'object' in X.dtypes.values:
-        st.markdown("- Conversão de colunas object → numérico (com coerção)")
-        relatorio_acoes.append("🧹 **Conversão de tipos:** Colunas object convertidas para numérico com coerção.")
-    if X.isnull().any().any():
-        st.markdown("- Preenchimento de valores faltantes com a média")
-        relatorio_acoes.append("🧹 **Tratamento de missing:** Valores faltantes preenchidos com a média das colunas.")
-    else:
-        st.markdown("- Nenhum valor faltante encontrado")
-        relatorio_acoes.append("🧹 **Tratamento de missing:** Nenhum valor faltante encontrado.")
-    
-    # 4. Modelo treinado
-    relatorio_acoes.append(f"🧠 **Modelo escolhido:** {modelo_tipo}")
-    relatorio_acoes.append(f"📊 **Variáveis preditoras ({len(features)}):** {', '.join(features)}")
-    st.markdown(f"**Modelo treinado:** {modelo_tipo}")
-    st.markdown(f"**Número de variáveis preditoras:** {len(features)}")
-    
-    # 5. Métricas
-    if 'acuracia' in locals():
-        st.markdown(f"**Acurácia no teste:** {acuracia:.1%}")
-        relatorio_acoes.append(f"📈 **Acurácia no teste:** {acuracia:.1%}")
-    
+        
     # --- EXPORTAÇÃO DO RELATÓRIO ---
-    with st.expander("📤 Exportar Relatório Personalizado", expanded=False):
-        st.markdown("#### Selecione os itens que deseja incluir no relatório final:")
+    with st.expander("📝 Relatório das Ações Realizadas", expanded=False):
+        st.info("Veja abaixo um resumo detalhado de todas as etapas executadas nesta modelagem.")
+        
+        # Verifica se o modelo já foi treinado
+        if 'modelo' not in st.session_state:
+            st.info("Treine o modelo para gerar o relatório detalhado.")
+        else:
+            relatorio_acoes = []
+        
+            # 1. Variável-alvo
+            relatorio_acoes.append(f"🎯 **Variável-alvo definida:** `{target}` (formato 0/1)")
+            st.markdown(f"**Variável-alvo:** `{target}`")
+        
+            # 2. Tratamento de variáveis categóricas
+            cat_vars = [col for col in features if dados[col].dtype == 'object']
+            if len(cat_vars) > 0:
+                st.markdown("**Tratamento de variáveis categóricas:**")
+                if 'encoding_choice' in st.session_state:
+                    tratamentos_aplicados = []
+                    for var in cat_vars:
+                        choice = st.session_state.encoding_choice.get(var, "Não definido")
+                        if choice == "One-Hot Encoding":
+                            # Estima número de dummies (baseado no número de categorias únicas)
+                            n_cats = dados[var].nunique()
+                            n_dummies = n_cats - 1  # drop_first=True
+                            desc = f"`{var}` → One-Hot Encoding ({n_dummies} colunas geradas)"
+                        else:
+                            desc = f"`{var}` → Label Encoding"
+                        st.markdown(f"- {desc}")
+                        tratamentos_aplicados.append(desc)
+                    relatorio_acoes.append("🔧 **Tratamento de categóricas:**")
+                    relatorio_acoes.extend([f"   - {t}" for t in tratamentos_aplicados])
+                else:
+                    st.warning("Nenhum tratamento de categóricas registrado.")
+                    relatorio_acoes.append("🔧 **Tratamento de categóricas:** Dados não disponíveis.")
+            else:
+                st.markdown("**Tratamento de variáveis categóricas:** Nenhuma variável categórica encontrada.")
+                relatorio_acoes.append("🔧 **Tratamento de categóricas:** Nenhuma variável categórica presente.")
+        
+            # 3. Conversão e limpeza
+            st.markdown("**Conversão e limpeza de dados:**")
+            X = st.session_state.get('X_processed', dados[features])
+            if X.isnull().any().any():
+                st.markdown("- Preenchimento de valores faltantes com a média")
+                relatorio_acoes.append("🧹 **Tratamento de missing:** Valores faltantes preenchidos com a média.")
+            else:
+                st.markdown("- Nenhum valor faltante encontrado")
+                relatorio_acoes.append("🧹 **Tratamento de missing:** Nenhum valor faltante encontrado.")
+        
+            # 4. Modelo treinado
+            modelo_tipo = st.session_state.get('modelo_tipo', 'Não identificado')
+            relatorio_acoes.append(f"🧠 **Modelo escolhido:** {modelo_tipo}")
+            relatorio_acoes.append(f"📊 **Variáveis preditoras ({len(features)}):** {', '.join(features)}")
+            st.markdown(f"**Modelo treinado:** {modelo_tipo}")
+            st.markdown(f"**Número de variáveis preditoras:** {len(features)}")
+        
+            # 5. Métricas
+            if 'acuracia' in st.session_state:
+                acuracia = st.session_state.acuracia
+                st.markdown(f"**Acurácia no teste:** {acuracia:.1%}")
+                relatorio_acoes.append(f"📈 **Acurácia no teste:** {acuracia:.1%}")
+        
+            # Armazena para exportação
+            st.session_state.relatorio_acoes = relatorio_acoes
+
+        st.markdown("#### 📤 Exportar Relatório Personalizado.")
+        st.caption('Selecione os itens que deseja incluir no relatório final:')
         
         opcoes_relatorio = [
             "Variável-alvo",
