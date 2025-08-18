@@ -53,8 +53,8 @@ def main():
         options=["Regressão Logística", "Random Forest"],
         horizontal=True
     )
-    st.info("🔹 **Regressão Logística**: Interpretação clara, bom para modelos regulatórios.  
-            🔹 **Random Forest**: Alta performance, menos interpretável.")
+    st.info("""🔹 **Regressão Logística**: Interpretação clara, bom para modelos regulatórios.  
+            🔹 **Random Forest**: Alta performance, menos interpretável.""")
 
     # Tratamento de variáveis categóricas
     st.markdown("#### 🧱 Tratamento de Variáveis Categóricas")
