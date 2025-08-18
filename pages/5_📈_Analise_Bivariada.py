@@ -475,6 +475,7 @@ def main():
                 
                     tmp['woe'] = np.log(tmp['%_não_default'] / tmp['%_default'])
                 
+                    woe_tables = {}
                     # Armazena tabela
                     if 'woe_tables' not in st.session_state:
                         st.session_state.woe_tables = {}
