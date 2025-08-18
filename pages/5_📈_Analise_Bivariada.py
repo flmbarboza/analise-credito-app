@@ -4,6 +4,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import ks_2samp
+import io, zipfile, base64
 
 def calcular_iv(dados, coluna, target):
     df = dados[[coluna, target]].dropna()
@@ -32,12 +33,6 @@ def calcular_ks(dados, coluna, target):
 
 def criar_zip_exportacao(selecionados, dados, target, iv_df, ks_df, woe_tables, corr_matrix, st):
     """Cria um buffer ZIP com os itens selecionados pelo usuário."""
-    import io
-    import zipfile
-    import base64
-    import matplotlib.pyplot as plt
-    import seaborn as sns
-
     zip_buffer = io.BytesIO()
     with zipfile.ZipFile(zip_buffer, "w") as zip_file:
         # 1. Mapa de calor de correlação
@@ -350,7 +345,7 @@ def main():
 
         st.warning("""
         Edite os valores de **mínimo e máximo** ou os **limites das faixas** para ajustar o binning.  
-        A tabela e o gráfico são atualizados automaticamente.
+        A  e o gráfico são atualizados automaticamente.
         """)
         
         # Inicializa o estado para configurações de WOE
@@ -435,53 +430,72 @@ def main():
                 bins = np.linspace(min_val, max_val, n_bins + 1)
         
                 # Exibe os limites atuais
-                st.markdown(f"**Faixas atuais:**")
-                faixas = []
-                for i in range(n_bins):
-                    faixas.append(f"`[{bins[i]:.2f}, {bins[i+1]:.2f})`")
-                st.write(" → ".join(faixas))
-        
+        #        st.markdown(f"**Faixas atuais:**")
+        #        faixas = []
+        #        for i in range(n_bins):
+        #            faixas.append(f"`[{bins[i]:.2f}, {bins[i+1]:.2f})`")
+        #        st.write(" → ".join(faixas))
+
                 try:
                     df_temp = dados[[var_selecionada, target]].dropna()
                     # Filtra apenas dentro dos limites definidos
                     mask = (df_temp[var_selecionada] >= min_val) & (df_temp[var_selecionada] <= max_val)
                     df_temp = df_temp[mask]
-        
-                    df_temp['bin'] = pd.cut(df_temp[var_selecionada], bins=bins, include_lowest=True, right=False, duplicates='drop')
-        
+                
+                    # Aplica os bins
+                    df_temp['bin_interval'] = pd.cut(df_temp[var_selecionada], bins=bins, include_lowest=True, right=False, duplicates='drop')
+                
+                    # Cria rótulos formatados para exibição
+                    bin_labels = []
+                    for i in range(len(bins) - 1):
+                        left = f"{bins[i]:.2f}"
+                        right = f"{bins[i+1]:.2f}"
+                        bin_labels.append(f"[{left}, {right})")
+                    
+                    # Mapeia o intervalo para o rótulo formatado
+                    bin_to_label = {interval: label for interval, label in zip(pd.IntervalIndex.from_breaks(bins, closed='left'), bin_labels)}
+                    df_temp['bin'] = df_temp['bin_interval'].map(bin_to_label)
+                
+                    # Garante que a coluna 'bin' esteja ordenada corretamente
+                    df_temp['bin'] = pd.Categorical(df_temp['bin'], categories=bin_labels, ordered=True)
+                
+                    # Cria a tabela de contagem
                     tmp = pd.crosstab(df_temp['bin'], df_temp[target])
                     tmp.columns = ['não_default', 'default']
-        
+                
                     total_bons = tmp['não_default'].sum()
                     total_maus = tmp['default'].sum()
-        
+                
                     tmp['%_não_default'] = tmp['não_default'] / (total_bons or 1)
                     tmp['%_default'] = tmp['default'] / (total_maus or 1)
-        
+                
                     # Evitar divisão por zero
                     tmp['%_default'] = tmp['%_default'].replace(0, 1e-6)
                     tmp['%_não_default'] = tmp['%_não_default'].replace(0, 1e-6)
-        
+                
                     tmp['woe'] = np.log(tmp['%_não_default'] / tmp['%_default'])
-                    #tmp['iv'] = (tmp['%_não_default'] - tmp['%_default']) * tmp['woe']
-        
+                
                     # Armazena tabela
-                    woe_tables = {}
                     if 'woe_tables' not in st.session_state:
                         st.session_state.woe_tables = {}
-                    st.session_state.woe_tables[var_selecionada] = tmp
-        
-                    # Exibe tabela
+                    st.session_state.woe_tables[var_selecionada] = tmp.copy()
+                
+                    # Exibe tabela formatada
                     st.markdown("##### 📊 Tabela de WOE")
+                
+                    # Formatação visual
                     st.dataframe(
                         tmp.style.format({
                             'não_default': '{:,.0f}',
                             'default': '{:,.0f}',
-                            '%_não_default': '{:.2f}',
-                            '%_default': '{:.2f}',
+                            '%_não_default': '{:.4f}',
+                            '%_default': '{:.4f}',
                             'woe': '{:.3f}'
                         }).background_gradient(cmap='RdYlGn', subset=['woe'], low=1, high=1)
                     )
+                
+                except Exception as e:
+                    st.error(f"Erro ao calcular WOE: {e}")
         
                     # Gráfico
                     fig, ax = plt.subplots(figsize=(6, 2.5))
