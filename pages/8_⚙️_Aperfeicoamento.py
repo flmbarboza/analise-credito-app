@@ -14,7 +14,7 @@ def main():
     recall = st.session_state.recall if 'recall' in st.session_state else None
     f1 = st.session_state.f1 if 'f1' in st.session_state else None
     ks = st.session_state.ks_max if 'ks_max' in st.session_state else None
-    target = st.session_state.target
+    target = st.session_state.get('target', 'Variável-Alvo')
     features = st.session_state.features
 
     if 'modelo' not in st.session_state or 'accuracy' not in st.session_state:
