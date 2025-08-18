@@ -454,13 +454,13 @@ def main():
                     
                     # Mapeia o intervalo para o rótulo formatado
                     bin_to_label = {interval: label for interval, label in zip(pd.IntervalIndex.from_breaks(bins, closed='left'), bin_labels)}
-                    df_temp['bin'] = df_temp['bin_interval'].map(bin_to_label)
+                    df_temp['Classe'] = df_temp['bin_interval'].map(bin_to_label)
                 
                     # Garante que a coluna 'bin' esteja ordenada corretamente
-                    df_temp['bin'] = pd.Categorical(df_temp['bin'], categories=bin_labels, ordered=True)
+                    df_temp['Classe'] = pd.Categorical(df_temp['Classe'], categories=bin_labels, ordered=True)
                 
                     # Cria a tabela de contagem
-                    tmp = pd.crosstab(df_temp['bin'], df_temp[target])
+                    tmp = pd.crosstab(df_temp['Classe'], df_temp[target])
                     tmp.columns = ['não_default', 'default']
                 
                     total_bons = tmp['não_default'].sum()
@@ -495,9 +495,6 @@ def main():
                         }).background_gradient(cmap='RdYlGn', subset=['woe'], low=1, high=1)
                     )
                 
-                except Exception as e:
-                    st.error(f"Erro ao calcular WOE: {e}")
-        
                     # Gráfico
                     fig, ax = plt.subplots(figsize=(6, 2.5))
                     tmp['woe'].plot(kind='barh', ax=ax, color='teal', edgecolor='black')
