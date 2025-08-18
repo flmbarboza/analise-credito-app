@@ -344,8 +344,8 @@ def main():
         st.info("WOE transforma variáveis numéricas em escores de risco. Ajuste o número de faixas.")
 
         st.warning("""
-        Edite os valores de **mínimo e máximo** ou os **limites das faixas** para ajustar o binning.  
-        A  e o gráfico são atualizados automaticamente.
+        Edite os valores de **mínimo e máximo** ou os **limites das faixas** para ajustar o tamanho do intervalo de cada classe.  
+        Obs: A tabela e o gráfico são atualizados automaticamente.
         """)
         
         # Inicializa o estado para configurações de WOE
@@ -538,6 +538,187 @@ def main():
         else:
             st.warning("Não foi possível calcular KS.")
 
+    # --- TRANSFORMAÇÃO DE VARIÁVEIS CATEGÓRICAS ---
+    with st.expander("🔄 Transformação de Variáveis Categóricas", expanded=False):
+        st.markdown("### 🧠 Por que transformar variáveis categóricas?")
+        st.info("""
+        Variáveis categóricas com muitas classes ou com baixo poder preditivo (IV < 0.1) podem:
+        - Aumentar a complexidade do modelo.
+        - Gerar overfitting.
+        - Ter classes com pouca população (ruído).
+        
+        **Soluções:**
+        - 🔗 **Fusão de classes**: agrupar categorias semelhantes ou com baixa frequência.
+        - ➕ **Variáveis dummy**: converter categorias em indicadores binários (útil para modelos lineares).
+        """)
+    
+        # Recupera variáveis categóricas ativas
+        if 'variaveis_ativas' not in st.session_state:
+            st.warning("Nenhuma variável ativa definida. Volte para a análise de correlação.")
+            st.stop()
+    
+        variaveis_ativas = st.session_state.variaveis_ativas
+        categoricas = [col for col in variaveis_ativas if col != target and dados[col].dtype == 'object']
+    
+        if not categoricas:
+            st.info("Nenhuma variável categórica disponível para transformação.")
+        else:
+            # Calcula IV para categóricas
+            iv_data = []
+            for col in categoricas:
+                try:
+                    iv = calcular_iv(dados, col, target)
+                    iv_data.append({'Variável': col, 'IV': iv})
+                except:
+                    iv_data.append({'Variável': col, 'IV': np.nan})
+            iv_df_cat = pd.DataFrame(iv_data).dropna().sort_values("IV", ascending=True)
+    
+            # Mostra variáveis com baixo IV
+            baixo_iv = iv_df_cat[iv_df_cat['IV'] < 0.1]
+            if not baixo_iv.empty:
+                st.warning(f"⚠️ {len(baixo_iv)} variável(s) com IV < 0.1 (baixo poder preditivo):")
+                st.dataframe(baixo_iv.style.format({"IV": "{:.3f}"}).background_gradient(cmap="Oranges", subset=["IV"]))
+            else:
+                st.success("✅ Todas as variáveis categóricas têm IV ≥ 0.1.")
+    
+            # Seleção da variável para transformação
+            var_cat = st.selectbox(
+                "Selecione uma variável categórica para transformar:",
+                options=categoricas,
+                key="var_cat_select"
+            )
+    
+            if var_cat:
+                serie = dados[var_cat].value_counts().reset_index()
+                serie.columns = [var_cat, 'Frequência']
+                serie['%'] = (serie['Frequência'] / serie['Frequência'].sum() * 100).round(2)
+                st.dataframe(serie)
+    
+                tab1, tab2 = st.tabs(["🔗 Fusão de Classes", "➕ Criar Dummies"])
+    
+                with tab1:
+                    st.markdown("#### 🔗 Reagrupe classes com critério (ex: 'outros', agrupar por risco)")
+                    classes = dados[var_cat].dropna().unique().tolist()
+                    st.caption("Selecione as classes que deseja **agrupar em uma nova categoria**.")
+    
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        selecao = st.multiselect(
+                            "Classes para agrupar:",
+                            options=classes,
+                            key=f"merge_select_{var_cat}"
+                        )
+                    with col2:
+                        novo_nome = st.text_input(
+                            "Nome da nova categoria:",
+                            value="Outros",
+                            key=f"novo_nome_{var_cat}"
+                        )
+    
+                    if st.button("✅ Aplicar Fusão", key=f"btn_merge_{var_cat}"):
+                        if len(selecao) < 2:
+                            st.warning("Selecione pelo menos duas classes para fundir.")
+                        else:
+                            # Cria cópia dos dados
+                            dados_transformado = dados.copy()
+                            dados_transformado[var_cat] = dados_transformado[var_cat].astype('object')
+                            dados_transformado[var_cat] = dados_transformado[var_cat].replace(selecao, novo_nome)
+    
+                            # Recalcula WOE e IV
+                            try:
+                                df_temp = dados_transformado[[var_cat, target]].dropna()
+                                tmp = pd.crosstab(df_temp[var_cat], df_temp[target])
+                                tmp.columns = ['não_default', 'default']
+                                tmp['%_não_default'] = tmp['não_default'] / tmp['não_default'].sum()
+                                tmp['%_default'] = tmp['default'] / tmp['default'].sum()
+                                tmp['%_default'] = tmp['%_default'].replace(0, 1e-6)
+                                tmp['%_não_default'] = tmp['%_não_default'].replace(0, 1e-6)
+                                tmp['woe'] = np.log(tmp['%_não_default'] / tmp['%_default'])
+                                iv_novo = ((tmp['%_não_default'] - tmp['%_default']) * tmp['woe']).sum()
+    
+                                st.success(f"✅ Fusão aplicada! Novo IV: {iv_novo:.3f}")
+    
+                                # Mostra tabela
+                                st.dataframe(
+                                    tmp[['não_default', 'default', '%_não_default', '%_default', 'woe']].style.format({
+                                        '%_não_default': '{:.4f}',
+                                        '%_default': '{:.4f}',
+                                        'woe': '{:.3f}'
+                                    }).background_gradient(cmap='RdYlGn', subset=['woe'])
+                                )
+    
+                                # Pergunta ao usuário se deseja salvar
+                                st.markdown("### 💾 Deseja incluir esta variável transformada no banco de dados?")
+                                incluir = st.radio(
+                                    "Incluir no conjunto de dados?",
+                                    options=["Não", "Sim"],
+                                    key=f"incluir_merge_{var_cat}"
+                                )
+                                if incluir == "Sim":
+                                    nome_nova = st.text_input(
+                                        "Como deseja identificar essa nova variável?",
+                                        value=f"{var_cat}_agrupado",
+                                        key=f"nome_merge_{var_cat}"
+                                    )
+                                    if st.button("💾 Salvar Variável Transformada", key=f"save_merge_{var_cat}"):
+                                        if nome_nova in dados.columns:
+                                            st.warning(f"Já existe uma coluna chamada `{nome_nova}`. Escolha outro nome.")
+                                        else:
+                                            # Salva a nova coluna
+                                            if 'dados_transformados' not in st.session_state:
+                                                st.session_state.dados_transformados = dados.copy()
+                                            st.session_state.dados_transformados[nome_nova] = dados_transformado[var_cat]
+                                            st.success(f"✅ Variável `{nome_nova}` salva com sucesso!")
+                                            st.session_state.get('variaveis_ativas', []).append(nome_nova)  # Opcional: adiciona à lista ativa
+    
+                            except Exception as e:
+                                st.error(f"Erro ao calcular novo WOE/IV: {e}")
+    
+                with tab2:
+                    st.markdown("#### ➕ Criar Variáveis Dummy (One-Hot Encoding)")
+                    st.info("Cria uma coluna binária para cada categoria (útil para modelos lineares).")
+    
+                    if st.button("✅ Gerar Dummies", key=f"btn_dummy_{var_cat}"):
+                        try:
+                            dummies = pd.get_dummies(dados[var_cat], prefix=var_cat)
+                            st.success(f"✅ Criadas {dummies.shape[1]} variáveis dummy a partir de `{var_cat}`")
+                            st.dataframe(dummies.head())
+    
+                            # Pergunta ao usuário se deseja salvar
+                            st.markdown("### 💾 Deseja incluir essas variáveis dummy no banco de dados?")
+                            incluir = st.radio(
+                                "Incluir dummies no conjunto de dados?",
+                                options=["Não", "Sim"],
+                                key=f"incluir_dummy_{var_cat}"
+                            )
+                            if incluir == "Sim":
+                                prefixo = st.text_input(
+                                    "Prefixo para identificar as variáveis dummy:",
+                                    value=var_cat,
+                                    key=f"prefixo_dummy_{var_cat}"
+                                )
+                                if st.button("💾 Salvar Variáveis Dummy", key=f"save_dummy_{var_cat}"):
+                                    dados_com_dummies = dados.copy()
+                                    dummies_renomeadas = dummies.add_prefix(f"{prefixo}_")
+                                    colisoes = [col for col in dummies_renomeadas.columns if col in dados_com_dummies.columns]
+                                    if colisoes:
+                                        st.warning(f"Conflito de nomes: {colisoes}. Remova ou renomeie primeiro.")
+                                    else:
+                                        # Salva no session_state
+                                        if 'dados_transformados' not in st.session_state:
+                                            st.session_state.dados_transformados = dados.copy()
+                                        st.session_state.dados_transformados = pd.concat([
+                                            st.session_state.dados_transformados, dummies_renomeadas
+                                        ], axis=1)
+                                        st.session_state.get('variaveis_ativas', []).extend(dummies_renomeadas.columns.tolist())
+                                        st.success(f"✅ {len(dummies_renomeadas.columns)} variáveis dummy salvas com o prefixo `{prefixo}_`")
+    
+                        except Exception as e:
+                            st.error(f"Erro ao gerar dummies: {e}")    
+
+
+
+    
     # --- RELATÓRIO ---
     with st.expander("📋 Relatório de Análise"):
         st.markdown("### ✅ Variáveis Ativas Após Pré-Seleção")
