@@ -253,18 +253,29 @@ def main():
                     st.latex(f"\\text{{logit}} = {formula}")
                     
                     # --- TABELA DE LEGENDA DAS VARIÁVEIS ---
-                    #st.markdown("#### 🔍 Legenda das Variáveis")
-                    #st.caption("Cada símbolo $$X_i$$ representa uma variável preditora do modelo.")
+                    st.markdown("# 🔍 Legenda das Variáveis")
+                    st.caption("Cada símbolo $$X_i$$ representa uma variável preditora do modelo.")
+                    # Gera a lista de legenda em LaTeX
+                    legenda_latex = []
+                    for i, var in enumerate(X.columns):
+                        # Escapa caracteres problemáticos (como _)
+                        var_escapado = var.replace('_', r'\_')
+                        legenda_latex.append(rf"X_{{{i+1}}} = \text{{{var_escapado}}}")
+                    
+                    # Junta com quebra de linha
+                    legenda_str = r" \\ ".join(legenda_latex)
+                    st.latex(legenda_str)
                     #legenda = pd.DataFrame({
                     #    "Símbolo": [f"$X_{{{i+1}}}$" for i in range(len(X.columns))],
                     #    "Variável": X.columns.tolist()
                     #})
                     #st.dataframe(legenda, use_container_width=True)
                     #st.markdown(legenda.to_markdown(index=False), unsafe_allow_html=True)
-                    linhas = [rf"X_{{{i+1}}} = \text{{{col}}}" for i, col in enumerate(X.columns)]
+                    
+                    #linhas = [rf"X_{{{i+1}}} = \text{{{col}}}" for i, col in enumerate(X.columns)]
                     # Junta tudo em um único bloco, separado por quebras de linha LaTeX (\\)
-                    latex_texto = r"Tal que:\\ " + r" \\ ".join(linhas)
-                    st.latex(latex_texto)
+                    #latex_texto = r"Tal que:\\ " + r" \\ ".join(linhas)
+                    #st.latex(latex_texto)
                     
                     # --- TABELA DE COEFICIENTES ---
                     st.markdown("### 📋 Coeficientes e Significância")
