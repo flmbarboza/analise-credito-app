@@ -10,14 +10,14 @@ from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import LabelEncoder
 import statsmodels.api as sm
 import io
-
-if 'encoding_choice' not in st.session_state:
-    st.session_state.encoding_choice = {}
     
 def main():
     st.title("🤖 Modelagem Preditiva")
     st.markdown("Construa e avalie modelos de credit scoring com interpretação clara.")
-
+    
+    if 'encoding_choice' not in st.session_state:
+    st.session_state.encoding_choice = {}
+    
     if 'dados' not in st.session_state:
         st.warning("Dados não encontrados! Complete a coleta primeiro.")
         st.page_link("pages/2_📊_Coleta_de_Dados.py", label="→ Coleta de Dados")
