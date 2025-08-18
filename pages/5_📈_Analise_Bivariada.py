@@ -563,6 +563,7 @@ def main():
                                 
                                 # Mostra preview
                                 st.dataframe(dados_novo[[var_selecionada, nome_nova_var]].head(10))
+                                st.dataframe(dados_novo.head(5))
                     
                             except Exception as e:
                                 st.error(f"Erro ao criar a variável: {e}")
