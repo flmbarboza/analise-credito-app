@@ -15,7 +15,7 @@ def main():
     """)
     
     modelo_tipo = st.session_state.get('modelo_tipo', 'Desconhecido')
-    target = st.session_state.get('y_col', 'Variável-Alvo')
+    target = st.session_state.get('target', 'Variável-Alvo')
 
     if 'modelo' not in st.session_state:
         st.warning("Nenhum modelo treinado! Construa um modelo primeiro.")
