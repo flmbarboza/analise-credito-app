@@ -8,14 +8,14 @@ def main():
     com base nas métricas de performance que você acabou de analisar.
     """)
     # Armazena métricas e informações no session_state
-    st.session_state.modelo_tipo = modelo_tipo
-    st.session_state.accuracy = accuracy
-    st.session_state.precision = precision
-    st.session_state.recall = recall
-    st.session_state.f1 = f1
-    st.session_state.ks_max = ks_max
-    st.session_state.y_col = target
-    st.session_state.features = list(features)
+    modelo_tipo = st.session_state.modelo_tipo
+    acuracia = st.session_state.accuracy if 'accuracy' in st.session_state else None
+    precision = st.session_state.precision if 'precision' in st.session_state else None
+    recall = st.session_state.recall if 'recall' in st.session_state else None
+    f1 = st.session_state.f1 if 'f1' in st.session_state else None
+    ks = st.session_state.ks_max if 'ks_max' in st.session_state else None
+    target = st.session_state.y_col
+    features = st.session_state.features
 
     if 'modelo' not in st.session_state or 'accuracy' not in st.session_state:
         st.warning("Nenhum modelo treinado ou métricas disponíveis. Construa e valide um modelo primeiro.")
@@ -24,12 +24,6 @@ def main():
     # --- Sugestões gerais ---
     st.subheader("📌 Sugestões de Aperfeiçoamento")
     
-    acuracia = st.session_state.accuracy if 'accuracy' in st.session_state else None
-    precision = st.session_state.precision if 'precision' in st.session_state else None
-    recall = st.session_state.recall if 'recall' in st.session_state else None
-    f1 = st.session_state.f1 if 'f1' in st.session_state else None
-    ks = st.session_state.ks_max if 'ks_max' in st.session_state else None
-
     sugestoes = []
 
     # Baseadas em métricas
