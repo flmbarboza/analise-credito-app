@@ -263,7 +263,10 @@ def main():
                         legenda_latex.append(rf"X_{{{i+1}}} = \text{{{var_escapado}}}")
                     
                     # Junta com quebra de linha
-                    legenda_str = r" \\ ".join(legenda_latex)
+                    legenda_str = r"""\[
+                        \begin{aligned}
+                        \text{tal que:}\\[6pt]
+                        """ + "".join(legenda_latex) + r"\end{aligned}\]"
                     st.latex(legenda_str)
                     #legenda = pd.DataFrame({
                     #    "Símbolo": [f"$X_{{{i+1}}}$" for i in range(len(X.columns))],
