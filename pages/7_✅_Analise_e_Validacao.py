@@ -183,7 +183,6 @@ def main():
                 test_loss_history.append(log_loss(y_test, y_test_proba))
         
             # --- Plot da curva de Loss ---
-            import matplotlib.pyplot as plt
             fig, ax = plt.subplots(figsize=(7,5))
             ax.plot(range(1, epochs+1), train_loss_history, label='Train Loss', color='blue', marker='o')
             ax.plot(range(1, epochs+1), test_loss_history, label='Test Loss', color='red', marker='s')
