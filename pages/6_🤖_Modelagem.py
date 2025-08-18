@@ -221,6 +221,7 @@ def main():
                     p_values = model_sm.pvalues[1:]
 
                     st.session_state.modelo = model
+                    st.session_state.modelo_tipo = modelo_tipo
                     st.session_state.model_sm = model_sm
                     st.session_state.X_test = X_test
                     st.session_state.y_test = y_test
