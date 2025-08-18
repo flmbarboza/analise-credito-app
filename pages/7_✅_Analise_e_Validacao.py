@@ -229,7 +229,15 @@ def main():
     # --- 7. RELATÓRIO DA ANÁLISE ---
     st.markdown("### 📄 Relatório da Análise de Validação")
     st.info("Gere um resumo das métricas e insights desta análise para compartilhar ou documentar.")
-    
+
+    # Detecta overfitting apenas se a curva existir
+    if modelo_tipo != "Regressão Logística" and 'test_mean' in locals():
+        overfit_msg = ('Possível overfitting detectado.'
+                       if np.argmax(test_mean) < len(test_mean) - 1 and 
+                          test_mean[-1] < test_mean[np.argmax(test_mean)]
+                       else 'Sem sinais claros de overfitting.')
+    else:
+        overfit_msg = "Não analisado para Regressão Logística."
     # Prepara o conteúdo do relatório
     relatorio_texto = f"""
     RELATÓRIO DE VALIDAÇÃO DO MODELO
