@@ -335,9 +335,8 @@ def main():
                 data=csv,
                 file_name=nome_csv,
                 mime='text/csv'
-            )
+                )
             # 3.2. GERAR RELATORIO
-            # Tabela resumida
             resumo = []
             for coluna in st.session_state.dados.columns:
                 nao_nulos = st.session_state.dados[coluna].count()
@@ -353,22 +352,29 @@ def main():
             df_resumo = pd.DataFrame(resumo)
             st.dataframe(df_resumo)
             
-            # ---- Exportar como relatório em texto ----
-            relatorio_texto = []
-            relatorio_texto.append("📋 RESUMO DO DATASET\n")
-            relatorio_texto.append(f"Total de registros: {len(st.session_state.dados):,}")
-            relatorio_texto.append(f"Número de variáveis: {len(st.session_state.dados.columns)}\n")
-            relatorio_texto.append("Resumo das variáveis:\n")
+            # ---- Relatório em texto amigável ----
+            relatorio_texto = f"""
+            ## 📋 RELATÓRIO DO DATASET
+            
+            - **Total de registros:** {len(st.session_state.dados):,}
+            - **Número de variáveis:** {len(st.session_state.dados.columns)}
+            
+            ### 🔎 Resumo das variáveis
+            """
             
             for r in resumo:
-                relatorio_texto.append(
-                    f"- {r['Variável']}: "
-                    f"Tipo={r['Tipo *']}, "
-                    f"Valores únicos={r['Valores únicos']}, "
-                    f"Preenchida={r['Preenchida (%)']}"
+                relatorio_texto += (
+                    f"- **{r['Variável']}**  \n"
+                    f"   • Tipo: {r['Tipo *']}  \n"
+                    f"   • Valores únicos: {r['Valores únicos']}  \n"
+                    f"   • Preenchida: {r['Preenchida (%)']}  \n\n"
                 )
             
-            relatorio_coleta = "\n".join(relatorio_texto)
+            # Exibir o relatório formatado para leitura
+            st.markdown(relatorio_texto)
+            
+            # Também guardar em texto puro para exportação
+            relatorio_coleta = relatorio_texto
 
             # Opções de exportação
             export_option = st.radio("Escolha o formato de exportação:", ["Texto (.txt)", "Copiar para área de transferência"])
