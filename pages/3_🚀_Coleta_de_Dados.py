@@ -324,8 +324,8 @@ def main():
         
         st.dataframe(pd.DataFrame(resumo))
         
-        with st.expander("Salvar a Amostra", expanded=False):
-            # 3. SALVAR DATAFRAME COMO CSV
+        with st.expander("Salvar a Amostra e Gerar Relatório", expanded=False):
+            # 3.1. SALVAR DATAFRAME COMO CSV
             st.subheader("💾 Salvar Subamostra em CSV")
             nome_csv = st.text_input("Nome do arquivo para download:", value="subamostra_credito.csv")
     
@@ -335,6 +335,46 @@ def main():
                 data=csv,
                 file_name=nome_csv,
                 mime='text/csv'
+            )
+            # 3.2. GERAR RELATORIO
+            # Tabela resumida
+            resumo = []
+            for coluna in st.session_state.dados.columns:
+                nao_nulos = st.session_state.dados[coluna].count()
+                percent_preenchido = (nao_nulos / len(st.session_state.dados)) * 100
+                
+                resumo.append({
+                    "Variável": coluna,
+                    "Tipo *": str(st.session_state.dados[coluna].dtype),
+                    "Valores únicos": st.session_state.dados[coluna].nunique(),
+                    "Preenchida (%)": f"{percent_preenchido:.1f}%"
+                })
+            
+            df_resumo = pd.DataFrame(resumo)
+            st.dataframe(df_resumo)
+            
+            # ---- Exportar como relatório em texto ----
+            relatorio_texto = []
+            relatorio_texto.append("📋 RESUMO DO DATASET\n")
+            relatorio_texto.append(f"Total de registros: {len(st.session_state.dados):,}")
+            relatorio_texto.append(f"Número de variáveis: {len(st.session_state.dados.columns)}\n")
+            relatorio_texto.append("Resumo das variáveis:\n")
+            
+            for r in resumo:
+                relatorio_texto.append(
+                    f"- {r['Variável']}: "
+                    f"Tipo={r['Tipo *']}, "
+                    f"Valores únicos={r['Valores únicos']}, "
+                    f"Preenchida={r['Preenchida (%)']}"
+                )
+            
+            relatorio_final = "\n".join(relatorio_texto)
+            
+            st.download_button(
+                label="💾 Baixar relatório em TXT",
+                data=relatorio_final,
+                file_name="resumo_dataset.txt",
+                mime="text/plain"
             )
     # 🚀 Link para a próxima página
     st.page_link("pages/3_🚀_Pré-Análise_dos_Dados.py", label="➡️ Ir para a próxima página: Pré-Análise dos Dados", icon="🚀")
