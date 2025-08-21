@@ -18,12 +18,18 @@ def main():
     if 'encoding_choice' not in st.session_state:
         st.session_state.encoding_choice = {}
     
+    # --- 1. VALIDAÇÃO DE DADOS (fora de qualquer expander) ---
     if 'dados' not in st.session_state:
-        st.warning("Dados não encontrados! Complete a coleta primeiro.")
-        st.page_link("pages/3_🚀_Coleta_de_Dados.py", label="→ Coleta de Dados")
-        return
-
+        st.warning("Carregue os dados na página de Coleta primeiro!")
+        st.page_link("pages/3_🚀_Coleta_de_Dados.py", label=" → Retornar para Coleta de dados")
+   
     dados = st.session_state.dados
+    
+    if dados is None or dados.empty:
+        st.error("""Os dados estão vazios ou inválidos.
+                Neste caso, retorne a página de coleta de dados e revise o procedimento.""")
+        st.page_link("pages/3_🚀_Coleta_de_Dados.py", label=" → Retornar para Coleta de dados")
+        st.stop()
 
     st.subheader("⚙️ Configuração do Modelo")
 
