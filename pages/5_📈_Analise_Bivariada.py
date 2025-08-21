@@ -113,17 +113,23 @@ def criar_zip_exportacao(selecionados, dados, target, iv_df, ks_df, woe_tables, 
     
 def main():
     st.title("📈 Análise Bivariada e Pré-Seleção de Variáveis")
+    # --- 1. VALIDAÇÃO DE DADOS (fora de qualquer expander) ---
+    if 'dados' not in st.session_state:
+        st.warning("Carregue os dados na página de Coleta primeiro!")
+        st.page_link("pages/3_🚀_Coleta_de_Dados.py", label=" → Retornar para Coleta de dados")
+   
+    dados = st.session_state.dados
+    
+    if dados is None or dados.empty:
+        st.error("""Os dados estão vazios ou inválidos.
+                Neste caso, retorne a página de coleta de dados e revise o procedimento.""")
+        st.page_link("pages/3_🚀_Coleta_de_Dados.py", label=" → Retornar para Coleta de dados")
+        st.stop()
+    
     st.markdown("""
     Defina a variável-alvo, corrija seu formato, e realize análises preditivas:  
     **IV, WOE, KS** – tudo em um só lugar.
     """)
-    
-    if 'dados' not in st.session_state:
-        st.warning("Dados não carregados! Acesse a página de Coleta primeiro.")
-        st.page_link("pages/3_🚀_Coleta_de_Dados.py", label="→ Ir para Coleta")
-        return
-
-    dados = st.session_state.dados.copy()
 
     # --- 1. SELEÇÃO E VALIDAÇÃO DA VARIÁVEL-ALVO (Y) ---
     st.markdown("### 🔍 Defina a Variável-Alvo (Default)")
