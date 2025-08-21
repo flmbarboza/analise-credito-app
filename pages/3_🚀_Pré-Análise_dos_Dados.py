@@ -10,12 +10,14 @@ st.title("🔍 Pré-Análise de Dados Interativa")
 # Inicialização do session_state
 if 'dados' not in st.session_state:
     st.warning("Dados não carregados! Acesse a página de Coleta primeiro.")
-    st.page_link("pages/3_🚀_Coleta_de_Dados.py", label="→ Ir para Coleta")
+    st.page_link("pages/3_🚀_Coleta_de_Dados.py", label=" → Retornar para Coleta de dados")
     
 dados = st.session_state.dados
 
 if dados is None or dados.empty:
-    st.error("Os dados estão vazios ou inválidos.")
+    st.error("""Os dados estão vazios ou inválidos.
+            Neste caso, retorne a página de coleta de dados e revise o procedimento.""")
+    st.page_link("pages/3_🚀_Coleta_de_Dados.py", label=" → Retornar para Coleta de dados")
     st.stop()
 
 if 'actions_log' not in st.session_state:
