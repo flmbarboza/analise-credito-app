@@ -15,7 +15,8 @@ def main():
     f1 = st.session_state.f1 if 'f1' in st.session_state else None
     ks = st.session_state.ks_max if 'ks_max' in st.session_state else None
     target = st.session_state.get('target', 'Variável-Alvo')
-    features = st.session_state.features
+    features = st.session_state.get('features', 'Desconhecidas')
+
 
     if 'modelo' not in st.session_state or 'accuracy' not in st.session_state:
         st.warning("Nenhum modelo treinado ou métricas disponíveis. Construa e valide um modelo primeiro.")
