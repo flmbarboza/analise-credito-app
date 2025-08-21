@@ -12,12 +12,12 @@ if 'dados' not in st.session_state:
     st.warning("Dados não carregados! Acesse a página de Coleta primeiro.")
     st.page_link("pages/3_🚀_Coleta_de_Dados.py", label="→ Ir para Coleta")
     return
-
+    
 dados = st.session_state.dados
 
 if dados is None or dados.empty:
-    st.error("Os dados estão vazios ou não foram carregados corretamente.")
-    return
+    st.error("Os dados estão vazios ou inválidos.")
+    st.stop()
 
 if 'actions_log' not in st.session_state:
     st.session_state.actions_log = []
