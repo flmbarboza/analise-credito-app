@@ -8,7 +8,7 @@ def main():
     com base nas métricas de performance que você acabou de analisar.
     """)
     # Armazena métricas e informações no session_state
-    modelo_tipo = st.session_state.modelo_tipo
+    modelo_tipo = st.session_state.get('modelo_tipo', 'Desconhecido')
     acuracia = st.session_state.accuracy if 'accuracy' in st.session_state else None
     precision = st.session_state.precision if 'precision' in st.session_state else None
     recall = st.session_state.recall if 'recall' in st.session_state else None
