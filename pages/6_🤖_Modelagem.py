@@ -23,7 +23,7 @@ def main():
         st.page_link("pages/3_🚀_Coleta_de_Dados.py", label="→ Coleta de Dados")
         return
 
-    dados = st.session_state.dados.copy()
+    dados = st.session_state.dados
 
     st.subheader("⚙️ Configuração do Modelo")
 
