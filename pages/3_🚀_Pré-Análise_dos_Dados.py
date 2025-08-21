@@ -8,9 +8,16 @@ st.set_page_config(page_title="Tratamento de Dados", layout="wide")
 st.title("🔍 Pré-Análise de Dados Interativa")
 
 # Inicialização do session_state
-if 'dados' not in st.session_state or st.session_state.dados.empty:
-    st.warning("⚠️ Nenhum dado carregado. Volte para a página de coleta.")
-    st.stop()
+if 'dados' not in st.session_state:
+    st.warning("Dados não carregados! Acesse a página de Coleta primeiro.")
+    st.page_link("pages/3_🚀_Coleta_de_Dados.py", label="→ Ir para Coleta")
+    return
+
+dados = st.session_state.dados
+
+if dados is None or dados.empty:
+    st.error("Os dados estão vazios ou não foram carregados corretamente.")
+    return
 
 if 'actions_log' not in st.session_state:
     st.session_state.actions_log = []
