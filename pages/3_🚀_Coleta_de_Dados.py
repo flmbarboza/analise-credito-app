@@ -368,14 +368,22 @@ def main():
                     f"Preenchida={r['Preenchida (%)']}"
                 )
             
-            relatorio_final = "\n".join(relatorio_texto)
+            relatorio_coleta = "\n".join(relatorio_texto)
+
+            # Opções de exportação
+            export_option = st.radio("Escolha o formato de exportação:", ["Texto (.txt)", "Copiar para área de transferência"])
             
-            st.download_button(
-                label="💾 Baixar relatório em TXT",
-                data=relatorio_final,
-                file_name="resumo_dataset.txt",
-                mime="text/plain"
-            )
+            if export_option == "Texto (.txt)":
+                st.download_button(
+                    label="💾 Baixar Relatório (TXT)",
+                    data=relatorio_coleta,
+                    file_name="relatorio_coleta_dados.txt",
+                    mime="text/plain"
+                )
+            else:
+                st.code(relatorio_texto, language="text")
+                st.info("Você pode copiar o texto acima com o botão no canto superior direito.")
+           
     # 🚀 Link para a próxima página
     st.page_link("pages/3_🚀_Pré-Análise_dos_Dados.py", label="➡️ Ir para a próxima página: Pré-Análise dos Dados", icon="🚀")
 
