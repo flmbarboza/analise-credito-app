@@ -352,9 +352,9 @@ def main():
             df_resumo = pd.DataFrame(resumo)
             st.dataframe(df_resumo)
             
-            # ---- Relatório em texto amigável ----
+            
             relatorio_texto = f"""
-            ## 📋 RELATÓRIO DO DATASET
+            ## 📋 Relatório da Coleta de Dados
             
             - **Total de registros:** {len(st.session_state.dados):,}
             - **Número de variáveis:** {len(st.session_state.dados.columns)}
@@ -369,9 +369,6 @@ def main():
                     f"   • Valores únicos: {r['Valores únicos']}  \n"
                     f"   • Preenchida: {r['Preenchida (%)']}  \n\n"
                 )
-            
-            # Exibir o relatório formatado para leitura
-            st.markdown(relatorio_texto)
             
             # Também guardar em texto puro para exportação
             relatorio_coleta = relatorio_texto
