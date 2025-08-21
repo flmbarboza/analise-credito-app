@@ -120,7 +120,7 @@ def main():
     
     if 'dados' not in st.session_state:
         st.warning("Dados não carregados! Acesse a página de Coleta primeiro.")
-        st.page_link("pages/2_📊_Coleta_de_Dados.py", label="→ Ir para Coleta")
+        st.page_link("pages/3_🚀_Coleta_de_Dados.py", label="→ Ir para Coleta")
         return
 
     dados = st.session_state.dados.copy()
