@@ -146,6 +146,62 @@ def main():
     st.metric("KS Máximo", f"{ks_max:.2f}")
     st.caption(f"Limiar ótimo para KS: {best_th:.2f}")
 
+    # --- 8. CÁLCULO DO CUSTO DOS ERROS (FALSOS NEGATIVOS) ---
+    st.markdown("### 💸 Custo dos Erros: Falsos Negativos")
+    st.info("""
+    Um **Falso Negativo (FN)** ocorre quando o modelo diz que o cliente é **adimplente (0)**,  
+    mas ele **é inadimplente (1)**. Ou seja: **o crédito foi concedido, mas o cliente não pagará**.
+    
+    Assumimos aqui que o **custo desse erro é o valor do empréstimo concedido (`loan_amount`)**.
+    """)
+    
+    # Verifica se temos os dados originais com loan_amount
+    if 'df_test' in st.session_state:
+        df_test = st.session_state.df_test
+        if 'loan_amount' not in df_test.columns:
+            st.warning("A coluna `loan_amount` não está disponível. Não é possível calcular o custo do erro.")
+        else:
+            # Garante que os índices estão alinhados
+            try:
+                # Cria um DataFrame com y_test, y_pred e loan_amount
+                results = pd.DataFrame({
+                    'y_real': y_test,
+                    'y_pred': y_pred,
+                    'loan_amount': df_test.loc[y_test.index, 'loan_amount'].values  # Alinha pelo índice
+                })
+    
+                # Filtra os Falsos Negativos (real=1, predito=0)
+                falsos_negativos = results[(results['y_real'] == 1) & (results['y_pred'] == 0)]
+    
+                if len(falsos_negativos) == 0:
+                    st.success("✅ Nenhum Falso Negativo encontrado! Nenhum custo de erro.")
+                    custo_total = 0.0
+                else:
+                    custo_total = falsos_negativos['loan_amount'].sum()
+                    media_custo_por_fn = falsos_negativos['loan_amount'].mean()
+    
+                    st.warning(f"⚠️ Foram identificados **{len(falsos_negativos)} Falsos Negativos**.")
+                    st.metric("Custo Total dos Falsos Negativos", f"R$ {custo_total:,.2f}")
+                    st.write(f"Valor médio do empréstimo por FN: R$ {media_custo_por_fn:,.2f}")
+    
+                    # Mostra uma amostra dos FNs
+                    with st.expander("📊 Ver detalhes dos Falsos Negativos"):
+                        st.dataframe(
+                            falsos_negativos[['loan_amount']]
+                            .rename(columns={'loan_amount': 'Valor do Empréstimo'})
+                            .head(10)
+                        )
+    
+                # Armazena o custo para uso futuro (ex: otimização de limiar)
+                st.session_state.custo_falsos_negativos = custo_total
+    
+            except Exception as e:
+                st.error(f"Erro ao calcular custo dos erros: {e}")
+                st.session_state.custo_falsos_negativos = None
+    
+    else:
+        st.warning("⚠️ Dados brutos de teste não disponíveis (`df_test`). Não é possível calcular o custo do erro.")
+        st.session_state.custo_falsos_negativos = None
     # --- 5. ANÁLISE DE OVERFITTING (Curva de Perda) ---
     st.markdown("### 📉 Análise de Overfitting: Curva de Perda")
     st.info("""
