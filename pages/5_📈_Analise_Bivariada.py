@@ -242,7 +242,7 @@ def main():
         
     # Remover NaNs ou substituir por string para evitar problemas
     dados_plot = dados[[var_x, var_y, target]].dropna()
-    dados_plot[target] = dados_plot[target].astype(int)  # Garante que seja int
+    #dados_plot[target] = dados_plot[target].astype(int)  # Garante que seja int
     classes = sorted(dados_plot[target].unique())
     cores_base = ['green', 'red', 'blue', 'orange', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan']
     marcadores_base = ['o', 'x', '^', 'D', 'v', '<', '>', 'p', '*', 's']
