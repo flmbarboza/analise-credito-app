@@ -218,6 +218,62 @@ def main():
         st.error(f"❌ A coluna `{coluna_valor}` não está disponível no conjunto de teste.")
     except Exception as e:
         st.error(f"Erro ao calcular custo dos erros: {e}")
+
+    # --- 9. INDICADOR RELATIVO: Custo do Erro vs. Montante Total Emprestado ---
+    st.markdown("### 📊 Indicador Relativo: Custo do Erro")
+    st.info("""
+    O custo absoluto dos erros é importante, mas ganha mais sentido quando comparado ao **total de crédito concedido**.
+    
+    Aqui, calculamos a **proporção do valor dos empréstimos que se tornou prejuízo** por causa de Falsos Negativos.
+    """)
+    
+    # Recupera o valor total emprestado no conjunto de teste
+    try:
+        # Valor total emprestado (soma de todos os loan_amount no conjunto de teste)
+        montante_total = df_original.loc[y_test.index, coluna_valor].sum()
+    
+        if 'custo_falsos_negativos' in st.session_state:
+            custo_fn = st.session_state.custo_falsos_negativos
+        else:
+            # Recalcula se necessário
+            results = pd.DataFrame({
+                'y_real': y_test,
+                'y_pred': y_pred,
+                'valor': df_original.loc[y_test.index, coluna_valor].values
+            })
+            falsos_negativos = results[(results['y_real'] == 1) & (results['y_pred'] == 0)]
+            custo_fn = falsos_negativos['valor'].sum()
+    
+        # Calcula o indicador relativo
+        if montante_total > 0:
+            percentual_perda = (custo_fn / montante_total) * 100
+        else:
+            percentual_perda = 0.0
+    
+        # Exibe os resultados
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Montante Total Concedido", f"R$ {montante_total:,.2f}")
+        col2.metric("Custo dos Falsos Negativos", f"R$ {custo_fn:,.2f}")
+        col3.metric("Taxa de Perda por Erro", f"{percentual_perda:.2f}%")
+    
+        # Interpretação
+        if percentual_perda < 1:
+            st.success(f"✅ Baixo impacto: apenas **{percentual_perda:.2f}%** do montante concedido foi perdido por erros do modelo.")
+        elif percentual_perda < 5:
+            st.warning(f"⚠️ Impacto moderado: **{percentual_perda:.2f}%** do crédito concedido resultou em prejuízo.")
+        else:
+            st.error(f"🚨 Alto impacto: **{percentual_perda:.2f}%** do valor emprestado foi perdido por Falsos Negativos. Reavalie o modelo ou o limiar de aprovação.")
+    
+        # Armazena para relatório
+        st.session_state.indicador_relativo_custo = {
+            'montante_total': montante_total,
+            'custo_fn': custo_fn,
+            'percentual_perda': percentual_perda
+        }
+    
+    except Exception as e:
+        st.error(f"Erro ao calcular indicador relativo: {e}")
+        
     # --- 5. ANÁLISE DE OVERFITTING (Curva de Perda) ---
     st.markdown("### 📉 Análise de Overfitting: Curva de Perda")
     st.info("""
@@ -327,6 +383,7 @@ def main():
     F1-Score: {f1:.1%}
     AUC-ROC: {roc_auc:.2f}
     KS Máximo: {ks_max:.2f}
+    Custo do Erro: R$ {custo_total:,.2f} ({percentual_perda:.2f}%)
     
     🔍 INTERPRETAÇÃO
     ----------------
@@ -334,7 +391,8 @@ def main():
     - **Recall**: O modelo identificou {recall:.1%} dos verdadeiros inadimplentes.
     - **AUC-ROC**: {'Excelente' if roc_auc > 0.9 else 'Bom' if roc_auc > 0.8 else 'Razoável' if roc_auc > 0.7 else 'Fraco'} poder preditivo.
     - **KS**: {'Excelente' if ks_max > 0.4 else 'Bom' if ks_max > 0.3 else 'Moderado'} separação entre bons e maus.
-
+    - **Custo do Erro**: Somatório do montante emprestado que resultou em inadimplência. O percentual é dado em relação ao total do valor emprestado.
+    
     📉 Overfitting
     -------------
     {overfit_msg}    
