@@ -251,7 +251,7 @@ def main():
     marcadores = dict(zip(classes, cycle(marcadores_base[:n_classes])))
 
     if dados_plot[target].dtype in ['int64', 'float64']:
-    classes = sorted(classes)
+        classes = sorted(classes)
     
     try:
         if tipo_grafico == "Dispersão":
