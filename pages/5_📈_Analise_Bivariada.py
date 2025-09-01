@@ -252,7 +252,8 @@ def main():
     try:
         if tipo_grafico == "Dispersão":
             dados_plot[target] = dados_plot[target].astype("category")
-            sns.scatterplot(data=dados_plot, x=var_x, y=var_y, hue=target, palette=cores, markers=marcadores, ax=ax)
+            sns.scatterplot(data=dados_plot, x=var_x, y=var_y, hue=target, palette=cores, markers=marcadores, ax=ax,
+            legend='auto')
             ax.set_title(f"{var_x} vs {var_y} por {target}")
         elif tipo_grafico == "Boxplot":
             sns.boxplot(data=dados, x=var_x, y=var_y, ax=ax)
