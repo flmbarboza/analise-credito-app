@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import ks_2samp
 import io, zipfile, base64
+from itertools import cycle
 
 def calcular_iv(dados, coluna, target):
     df = dados[[coluna, target]].dropna()
@@ -231,9 +232,17 @@ def main():
     tipo_grafico = st.radio("Tipo de gráfico:", ["Dispersão", "Boxplot", "Barras"], horizontal=True)
 
     fig, ax = plt.subplots(figsize=(7, 4.5))
+    classes = target.dropna().unique()
+    n_classes = len(classes)
+    cores_base = ['green', 'red', 'blue', 'orange', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan']
+    marcadores_base = ['o', 'x', '^', 'D', 'v', '<', '>', 'p', '*', 's']
+    cores = dict(zip(classes, cycle(cores_base[:n_classes])))
+    marcadores = dict(zip(classes, cycle(marcadores_base[:n_classes])))
+
+
     try:
         if tipo_grafico == "Dispersão":
-            sns.scatterplot(data=dados, x=var_x, y=var_y, hue=target, palette="Set1", ax=ax)
+            sns.scatterplot(data=dados, x=var_x, y=var_y, hue=target, palette=cores, style=target, markers=marcadores, ax=ax)
             ax.set_title(f"{var_x} vs {var_y} por {target}")
         elif tipo_grafico == "Boxplot":
             sns.boxplot(data=dados, x=var_x, y=var_y, ax=ax)
@@ -434,14 +443,6 @@ def main():
         
                 # Cria bins com os limites ajustados
                 bins = np.linspace(min_val, max_val, n_bins + 1)
-        
-                # Exibe os limites atuais
-        #        st.markdown(f"**Faixas atuais:**")
-        #        faixas = []
-        #        for i in range(n_bins):
-        #            faixas.append(f"`[{bins[i]:.2f}, {bins[i+1]:.2f})`")
-        #        st.write(" → ".join(faixas))
-
                 try:
                     df_temp = dados[[var_selecionada, target]].dropna()
                     # Filtra apenas dentro dos limites definidos
