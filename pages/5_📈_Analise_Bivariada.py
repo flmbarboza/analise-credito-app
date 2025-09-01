@@ -152,12 +152,26 @@ def main():
         return
     
     valores_unicos = pd.Series(y_data.unique()).dropna().tolist()
-    try:
+    if 'target' in st.session_state and st.session_state.target == target:
+        if hasattr(st.session_state, 'rotulos_originais'):
+            bom_label, mau_label = st.session_state.rotulos_originais
+            st.success(f"✅ `{target}` já foi mapeada: **'{bom_label}' (adimplente)** e **'{mau_label}' (inadimplente)**.")
+        else:
+            st.success(f"✅ Variável-alvo `{target}` já definida.")
+        # Pule para análise bivariada
+    else:
+        st.info(f"ℹ️ Você selecionou a variável `{target}`. Defina agora o que cada valor representa.")
+    
+        # Mostrar valores únicos
+        st.write(f"Valores únicos encontrados em `{target}`:")
+        st.write(valores_unicos)
+
+    #try:
         # Tenta ordenar apenas valores numéricos
-        valores_numericos = [x for x in valores_unicos if isinstance(x, (int, float))]
-        valores_unicos = sorted(valores_numericos) if valores_numericos else valores_unicos
-    except:
-        pass
+     #   valores_numericos = [x for x in valores_unicos if isinstance(x, (int, float))]
+      #  valores_unicos = sorted(valores_numericos) if valores_numericos else valores_unicos
+    #except:
+     #   pass
     
     # Verificar se é binária (0/1)
     if set(valores_unicos) != {0, 1}:
