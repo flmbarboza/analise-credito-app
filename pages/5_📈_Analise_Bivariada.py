@@ -200,7 +200,7 @@ def main():
                     else:
                         # Atualiza os dados
                         dados_atualizados = dados.copy()
-                        dados_atualizados[target] = y_mapped
+                        dados_atualizados[target] = y_mapped.astype(int)
                         st.session_state.dados = dados_atualizados
                         st.session_state.target = target
                         st.success(f"✅ `{target}` foi convertida para 0 (adimplente) e 1 (inadimplente).")
@@ -220,7 +220,11 @@ def main():
     numericas = dados[variaveis_ativas].select_dtypes(include=[np.number]).columns.tolist()
     categoricas = dados[variaveis_ativas].select_dtypes(include='object').columns.tolist()
     features = [c for c in (numericas + categoricas) if c != target]
-
+    
+    if len(features) < 2:
+        st.warning("É necessário ter pelo menos duas variáveis para análise bivariada.")
+        return
+        
     # --- 2. ANÁLISE BIVARIADA ---
     st.markdown("### 📊 Análise Bivariada")
     col1, col2 = st.columns(2)
@@ -231,30 +235,23 @@ def main():
 
     tipo_grafico = st.radio("Tipo de gráfico:", ["Dispersão", "Boxplot", "Barras"], horizontal=True)
     # Certifique-se de que as colunas existem
-    if var_x not in dados.columns:
-        raise ValueError(f"Coluna '{var_x}' não encontrada no DataFrame.")
-    if var_y not in dados.columns:
-        raise ValueError(f"Coluna '{var_y}' não encontrada no DataFrame.")
-    if target not in dados.columns:
-        raise ValueError(f"Coluna '{target}' não encontrada no DataFrame.")
-    
+    if var_x not in dados.columns or var_y not in dados.columns or target not in dados.columns:
+        st.error("Erro interno: coluna ausente.")
+        st.stop()
+        
     # Remover NaNs ou substituir por string para evitar problemas
     dados_plot = dados[[var_x, var_y, target]].dropna()
-    
-    # Extrair classes únicas do target
-    classes = dados_plot[target].unique()
-    fig, ax = plt.subplots(figsize=(7, 4.5))
-    n_classes = len(classes)
+    dados_plot[target] = dados_plot[target].astype(int)  # Garante que seja int
+    classes = sorted(dados_plot[target].unique())
     cores_base = ['green', 'red', 'blue', 'orange', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan']
     marcadores_base = ['o', 'x', '^', 'D', 'v', '<', '>', 'p', '*', 's']
-    cores = dict(zip(classes, cycle(cores_base[:n_classes])))
-    marcadores = dict(zip(classes, cycle(marcadores_base[:n_classes])))
-
-    if dados_plot[target].dtype in ['int64', 'float64']:
-        classes = sorted(classes)
+    cores = dict(zip(classes, cycle(cores_base[:len(classes)])))
+    marcadores = dict(zip(classes, cycle(marcadores_base[:len(classes)])))
+    fig, ax = plt.subplots(figsize=(7, 4.5))
     
     try:
         if tipo_grafico == "Dispersão":
+            dados_plot[target] = dados_plot[target].astype("category")
             sns.scatterplot(data=dados_plot, x=var_x, y=var_y, hue=target, palette=cores, style=target, markers=marcadores, ax=ax)
             ax.set_title(f"{var_x} vs {var_y} por {target}")
         elif tipo_grafico == "Boxplot":
