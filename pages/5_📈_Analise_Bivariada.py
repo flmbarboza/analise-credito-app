@@ -244,15 +244,15 @@ def main():
     dados_plot[target] = dados_plot[target].astype(int)  # Garante que seja int
     classes = sorted(dados_plot[target].unique())
     cores_base = ['green', 'red', 'blue', 'orange', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan']
-    #marcadores_base = ['o', 'x', '^', 'D', 'v', '<', '>', 'p', '*', 's']
+    marcadores_base = ['o', 'x', '^', 'D', 'v', '<', '>', 'p', '*', 's']
     cores = dict(zip(classes, cycle(cores_base[:len(classes)])))
-    #marcadores = dict(zip(classes, cycle(marcadores_base[:len(classes)])))
+    marcadores = dict(zip(classes, cycle(marcadores_base[:len(classes)])))
     fig, ax = plt.subplots(figsize=(7, 4.5))
     
     try:
         if tipo_grafico == "Dispersão":
             dados_plot[target] = dados_plot[target].astype("category")
-            sns.scatterplot(data=dados_plot, x=var_x, y=var_y, hue=target, palette=cores, ax=ax)
+            sns.scatterplot(data=dados_plot, x=var_x, y=var_y, hue=target, palette=cores, markers=marcadores, ax=ax)
             ax.set_title(f"{var_x} vs {var_y} por {target}")
         elif tipo_grafico == "Boxplot":
             sns.boxplot(data=dados, x=var_x, y=var_y, ax=ax)
