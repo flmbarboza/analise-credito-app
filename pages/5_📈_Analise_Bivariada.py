@@ -232,7 +232,7 @@ def main():
     tipo_grafico = st.radio("Tipo de gráfico:", ["Dispersão", "Boxplot", "Barras"], horizontal=True)
 
     fig, ax = plt.subplots(figsize=(7, 4.5))
-    classes = target.dropna().unique()
+    classes = dados[target].dropna().unique()
     n_classes = len(classes)
     cores_base = ['green', 'red', 'blue', 'orange', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan']
     marcadores_base = ['o', 'x', '^', 'D', 'v', '<', '>', 'p', '*', 's']
