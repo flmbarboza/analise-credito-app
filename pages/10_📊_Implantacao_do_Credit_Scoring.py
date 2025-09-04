@@ -159,15 +159,15 @@ def main():
         st.markdown(item)
 
     with st.expander("🔍 Concluiu o teste final?"):
-    st.markdown("""
-    - **Novos dados**: Testou se realmente a sua Análise de Crédito funciona na prática? 
-    - **Apurar resultados**: Os indicadores apresentam números similares ao teste?  
-    - **Concluir análise**: Agora é só emitir um documento que sintetize sua proposta, demonstrando claramente os pontos fortes e fracos. 
-    """)
-
-    st.markdown("""
-        Encerrada a jornada, vamos a conclusão do documento que contém todas as partes do processo em detalhes.
-    """)
+        st.markdown("""
+        - **Novos dados**: Testou se realmente a sua Análise de Crédito funciona na prática? 
+        - **Apurar resultados**: Os indicadores apresentam números similares ao teste?  
+        - **Concluir análise**: Agora é só emitir um documento que sintetize sua proposta, demonstrando claramente os pontos fortes e fracos. 
+        """)
+    
+        st.markdown("""
+            Encerrada a jornada, vamos a conclusão do documento que contém todas as partes do processo em detalhes.
+        """)
 
     # --- 6. RELATÓRIO DE IMPLANTAÇÃO ---
     with st.expander("📄 Gerar Relatório de Implantação", expanded=False):
