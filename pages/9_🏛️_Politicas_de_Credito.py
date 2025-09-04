@@ -158,9 +158,20 @@ def main():
         st.metric("Taxa de Aprovação", f"{st.session_state.aprovacao_rate:.1%}")
     else:
         st.info("👆 Clique em **'Simular Política'** para calcular a taxa de aprovação com as regras definidas.")
-    # --- 6. RELATÓRIO DA POLÍTICA ---
-    with st.expander("📄 Gerar Relatório de Política de Crédito", expanded=False):
-        st.markdown("### 📝 Resumo da política definida")
+        
+# --- 6. RELATÓRIO DA POLÍTICA ---
+with st.expander("📄 Gerar Relatório de Política de Crédito", expanded=False):
+    st.markdown("### 📝 Resumo da política definida")
+
+    # Verifica se a simulação já foi feita
+    if 'aprovacao_rate' not in st.session_state:
+        st.info("👆 Primeiro, clique em **'Simular Política'** para gerar o relatório.")
+    else:
+        # Recupera os valores do session_state
+        aprovacao_rate = st.session_state.aprovacao_rate
+        fn = st.session_state.get('fn', 0)
+        fp = st.session_state.get('fp', 0)
+        total = len(y_test)
 
         relatorio = f"""
 RELATÓRIO DE POLÍTICA DE CRÉDITO
@@ -174,7 +185,7 @@ RELATÓRIO DE POLÍTICA DE CRÉDITO
 --------------------------
 Falsos Negativos (prejuízo): {fn}
 Falsos Positivos (perda de receita): {fp}
-Taxa de erro total: {(fp + fn) / len(y_test):.1%}
+Taxa de erro total: {(fp + fn) / total:.1%}
 
 🔧 **Política Simulada**
 ------------------------
