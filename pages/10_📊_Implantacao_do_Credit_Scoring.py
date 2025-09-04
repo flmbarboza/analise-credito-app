@@ -119,6 +119,48 @@ def main():
     col4.metric("F1-Score", f"{f1:.1%}")
     col5.metric("KS", f"{ks:.2f}")
 
+    # --- 4.1. CUSTO DO ERRO ---
+    st.markdown("### 💰 Custo do Erro")
+    st.info("""
+    O erro do modelo tem um custo financeiro direto:
+    - **Falso Negativo (FN)**: Cliente inadimplente aprovado → **prejuízo** (ex: valor do empréstimo não pago).
+    - **Falso Positivo (FP)**: Cliente adimplente rejeitado → **perda de receita** (juros e tarifas não realizadas).
+    """)
+    
+    # Entrada de custos (valores médios)
+    col1, col2 = st.columns(2)
+    with col1:
+        custo_fn = st.number_input(
+            "Custo médio de um Falso Negativo (ex: valor médio de perda):",
+            min_value=0.0,
+            value=5000.0,
+            step=100.0,
+            format="%.2f"
+        )
+    with col2:
+        custo_fp = st.number_input(
+            "Custo médio de um Falso Positivo (ex: lucro médio perdido):",
+            min_value=0.0,
+            value=1000.0,
+            step=100.0,
+            format="%.2f"
+        )
+    
+    # Extração de FN e FP da matriz de confusão
+    tn, fp, fn, tp = cm.ravel()
+    
+    # Cálculo do custo total e por cliente
+    custo_total = (fn * custo_fn) + (fp * custo_fp)
+    custo_por_cliente = custo_total / len(y_novo)
+    
+    # Exibe os resultados
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Falsos Negativos (FN)", fn)
+    col2.metric("Falsos Positivos (FP)", fp)
+    col3.metric("Custo por Cliente", f"R$ {custo_por_cliente:,.2f}")
+    
+    st.success(f"✅ Custo total do erro: R$ {custo_total:,.2f}")
+    
     # --- 5. VALIDAÇÃO DAS POLÍTICAS DE CRÉDITO ---
     st.markdown("### 🏛️ Validação das Políticas de Crédito")
     st.info("Verifique se o modelo atende às políticas definidas anteriormente.")
@@ -191,6 +233,7 @@ Precision: {prec:.1%}
 Recall: {rec:.1%}
 F1-Score: {f1:.1%}
 KS: {ks:.2f}
+Custo por Cliente: R$ {custo_por_cliente:,.2f}
 
 📋 **POLÍTICAS DE CRÉDITO**
 ----------------------------
