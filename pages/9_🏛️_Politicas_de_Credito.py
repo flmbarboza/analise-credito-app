@@ -122,30 +122,42 @@ def main():
 
     # --- 5. SIMULAÇÃO DE POLÍTICA COM RESTRIÇÕES ---
     st.markdown("### 🛠️ Simular Política de Crédito com Restrições")
-
+    
     corte_score = st.slider("Score mínimo para aprovação:", 0.0, 1.0, float(threshold), step=0.01, format="%.2f")
     exigir_garantia = st.checkbox("Exigir garantia para clientes com score entre 0.4 e 0.6?")
     limite_dti = st.number_input("Limite máximo de DTI (dívida/renda):", 0.1, 1.0, 0.5, 0.05)
-
+    
     if st.button("Simular Política"):
         # Simula aprovação com base no corte
         aprovado = (y_proba >= corte_score)
-
-        # Aplica restrição de DTI
+    
+        # Aplica restrição de DTI (se a coluna existir)
         if 'dti' in X_test.columns:
             dti = X_test['dti']
             aprovado = aprovado & (dti <= limite_dti)
-
+        else:
+            st.warning("A coluna 'dti' não está disponível. Restrição de DTI ignorada.")
+    
         # Aplica restrição de garantia (simulada)
         precisa_garantia = (y_proba >= 0.4) & (y_proba < 0.6)
-        com_garantia = np.random.rand(len(aprovado)) > 0.3  # Simula 70% fornecem garantia
+        # Simula que 70% dos clientes fornecem garantia (aleatório)
+        np.random.seed(42)  # Para reprodutibilidade
+        com_garantia = np.random.rand(len(aprovado)) < 0.7
         if exigir_garantia:
             aprovado = aprovado & (~precisa_garantia | com_garantia)
-
+    
         aprovacao_rate = aprovado.mean()
-        st.metric("Taxa de Aprovação", f"{aprovacao_rate:.1%}")
-        st.success(f"✅ Política simulada com sucesso! {aprovacao_rate:.1%} dos clientes seriam aprovados.")
-
+    
+        # Salva no session_state para exibir depois
+        st.session_state.aprovacao_rate = aprovacao_rate
+    
+        st.success("✅ Política simulada com sucesso!")
+    
+    # --- EXIBIÇÃO DA TAXA DE APROVAÇÃO (só se já foi simulada)
+    if 'aprovacao_rate' in st.session_state:
+        st.metric("Taxa de Aprovação", f"{st.session_state.aprovacao_rate:.1%}")
+    else:
+        st.info("👆 Clique em **'Simular Política'** para calcular a taxa de aprovação com as regras definidas.")
     # --- 6. RELATÓRIO DA POLÍTICA ---
     with st.expander("📄 Gerar Relatório de Política de Crédito", expanded=False):
         st.markdown("### 📝 Resumo da política definida")
