@@ -189,7 +189,7 @@ Taxa de aprovação simulada: {aprovacao_rate:.1%}
 
     # --- NAVEGAÇÃO ---
     st.markdown("---")
-    st.page_link("pages/10_📊_Entendendo_Analise_de_Credito.py", label="➡️ Ir para Entendendo Análise de Crédito", icon="📊")
+    st.page_link("pages/10_📊_Implantacao_do_Credit_Scoring.py", label="➡️ Ir para Implantação do Credit Scoring", icon="📊")
 
 if __name__ == "__main__":
     main()
