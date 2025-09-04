@@ -486,6 +486,47 @@ def main():
                 file_name="relatorio_modelagem.txt",
                 mime="text/plain"
             )
+
+    # --- EXPORTAÇÃO DOS DADOS DE TESTE ---
+    st.markdown("---")
+    with st.expander("📥 Baixar Amostra de Teste para Validação Externa", expanded=False):
+        st.markdown("### 📥 Dados de Teste (`X_test` e `y_test`)")
+
+        if 'X_test' not in st.session_state or 'y_test' not in st.session_state:
+            st.info("Treine o modelo primeiro para gerar a amostra de teste.")
+        else:
+            st.info("""
+            Use este conjunto para:
+            - Validar o modelo em outro ambiente (Excel, Python, etc).
+            - Testar com ferramentas de IA generativa.
+            - Simular políticas de crédito com dados reais.
+            """)
+
+            # Recupera os dados
+            X_test = st.session_state.X_test
+            y_test = st.session_state.y_test
+
+            # Junta X_test e y_test
+            teste_completo = X_test.copy()
+            teste_completo['target'] = y_test.values
+
+            # Converte para CSV
+            csv_teste = teste_completo.to_csv(index=False)
+
+            # Botão de download
+            st.download_button(
+                label="⬇️ Baixar Amostra de Teste (CSV)",
+                data=csv_teste,
+                file_name="amostra_teste_modelo.csv",
+                mime="text/csv",
+                help="Inclui todas as variáveis preditoras e a variável-alvo (real)."
+            )
+
+            # Preview
+            st.markdown("#### 🔍 Prévia dos dados (primeiras 10 linhas)")
+            st.dataframe(teste_completo.head(10))
+
+            st.success("✅ Pronto para validação externa!")
             
     # --- NAVEGAÇÃO ---
     st.markdown("---")
