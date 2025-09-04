@@ -108,7 +108,7 @@ def main():
         with st.expander("🎯 O que você leva disso?"):
             st.markdown("""
             ## 🎯 **O que você leva disso?**  
-            - Uma habilidade que o mercado paga muito bem. De acordo com o site Glassdoor ([clique aqui](https://www.glassdoor.com.br/Sal%C3%A1rios/credit-risk-manager-sal%C3%A1rio-SRCH_KO0,19.htm)), um gestor de risco de crédito ganha entre **R\$ 200 mil e R\$ 400 mil**, além de bonificações.  
+            - Uma habilidade que o mercado paga muito bem. De acordo com o site Glassdoor ([clique aqui](https://www.glassdoor.com.br/Sal%C3%A1rios/credit-risk-manager-sal%C3%A1rio-SRCH_KO0,19.htm)), um gestor de risco de crédito ganha entre **R\\$ 200 mil e R\$ 400 mil**, além de bonificações.  
             - Capacidade real de transformar dados em decisão.  
             - Um raciocínio mais analítico, mais lógico e mais preparado pra qualquer área da gestão — não só finanças.  
 
