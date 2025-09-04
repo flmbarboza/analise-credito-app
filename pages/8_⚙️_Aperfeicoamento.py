@@ -78,8 +78,8 @@ def main():
 
     # --- 3. EXPANDER: AJUSTE DE LIMIAR (com base no KS) ---
     with st.expander("🎛️ Ajuste de Limiar de Decisão (Threshold)", expanded=True):
-        st.markdown("### 📊 Otimização com base no KS e na taxa de inadimplência")
-
+        st.markdown("### 📊 Otimização com base no KS, custo de erro e taxa de inadimplência")
+    
         # Cálculo do KS e limiar ótimo
         thresholds = np.linspace(0, 1, 100)
         tpr = [np.mean(y_proba[y_test == 1] >= th) for th in thresholds]
@@ -88,13 +88,13 @@ def main():
         best_idx = np.argmax(ks_values)
         best_threshold = thresholds[best_idx]
         max_ks = ks_values[best_idx]
-
+    
         st.info(f"""
         - **KS Máximo encontrado:** {max_ks:.2f} no limiar **{best_threshold:.2f}**
         - **Taxa de inadimplência na amostra:** {taxa_inadimplencia:.1%}
-        - **Sugestão de limiar inicial:** Próximo de {best_threshold:.2f} (onde o modelo melhor separa bons e maus).
+        - **Sugestão de limiar inicial:** Próximo de {best_threshold:.2f}.
         """)
-
+    
         # Usuário escolhe o limiar
         threshold = st.slider(
             "Escolha o limiar de aprovação:",
@@ -104,35 +104,89 @@ def main():
             step=0.01,
             format="%.2f"
         )
-
-        # Aplica o novo limiar
+    
+        # --- CÁLCULO DE MÉTRICAS E CUSTO DO ERRO ---
         y_pred_threshold = (y_proba >= threshold).astype(int)
-
-        # Recalcula métricas
+    
+        # Métricas com novo limiar
         acc = accuracy_score(y_test, y_pred_threshold)
         prec = precision_score(y_test, y_pred_threshold)
         rec = recall_score(y_test, y_pred_threshold)
         f1_val = f1_score(y_test, y_pred_threshold)
-
-        # Mostra métricas atualizadas
-        col1, col2, col3, col4 = st.columns(4)
-        col1.metric("Acurácia", f"{acc:.1%}")
-        col2.metric("Precision", f"{prec:.1%}")
-        col3.metric("Recall", f"{rec:.1%}")
-        col4.metric("F1-Score", f"{f1_val:.1%}")
-
+    
         # Matriz de confusão
         cm = confusion_matrix(y_test, y_pred_threshold)
-        fig, ax = plt.subplots(figsize=(5, 4))
-        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax,
-                    xticklabels=['Adimplente', 'Inadimplente'],
-                    yticklabels=['Adimplente', 'Inadimplente'])
-        ax.set_xlabel('Previsto')
-        ax.set_ylabel('Real')
-        ax.set_title(f'Matriz de Confusão (Limiar = {threshold:.2f})')
-        st.pyplot(fig)
-
-        # Salva métricas atualizadas
+        tn, fp, fn, tp = cm.ravel()
+    
+        # --- CUSTO DO ERRO ---
+        st.markdown("### 💰 Custo do Erro")
+        st.info("""
+        O erro do modelo tem custo real:
+        - **Falso Negativo (FN)**: Cliente inadimplente aprovado → **prejuízo financeiro** (ex: perda do valor emprestado).
+        - **Falso Positivo (FP)**: Cliente adimplente rejeitado → **perda de receita** (juros e tarifas não realizadas).
+        """)
+    
+        # Entrada de custos (valores médios)
+        col1, col2 = st.columns(2)
+        with col1:
+            custo_fn = st.number_input("Custo médio de um Falso Negativo (ex: valor médio de perda):", 
+                                       min_value=0.0, value=5000.0, step=100.0)
+        with col2:
+            custo_fp = st.number_input("Custo médio de um Falso Positivo (ex: lucro médio perdido):", 
+                                       min_value=0.0, value=1000.0, step=100.0)
+    
+        # Custo total do erro
+        custo_total = (fn * custo_fn) + (fp * custo_fp)
+        custo_por_cliente = custo_total / len(y_test)
+    
+        # --- MODELO BASE (limiar 0.5) para comparação ---
+        y_pred_base = (y_proba >= 0.5).astype(int)
+        acc_base = accuracy_score(y_test, y_pred_base)
+        prec_base = precision_score(y_test, y_pred_base)
+        rec_base = recall_score(y_test, y_pred_base)
+        f1_base = f1_score(y_test, y_pred_base)
+        cm_base = confusion_matrix(y_test, y_pred_base)
+        tn_base, fp_base, fn_base, tp_base = cm_base.ravel()
+        custo_total_base = (fn_base * custo_fn) + (fp_base * custo_fp)
+        custo_por_cliente_base = custo_total_base / len(y_test)
+    
+        # --- VARIAÇÃO EM RELAÇÃO AO MODELO BASE ---
+        st.markdown("### 📈 Variação em Relação ao Modelo Base (limiar = 0.5)")
+    
+        variacao = pd.DataFrame({
+            "Métrica": ["Acurácia", "Precision", "Recall", "F1-Score", "Custo por Cliente"],
+            "Modelo Base (0.5)": [
+                f"{acc_base:.1%}",
+                f"{prec_base:.1%}",
+                f"{rec_base:.1%}",
+                f"{f1_base:.1%}",
+                f"R$ {custo_por_cliente_base:.2f}"
+            ],
+            "Novo Modelo": [
+                f"{acc:.1%}",
+                f"{prec:.1%}",
+                f"{rec:.1%}",
+                f"{f1_val:.1%}",
+                f"R$ {custo_por_cliente:.2f}"
+            ],
+            "Variação": [
+                f"{'🟢' if acc > acc_base else '🔴'} {((acc - acc_base)/acc_base*100):+.1f}%",
+                f"{'🟢' if prec > prec_base else '🔴'} {((prec - prec_base)/prec_base*100):+.1f}%",
+                f"{'🟢' if rec > rec_base else '🔴'} {((rec - rec_base)/rec_base*100):+.1f}%",
+                f"{'🟢' if f1_val > f1_base else '🔴'} {((f1_val - f1_base)/f1_base*100):+.1f}%",
+                f"{'🟢' if custo_por_cliente < custo_por_cliente_base else '🔴'} R$ {custo_por_cliente - custo_por_cliente_base:+.2f}"
+            ]
+        })
+    
+        st.dataframe(variacao, use_container_width=True)
+    
+        # Destaque se o custo melhorou
+        if custo_por_cliente < custo_por_cliente_base:
+            st.success(f"✅ O novo limiar reduziu o custo por cliente em **R$ {custo_por_cliente_base - custo_por_cliente:.2f}**.")
+        else:
+            st.warning(f"⚠️ O novo limiar aumentou o custo por cliente em **R$ {custo_por_cliente - custo_por_cliente_base:.2f}**.")
+    
+        # --- SALVAMENTO DAS MÉTRICAS ---
         st.session_state.accuracy = acc
         st.session_state.precision = prec
         st.session_state.recall = rec
@@ -140,7 +194,9 @@ def main():
         st.session_state.ks_max = max_ks
         st.session_state.threshold = threshold
         st.session_state.y_pred_final = y_pred_threshold
-
+        st.session_state.custo_por_cliente = custo_por_cliente
+        st.session_state.custo_por_cliente_base = custo_por_cliente_base
+    
         st.success("✅ Limiar aplicado e métricas atualizadas!")
 
     # --- 4. AJUSTE DE HIPERPARÂMETROS (simulado) ---
@@ -174,6 +230,8 @@ Recall: {rec:.1%}
 F1-Score: {f1_val:.1%}
 KS Máximo: {max_ks:.2f}
 Limiar de decisão: {threshold:.2f}
+Custo do Erro Total: R$ {custo_total:.2f}
+Custo do Erro por cliente: R$ {custo_por_cliente:.2f}
 
 📉 **Taxa de inadimplência (amostra):** {taxa_inadimplencia:.1%}
 
