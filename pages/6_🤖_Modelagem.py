@@ -491,7 +491,7 @@ def main():
     st.markdown("---")
     with st.expander("📥 Baixar Amostra de Teste para Validação Externa", expanded=False):
         st.markdown("### 📥 Dados de Teste (`X_test` e `y_test`)")
-
+    
         if 'X_test' not in st.session_state or 'y_test' not in st.session_state:
             st.info("Treine o modelo primeiro para gerar a amostra de teste.")
         else:
@@ -501,33 +501,34 @@ def main():
             - Testar com ferramentas de IA generativa.
             - Simular políticas de crédito com dados reais.
             """)
-
+    
             # Recupera os dados
             X_test = st.session_state.X_test
             y_test = st.session_state.y_test
-
-            # Junta X_test e y_test
+            target_name = st.session_state.get('target', 'target')  # Usa o nome original da coluna
+    
+            # Junta X_test e y_test, com a coluna-alvo no nome original
             teste_completo = X_test.copy()
-            teste_completo['target'] = y_test.values
-
+            teste_completo[target_name] = y_test.values  # ← Aqui está a correção!
+    
             # Converte para CSV
             csv_teste = teste_completo.to_csv(index=False)
-
+    
             # Botão de download
             st.download_button(
                 label="⬇️ Baixar Amostra de Teste (CSV)",
                 data=csv_teste,
                 file_name="amostra_teste_modelo.csv",
                 mime="text/csv",
-                help="Inclui todas as variáveis preditoras e a variável-alvo (real)."
+                help=f"Inclui todas as variáveis preditoras e a variável-alvo: `{target_name}`."
             )
-
+    
             # Preview
             st.markdown("#### 🔍 Prévia dos dados (primeiras 10 linhas)")
             st.dataframe(teste_completo.head(10))
-
+    
             st.success("✅ Pronto para validação externa!")
-            
+        
     # --- NAVEGAÇÃO ---
     st.markdown("---")
     st.page_link("pages/7_✅_Analise_e_Validacao.py", label="➡️ Ir para Análise e Validação", icon="✅")
