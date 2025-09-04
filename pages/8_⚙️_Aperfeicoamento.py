@@ -197,7 +197,7 @@ Limiar de decisão: {threshold:.2f}
 
     # --- NAVEGAÇÃO ---
     st.markdown("---")
-    st.page_link("pages/9_📊_Scorecard.py", label="➡️ Ir para Scorecard", icon="📊")
+    st.page_link("pages/9_🏛️_Politicas_de_Credito.py", label="➡️ Ir para Políticas de Crédito", icon="🏛️")
 
 if __name__ == "__main__":
     main()
