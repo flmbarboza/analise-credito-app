@@ -9,6 +9,7 @@ import io
 import zipfile
 import base64
 from datetime import datetime
+from utils import load_session, save_session
 
 def calcular_ks(bons, maus):
     """Calcula KS entre bons (0) e maus (1)."""
@@ -18,6 +19,13 @@ def calcular_ks(bons, maus):
     return ks_stat
 
 def main():
+    # Carrega sessão salva
+    if 'dados' not in st.session_state:
+        saved = load_session()
+        st.session_state.update(saved)
+        if saved:
+            st.info("✅ Dados recuperados da sessão anterior.")
+
     st.title("📊 Implantação do Credit Scoring")
     st.markdown("""
     Teste o modelo com **novos dados** e valide sua performance na prática.  
@@ -201,6 +209,7 @@ def main():
         st.markdown(item)
     for item in nao_cumpridas:
         st.markdown(item)
+    save_session()
 
     with st.expander("🔍 Concluiu o teste final?"):
         st.markdown("""
