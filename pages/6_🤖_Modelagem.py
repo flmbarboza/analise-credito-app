@@ -78,33 +78,34 @@ def main():
     st.success(f"✅ {len(variaveis_ativas)} variáveis ativas carregadas e validadas.")
 
     st.subheader("⚙️ Configuração do Modelo")
-
     # --- 1. SELEÇÃO E VALIDAÇÃO DA VARIÁVEL-ALVO (Y) ---
-    st.markdown("### 🔍 Defina a Variável-Alvo (Default)")
-    target = st.selectbox(
-        "Selecione a coluna que indica **inadimplência**:",
-        options=dados.columns,
-        index=None,
-        placeholder="Escolha a variável de default",
-        key="target_select"  # ← mantém estado
-    )
-    
-    if target not in dados.columns:
-        st.error("ALERTA: variável-alvo inválida ou indefinida.")
+    if target not in dados.columns or target is None:
+        st.error("ALERTA: variável-alvo inválida ou não selecionada.")
+        st.markdown("""
+          Defina a variável-alvo, corrija seu formato, e realize análises preditivas:  
+          **IV, WOE, KS** – tudo em um só lugar.
+          """)
+        st.markdown("### 🔍 Defina a Variável-Alvo (Default)")
+        target = st.selectbox(
+            "Selecione a coluna que indica **inadimplência**:",
+            options=dados.columns,
+            index=None,
+            placeholder="Escolha a variável de default",
+            key="target_select"  # ← mantém estado
+        )
         return
-    
+    st.session_state.target = target
     y_data = dados[target].dropna()
-    if len(y_data) == 0:
-        st.error(f"A coluna `{target}` está vazia.")
+    if y_data.empty:
+        st.error(f"A coluna `{target}` está vazia ou contém apenas valores nulos.")
         return
     
-    valores_unicos = pd.Series(y_data.unique()).dropna().tolist()
+    # Obter valores únicos de forma segura
     try:
-        # Tenta ordenar apenas valores numéricos
-        valores_numericos = [x for x in valores_unicos if isinstance(x, (int, float))]
-        valores_unicos = sorted(valores_numericos) if valores_numericos else valores_unicos
-    except:
-        pass
+        valores_unicos = sorted(pd.Series(y_data.unique()).dropna())
+    except (TypeError, ValueError):
+        # Para dados não ordenáveis (ex: str + int), ordena como string
+        valores_unicos = sorted(pd.Series(y_data.unique()).dropna().astype(str).tolist())
     
     # Verificar se é binária (0/1)
     if set(valores_unicos) != {0, 1}:
@@ -112,7 +113,6 @@ def main():
         ⚠️ A variável `{target}` não está no formato 0/1.  
         Valores encontrados: {valores_unicos}
         """)
-    
         st.markdown("#### 🔧 Mapeie os valores para 0 (adimplente) e 1 (inadimplente)")
         col1, col2 = st.columns(2)
     
@@ -147,7 +147,7 @@ def main():
                     else:
                         # Atualiza os dados
                         dados_atualizados = dados.copy()
-                        dados_atualizados[target] = y_mapped
+                        dados_atualizados[target] = y_mapped.astype(int)
                         st.session_state.dados = dados_atualizados
                         st.session_state.target = target
                         st.success(f"✅ `{target}` foi convertida para 0 (adimplente) e 1 (inadimplente).")
@@ -156,10 +156,15 @@ def main():
                     st.error(f"Erro ao aplicar mapeamento: {e}")
     
     else:
-        st.success(f"✅ `{target}` já está no formato 0/1.")
-        st.session_state.target = target
+        st.info(f"✅ A variável-alvo `{target}` já está no formato 0/1.")
+
+    try:
+        # Tenta ordenar apenas valores numéricos
+        valores_numericos = [x for x in valores_unicos if isinstance(x, (int, float))]
+        valores_unicos = sorted(valores_numericos) if valores_numericos else valores_unicos
+    except:
+        pass   
     save_session()
-    
     # --- 2. Seleção de variáveis preditoras ---
     st.markdown("### 📊 Dados que serão usados no modelo")
     features = st.multiselect(
