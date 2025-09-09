@@ -174,24 +174,6 @@ def main():
         ⚠️ A variável `{target}` não está no formato 0/1.  
         Valores encontrados: {valores_unicos}
         """)
-        # ... resto do mapeamento
-    else:
-        st.success(f"✅ `{target}` já está no formato 0/1.")
-
-    try:
-        # Tenta ordenar apenas valores numéricos
-        valores_numericos = [x for x in valores_unicos if isinstance(x, (int, float))]
-        valores_unicos = sorted(valores_numericos) if valores_numericos else valores_unicos
-    except:
-        pass
-    
-    # Verificar se é binária (0/1)
-    if set(valores_unicos) != {0, 1}:
-        st.warning(f"""
-        ⚠️ A variável `{target}` não está no formato 0/1.  
-        Valores encontrados: {valores_unicos}
-        """)
-    
         st.markdown("#### 🔧 Mapeie os valores para 0 (adimplente) e 1 (inadimplente)")
         col1, col2 = st.columns(2)
     
@@ -236,8 +218,13 @@ def main():
     
     else:
         st.success(f"✅ `{target}` já está no formato 0/1.")
-        st.session_state.target = target
-      
+
+    try:
+        # Tenta ordenar apenas valores numéricos
+        valores_numericos = [x for x in valores_unicos if isinstance(x, (int, float))]
+        valores_unicos = sorted(valores_numericos) if valores_numericos else valores_unicos
+    except:
+        pass   
     
     # --- DEFINIÇÃO INICIAL DE VARIÁVEIS ATIVAS ---
     if 'variaveis_ativas' not in st.session_state:
