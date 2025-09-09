@@ -2,6 +2,14 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from datetime import datetime
+from utils import load_session, save_session
+
+# Carrega sessão salva
+if 'dados' not in st.session_state:
+    saved = load_session()
+    st.session_state.update(saved)
+    if saved:
+        st.info("✅ Dados recuperados da sessão anterior.")
 
 # Título da página
 st.set_page_config(page_title="Tratamento de Dados", layout="wide")
@@ -103,7 +111,7 @@ with st.expander("🔍 Identificar e Remover Linhas Duplicadas", expanded=False)
                 'removed': linhas_removidas
             }
             st.session_state.actions_log.append(action)
-
+            save_session()
             st.success(f"{linhas_removidas} linhas duplicadas foram removidas com sucesso!")
             st.rerun()
     else:
@@ -140,7 +148,7 @@ with st.expander("🔎 Identificar e Remover Linhas com Dados Faltantes", expand
                 'type': "Remoção"
             }
             st.session_state.actions_log.append(action)
-
+            save_session()
             st.success(f"{total_com_faltantes} linhas com dados faltantes foram excluídas com sucesso!")
             st.rerun()
     else:
@@ -180,6 +188,7 @@ with st.expander("✏️ Identificar Dados Inconsistentes", expanded=False):
                     removed_count
                 )
                 st.session_state.inconsistentes_indices = []
+                save_session()
                 st.success(f"{removed_count} linhas removidas com sucesso!")
                 st.rerun()
 
@@ -226,6 +235,7 @@ with st.expander("📊 Identificar Outliers", expanded=False):
                         removed_count
                     )
                     st.session_state.outlier_indices = []
+                    save_session()
                     st.success(f"{removed_count} linhas removidas com sucesso!")
                     st.rerun()
             else:
@@ -276,7 +286,7 @@ with st.expander("🧹 Exclusão Manual de Linhas", expanded=False):
                     'type': "Remoção"
                 }
                 st.session_state.actions_log.append(action)
-
+                save_session()
                 st.success(f"{count_removed} linha(s) removida(s) com sucesso!")
                 st.rerun()
             else:
