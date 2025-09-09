@@ -802,7 +802,116 @@ def main():
     
                         except Exception as e:
                             st.error(f"Erro ao gerar dummies: {e}")
-                    save_session()  
+                    save_session()
+
+    # --- NOVO: CRIAÇÃO DE VARIÁVEIS COMBINADAS ---
+    st.markdown("---")
+    with st.expander("🔗 Criar Variáveis Combinadas", expanded=False):
+        st.markdown("### 🧩 Crie novas variáveis a partir de combinações")
+    
+        if 'dados' not in st.session_state:
+            st.warning("Dados não disponíveis.")
+            st.stop()
+    
+        dados = st.session_state.dados.copy()
+        numericas = dados.select_dtypes(include=[np.number]).columns.tolist()
+    
+        if len(numericas) < 2:
+            st.info("É necessário pelo menos 2 variáveis numéricas para combinar.")
+        else:
+            # Seleção de variáveis
+            vars_selecionadas = st.multiselect(
+                "Selecione as variáveis para combinar:",
+                options=numericas,
+                default=numericas[:2] if len(numericas) >= 2 else numericas,
+                key="vars_combinadas_select"
+            )
+    
+            if len(vars_selecionadas) >= 2:
+                # Operação de fusão
+                operacao = st.selectbox(
+                    "Tipo de fusão:",
+                    options=[
+                        "Soma (var1 + var2 + ...)",
+                        "Média (mean)",
+                        "Produto (var1 * var2 * ...)",
+                        "Razão (var1 / var2) - apenas 2 variáveis",
+                        "Diferença (var1 - var2) - apenas 2 variáveis"
+                    ],
+                    key="op_combinada"
+                )
+    
+                # Nome da nova variável
+                nome_sugerido = "_".join(vars_selecionadas[:2]) + "_"
+                if "Soma" in operacao:
+                    nome_sugerido += "soma"
+                elif "Média" in operacao:
+                    nome_sugerido += "media"
+                elif "Produto" in operacao:
+                    nome_sugerido += "prod"
+                elif "Razão" in operacao:
+                    nome_sugerido = f"{vars_selecionadas[0]}_por_{vars_selecionadas[1]}"
+                elif "Diferença" in operacao:
+                    nome_sugerido = f"{vars_selecionadas[0]}_menos_{vars_selecionadas[1]}"
+    
+                nome_novo = st.text_input("Nome da nova variável:", value=nome_sugerido, key="nome_var_combinada")
+    
+                if st.button("➕ Criar Variável Combinada", key="btn_criar_combinada"):
+                    if not nome_novo.strip():
+                        st.warning("O nome da variável não pode ser vazio.")
+                    elif nome_novo in dados.columns:
+                        st.warning(f"Já existe uma coluna chamada `{nome_novo}`. Escolha outro nome.")
+                    elif operacao == "Razão (var1 / var2) - apenas 2 variáveis" and len(vars_selecionadas) != 2:
+                        st.warning("A operação de razão só é válida para 2 variáveis.")
+                    elif operacao == "Diferença (var1 - var2) - apenas 2 variáveis" and len(vars_selecionadas) != 2:
+                        st.warning("A operação de diferença só é válida para 2 variáveis.")
+                    else:
+                        try:
+                            nova_var = None
+                            descricao = ""
+    
+                            if operacao == "Soma (var1 + var2 + ...)":
+                                nova_var = dados[vars_selecionadas].sum(axis=1)
+                                descricao = f"Soma de: {', '.join(vars_selecionadas)}"
+    
+                            elif operacao == "Média (mean)":
+                                nova_var = dados[vars_selecionadas].mean(axis=1)
+                                descricao = f"Média de: {', '.join(vars_selecionadas)}"
+    
+                            elif operacao == "Produto (var1 * var2 * ...)":
+                                nova_var = dados[vars_selecionadas].prod(axis=1)
+                                descricao = f"Produto de: {', '.join(vars_selecionadas)}"
+    
+                            elif operacao == "Razão (var1 / var2) - apenas 2 variáveis":
+                                divisor = dados[vars_selecionadas[1]].replace(0, np.nan)
+                                nova_var = dados[vars_selecionadas[0]] / divisor
+                                descricao = f"Razão: {vars_selecionadas[0]} / {vars_selecionadas[1]}"
+    
+                            elif operacao == "Diferença (var1 - var2) - apenas 2 variáveis":
+                                nova_var = dados[vars_selecionadas[0]] - dados[vars_selecionadas[1]]
+                                descricao = f"Diferença: {vars_selecionadas[0]} - {vars_selecionadas[1]}"
+    
+                            # Salvar nova variável
+                            if nova_var is not None:
+                                dados[nome_novo] = nova_var
+                                st.session_state.dados = dados  # Atualiza os dados
+    
+                                # Atualiza variáveis ativas
+                                if 'variaveis_ativas' in st.session_state:
+                                    if nome_novo not in st.session_state.variaveis_ativas:
+                                        st.session_state.variaveis_ativas.append(nome_novo)
+    
+                                st.success(f"✅ Variável `{nome_novo}` criada com sucesso!")
+                                st.info(f"🔹 Descrição: {descricao}")
+    
+                                # Preview
+                                st.dataframe(dados[[nome_novo]].head(10))
+    
+                                # Atualiza listas para análise posterior
+                                st.rerun()  # Garante que a nova variável apareça nos selectbox
+    
+                        except Exception as e:
+                            st.error(f"Erro ao criar a variável: {e}")
     # --- RELATÓRIO ---
     with st.expander("📋 Relatório de Análise"):
         st.markdown("### ✅ Variáveis Ativas Após Pré-Seleção")
