@@ -11,15 +11,15 @@ from sklearn.preprocessing import LabelEncoder
 import statsmodels.api as sm
 import io
 from utils import load_session, save_session
-
-# Carrega sessão salva
-if 'dados' not in st.session_state:
-    saved = load_session()
-    st.session_state.update(saved)
-    if saved:
-        st.info("✅ Dados recuperados da sessão anterior.")
-    
+  
 def main():
+    # Carrega sessão salva
+    if 'dados' not in st.session_state:
+        saved = load_session()
+        st.session_state.update(saved)
+        if saved:
+            st.info("✅ Dados recuperados da sessão anterior.")
+    
     st.title("🤖 Modelagem Preditiva")
     st.markdown("Construa e avalie modelos de credit scoring com interpretação clara.")
     
@@ -120,7 +120,8 @@ def main():
     else:
         st.success(f"✅ `{target}` já está no formato 0/1.")
         st.session_state.target = target
-
+    save_session()
+    
     # --- 2. Seleção de variáveis preditoras ---
     st.markdown("### 📊 Dados que serão usados no modelo")
     features = st.multiselect(
@@ -356,7 +357,8 @@ def main():
 
             except Exception as e:
                 st.error(f"Erro ao treinar o modelo: {e}")
-        
+            save_session()
+            
     # --- EXPORTAÇÃO DO RELATÓRIO ---
     with st.expander("📝 Relatório das Ações Realizadas", expanded=False):
         st.info("Veja abaixo um resumo detalhado de todas as etapas executadas nesta modelagem.")
