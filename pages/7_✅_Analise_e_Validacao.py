@@ -8,14 +8,14 @@ from sklearn.model_selection import validation_curve
 from sklearn.linear_model import LogisticRegression, SGDClassifier
 from utils import load_session, save_session
 
-# Carrega sessão salva
-if 'dados' not in st.session_state:
-    saved = load_session()
-    st.session_state.update(saved)
-    if saved:
-        st.info("✅ Dados recuperados da sessão anterior.")
-        
 def main():
+    # Carrega sessão salva
+    if 'dados' not in st.session_state:
+        saved = load_session()
+        st.session_state.update(saved)
+        if saved:
+            st.info("✅ Dados recuperados da sessão anterior.")
+    
     st.title("✅ Análise e Validação do Modelo")
     st.markdown("""
     Entenda **como o seu modelo se comporta na prática** com métricas essenciais para credit scoring.  
@@ -226,7 +226,7 @@ def main():
         st.error(f"❌ A coluna `{coluna_valor}` não está disponível no conjunto de teste.")
     except Exception as e:
         st.error(f"Erro ao calcular custo dos erros: {e}")
-
+    
     # --- 9. INDICADOR RELATIVO: Custo do Erro vs. Montante Total Emprestado ---
     st.markdown("### 📊 Indicador Relativo: Custo do Erro")
     st.info("""
@@ -281,7 +281,8 @@ def main():
     
     except Exception as e:
         st.error(f"Erro ao calcular indicador relativo: {e}")
-        
+    save_session()
+    
     # --- 5. ANÁLISE DE OVERFITTING (Curva de Perda) ---
     st.markdown("### 📉 Análise de Overfitting: Curva de Perda")
     st.info("""
