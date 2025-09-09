@@ -10,7 +10,15 @@ from datetime import datetime
 import pandas as pd
 import numpy as np
 import random
+# No início de cada página
+from utils.persistence import load_session, save_session
 
+# Carrega sessão salva
+if 'dados' not in st.session_state:
+    saved = load_session()
+    st.session_state.update(saved)
+    if saved:
+        st.info("✅ Dados recuperados da sessão anterior.")
 # --------------------------------------------
 # Funções auxiliares para pré e pós-processamento
 # --------------------------------------------
@@ -162,6 +170,7 @@ def main():
                     st.write(f"A critério de exemplo, veja um subconjunto dos seus dados - Dimensões (número de amostras, quantidade de variáveis): {st.session_state.dados.shape}")
                     st.dataframe(st.session_state.dados.head())
                     st.balloons()
+                    save_session()
                 except Exception as e:
                     st.error(f"Erro ao baixar dados: {str(e)}")
     
@@ -214,7 +223,7 @@ def main():
                 st.success("Arquivo carregado com sucesso!")
                 st.write("Pré-visualização dos dados (5 primeiras linhas):")
                 st.dataframe(dados.head())
-                
+                save_session()
                 # Mostrar estatísticas básicas
                 with st.expander("📊 Estatísticas básicas do arquivo"):
                     st.write(f"Total de linhas: {len(dados)}")
@@ -293,7 +302,8 @@ def main():
                 st.session_state.dados.columns = novos_nomes
                 st.success("Nomes das colunas atualizados!")
                 st.session_state.colunas_originais = colunas_atuais  # Guarda original
-
+                save_session()
+                
         # 2. ANÁLISE SIMPLIFICADA
         st.subheader("🧐 Entendendo Seus Dados")
         
