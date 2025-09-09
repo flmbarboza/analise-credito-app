@@ -5,15 +5,15 @@ import io
 import base64
 from datetime import datetime
 from utils import load_session, save_session
-
-# Carrega sessão salva
-if 'dados' not in st.session_state:
-    saved = load_session()
-    st.session_state.update(saved)
-    if saved:
-        st.info("✅ Dados recuperados da sessão anterior.")
-        
-def main():
+   
+def main():    
+    # Carrega sessão salva
+    if 'dados' not in st.session_state:
+        saved = load_session()
+        st.session_state.update(saved)
+        if saved:
+            st.info("✅ Dados recuperados da sessão anterior.")
+          
     st.title("🏛️ Políticas de Crédito")
     st.markdown("""
     Defina regras de negócio para decisão de crédito, **baseadas em evidências do modelo**.  
@@ -57,7 +57,7 @@ def main():
     # Adiciona y_proba
     dados_teste['y_proba'] = y_proba
     dados_teste['y_pred'] = (y_proba >= threshold).astype(int)
-
+    save_session() 
     # --- 2. ANÁLISE DE ERROS E PREJUÍZO ---
     st.markdown("### 🔍 Análise de Erros do Modelo")
     st.info("""
@@ -166,7 +166,7 @@ def main():
         st.metric("Taxa de Aprovação", f"{st.session_state.aprovacao_rate:.1%}")
     else:
         st.info("👆 Clique em **'Simular Política'** para calcular a taxa de aprovação com as regras definidas.")
-        
+    save_session()     
 # --- 6. RELATÓRIO DA POLÍTICA ---
 with st.expander("📄 Gerar Relatório de Política de Crédito", expanded=False):
     st.markdown("### 📝 Resumo da política definida")
