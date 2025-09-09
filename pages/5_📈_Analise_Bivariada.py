@@ -6,15 +6,7 @@ import numpy as np
 from scipy.stats import ks_2samp
 import io, zipfile, base64
 from itertools import cycle
-from utils import load_session, save_session
-
-# Carrega sessão salva
-if 'dados' not in st.session_state:
-    saved = load_session()
-    st.session_state.update(saved)
-    if saved:
-        st.info("✅ Dados recuperados da sessão anterior.")
-        
+  
 def calcular_iv(dados, coluna, target):
     df = dados[[coluna, target]].dropna()
     if df[coluna].dtype != 'object':
@@ -121,6 +113,15 @@ def criar_zip_exportacao(selecionados, dados, target, iv_df, ks_df, woe_tables, 
     return zip_buffer
     
 def main():
+    from utils import load_session, save_session
+    
+    # Carrega sessão salva
+    if 'dados' not in st.session_state:
+        saved = load_session()
+        st.session_state.update(saved)
+        if saved:
+            st.info("✅ Dados recuperados da sessão anterior.")
+
     st.title("📈 Análise Bivariada e Pré-Seleção de Variáveis")
     # --- 1. VALIDAÇÃO DE DADOS (fora de qualquer expander) ---
     if 'dados' not in st.session_state:
@@ -220,6 +221,7 @@ def main():
     else:
         st.success(f"✅ `{target}` já está no formato 0/1.")
         st.session_state.target = target
+    save_session()  
     
     # --- DEFINIÇÃO INICIAL DE VARIÁVEIS ATIVAS ---
     if 'variaveis_ativas' not in st.session_state:
@@ -335,7 +337,7 @@ def main():
                             st.rerun()
                         else:
                             st.info("Nenhuma variável selecionada para remoção.")
-    
+    save_session()  
     # --- ATUALIZAR LISTAS APÓS REMOÇÃO ---
     # Isso é essencial: recarregar as listas com base na versão atualizada de variaveis_ativas
     variaveis_ativas = st.session_state.variaveis_ativas
@@ -373,7 +375,8 @@ def main():
             st.pyplot(fig_iv)
         else:
             st.warning("Não foi possível calcular IV para nenhuma variável.")
-
+        save_session()
+        
         # --- WOE
         st.markdown("#### 🔎 Weight of Evidence (WOE)")
         st.info("WOE transforma variáveis numéricas em escores de risco. Ajuste o número de faixas.")
@@ -536,7 +539,7 @@ def main():
         
             # Armazenar para uso futuro
             st.session_state.woe_tables = woe_tables  
-    
+        save_session()  
         # --- KS ---
         st.markdown("#### 📊 Kolmogorov-Smirnov (KS)")
         st.info("KS > 0.3: bom | > 0.4: excelente. Mede a separação entre bons e maus.")
@@ -564,7 +567,8 @@ def main():
             st.pyplot(fig_ks)
         else:
             st.warning("Não foi possível calcular KS.")
-
+        save_session()  
+        
     # --- TRANSFORMAÇÃO DE VARIÁVEIS CATEGÓRICAS ---
     with st.expander("🔄 Transformação de Variáveis Categóricas", expanded=False):
         st.markdown("### 🧠 Por que transformar variáveis categóricas?")
@@ -704,7 +708,7 @@ def main():
     
                             except Exception as e:
                                 st.error(f"Erro ao calcular novo WOE/IV: {e}")
-    
+                    save_session()  
                 with tab2:
                     st.markdown("#### ➕ Criar Variáveis Dummy (One-Hot Encoding)")
                     st.info("Cria uma coluna binária para cada categoria (útil para modelos lineares).")
@@ -746,7 +750,7 @@ def main():
     
                         except Exception as e:
                             st.error(f"Erro ao gerar dummies: {e}")
-
+                    save_session()  
     # --- RELATÓRIO ---
     with st.expander("📋 Relatório de Análise"):
         st.markdown("### ✅ Variáveis Ativas Após Pré-Seleção")
