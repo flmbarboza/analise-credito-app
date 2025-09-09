@@ -11,7 +11,7 @@ import pandas as pd
 import numpy as np
 import random
 # No início de cada página
-from utils.persistence import load_session, save_session
+from utils import load_session, save_session
 
 # Carrega sessão salva
 if 'dados' not in st.session_state:
