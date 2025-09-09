@@ -26,18 +26,58 @@ def main():
     if 'encoding_choice' not in st.session_state:
         st.session_state.encoding_choice = {}
     
-    # --- 1. VALIDAÇÃO DE DADOS (fora de qualquer expander) ---
-    if 'dados' not in st.session_state:
-        st.warning("Carregue os dados na página de Coleta primeiro!")
-        st.page_link("pages/3_🚀_Coleta_de_Dados.py", label=" → Retornar para Coleta de dados")
-   
-    dados = st.session_state.dados
-    
-    if dados is None or dados.empty:
-        st.error("""Os dados estão vazios ou inválidos.
-                Neste caso, retorne a página de coleta de dados e revise o procedimento.""")
+     # --- 1. VALIDAÇÃO INICIAL DE DADOS ---
+    if 'dados' not in st.session_state or st.session_state.dados is None or st.session_state.dados.empty:
+        st.warning("Dados não carregados ou vazios! Acesse a página de Coleta primeiro.")
         st.page_link("pages/3_🚀_Coleta_de_Dados.py", label=" → Retornar para Coleta de dados")
         st.stop()
+    
+    dados = st.session_state.dados.copy()
+    
+    # --- 2. VALIDAÇÃO DA VARIÁVEL-ALVO ---
+    target = st.session_state.get('target')
+    if not target or target not in dados.columns:
+        st.warning("⚠️ Variável-alvo não definida ou inválida. Vá para a Análise Bivariada.")
+        st.page_link("pages/5_📈_Analise_Bivariada.py", label="→ Ir para Análise Bivariada")
+        st.stop()
+    
+    # --- 3. DEFINIÇÃO SEGURO DE VARIÁVEIS ATIVAS ---
+    if 'variaveis_ativas' not in st.session_state or st.session_state.variaveis_ativas is None:
+        # st.info(f"ℹ️ A lista de variáveis ativas não foi definida ou está vazia. Usando todas as colunas exceto `{target}`.")
+        # Fallback seguro
+        st.session_state.variaveis_ativas = [col for col in dados.columns if col != target]
+    
+    # Recupera a lista
+    variaveis_ativas = st.session_state.variaveis_ativas
+    
+    # --- 4. VALIDAÇÃO FINAL: Garantir que é uma lista válida ---
+    if not isinstance(variaveis_ativas, list):
+        st.error("❌ A lista de variáveis ativas não foi carregada. Reinicializando...")
+        variaveis_ativas = [col for col in dados.columns if col != target]
+    
+    # Remove colunas que não existem mais nos dados
+    variaveis_ativas = [col for col in variaveis_ativas if col in dados.columns]
+    
+    # Remove a target, se estiver presente
+    if target in variaveis_ativas:
+        variaveis_ativas.remove(target)
+    
+    # --- 5. VERIFICAÇÃO DE VAZIO ---
+    if not variaveis_ativas:
+        st.error("""
+        ❌ Nenhuma variável ativa válida encontrada.  
+        Isso pode ocorrer se:
+        - Todas as variáveis foram removidas.
+        - O nome das colunas mudou.
+        - A variável-alvo é a única coluna no dataset.
+        """)
+        st.stop()
+    
+    # Atualiza o session_state (para garantir consistência)
+    st.session_state.variaveis_ativas = variaveis_ativas
+    
+    # ✅ Confirmação final
+    st.success(f"✅ {len(variaveis_ativas)} variáveis ativas carregadas e validadas.")
 
     st.subheader("⚙️ Configuração do Modelo")
 
