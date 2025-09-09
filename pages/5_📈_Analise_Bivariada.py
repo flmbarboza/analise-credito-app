@@ -194,7 +194,7 @@ def main():
     if target not in dados.columns or target is None:
         st.error("ALERTA: variável-alvo inválida ou não selecionada.")
         return
-    
+    st.session_state.target = target
     y_data = dados[target].dropna()
     
     if y_data.empty:
