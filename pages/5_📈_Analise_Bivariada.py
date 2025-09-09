@@ -151,17 +151,33 @@ def main():
         key="target_select"  # ← mantém estado
     )
     
-    if target not in dados.columns:
-        st.error("ALERTA: variável-alvo inválida ou indefinida.")
+    if target not in dados.columns or target is None:
+        st.error("ALERTA: variável-alvo inválida ou não selecionada.")
         return
     
     y_data = dados[target].dropna()
-    if len(y_data) == 0:
-        st.error(f"A coluna `{target}` está vazia.")
+    
+    if y_data.empty:
+        st.error(f"A coluna `{target}` está vazia ou contém apenas valores nulos.")
         return
     
-    valores_unicos = pd.Series(y_data.unique()).dropna().tolist()
-  
+    # Obter valores únicos de forma segura
+    try:
+        valores_unicos = sorted(pd.Series(y_data.unique()).dropna())
+    except (TypeError, ValueError):
+        # Para dados não ordenáveis (ex: str + int), ordena como string
+        valores_unicos = sorted(pd.Series(y_data.unique()).dropna().astype(str).tolist())
+    
+    # Verificar se é binária (0/1)
+    if set(valores_unicos) != {0, 1}:
+        st.warning(f"""
+        ⚠️ A variável `{target}` não está no formato 0/1.  
+        Valores encontrados: {valores_unicos}
+        """)
+        # ... resto do mapeamento
+    else:
+        st.success(f"✅ `{target}` já está no formato 0/1.")
+
     try:
         # Tenta ordenar apenas valores numéricos
         valores_numericos = [x for x in valores_unicos if isinstance(x, (int, float))]
