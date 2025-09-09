@@ -225,9 +225,22 @@ def main():
     
     # --- DEFINIÇÃO INICIAL DE VARIÁVEIS ATIVAS ---
     if 'variaveis_ativas' not in st.session_state:
-        st.session_state.variaveis_ativas = [col for col in dados.columns if col != target]
-
+        # Fallback: usa todas as colunas exceto a target (se definida)
+        if 'target' in st.session_state:
+            st.session_state.variaveis_ativas = [col for col in dados.columns if col != st.session_state.target]
+        else:
+            st.session_state.variaveis_ativas = dados.columns.tolist()
+        st.info("ℹ️ `variaveis_ativas` não definido. Usando todas as colunas disponíveis.")
+    
     variaveis_ativas = st.session_state.variaveis_ativas
+    
+    # Valida se a lista não está vazia ou contém colunas inválidas
+    variaveis_ativas = [col for col in variaveis_ativas if col in dados.columns]
+    if not variaveis_ativas:
+        st.error("Nenhuma variável ativa válida encontrada. Verifique as colunas do dataset.")
+        st.stop()
+    
+    # --- Seleção de variáveis numéricas ---
     numericas = dados[variaveis_ativas].select_dtypes(include=[np.number]).columns.tolist()
     categoricas = dados[variaveis_ativas].select_dtypes(include='object').columns.tolist()
     features = [c for c in (numericas + categoricas) if c != target]
