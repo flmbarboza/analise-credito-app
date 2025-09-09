@@ -170,7 +170,7 @@ def main():
     features = st.multiselect(
         "Variáveis Preditivas:",
         options=[col for col in dados.columns if col != target],
-        default=[col for col in dados.columns if col != target][:5]
+        default=[col for col in dados.columns if col != target]
     )
 
     if len(features) == 0:
