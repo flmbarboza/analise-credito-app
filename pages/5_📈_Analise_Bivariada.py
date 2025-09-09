@@ -126,37 +126,36 @@ def main():
     # --- 1. VALIDAÇÃO INICIAL DE DADOS ---
     if 'dados' not in st.session_state or st.session_state.dados is None or st.session_state.dados.empty:
         st.warning("Dados não carregados ou vazios! Acesse a página de Coleta primeiro.")
-        st.page_link("pages/2_📊_Coleta_de_Dados.py", label="→ Retornar para Coleta de dados")
+        st.page_link("pages/2_📊_Coleta_de_Dados.py", label="→ Retornar para a Coleta de dados")
         st.stop()
     
     dados = st.session_state.dados.copy()
     
     # --- 2. VALIDAÇÃO DA VARIÁVEL-ALVO ---
     target = st.session_state.get('target')
-    
-    if not target:
-        st.warning("⚠️ Variável-alvo não definida. Vá para a Análise Bivariada para configurá-la.")
+    if not target or target not in dados.columns:
+        st.warning("⚠️ Variável-alvo não definida ou inválida. Vá para a Análise Bivariada.")
         st.page_link("pages/5_📈_Analise_Bivariada.py", label="→ Ir para Análise Bivariada")
         st.stop()
     
-    if target not in dados.columns:
-        st.error(f"❌ A coluna `{target}` não existe mais nos dados. Recarregue os dados ou redefina a variável-alvo.")
-        st.stop()
-    
     # --- 3. DEFINIÇÃO SEGURO DE VARIÁVEIS ATIVAS ---
-    if 'variaveis_ativas' not in st.session_state:
-        st.info(f"ℹ️ `variaveis_ativas` não encontrado. Criando com base em todas as colunas exceto `{target}`.")
-        
-        # Define como todas as colunas, exceto a target
+    if 'variaveis_ativas' not in st.session_state or st.session_state.variaveis_ativas is None:
+        st.info(f"ℹ️ `variaveis_ativas` não definido ou é None. Usando todas as colunas exceto `{target}`.")
+        # Fallback seguro
         st.session_state.variaveis_ativas = [col for col in dados.columns if col != target]
     
-    # Recupera a lista do session_state
+    # Recupera a lista
     variaveis_ativas = st.session_state.variaveis_ativas
     
-    # --- 4. VALIDAÇÃO FINAL: Remove colunas que não existem mais em `dados`
+    # --- 4. VALIDAÇÃO FINAL: Garantir que é uma lista válida ---
+    if not isinstance(variaveis_ativas, list):
+        st.error("❌ `variaveis_ativas` não é uma lista. Reinicializando...")
+        variaveis_ativas = [col for col in dados.columns if col != target]
+    
+    # Remove colunas que não existem mais nos dados
     variaveis_ativas = [col for col in variaveis_ativas if col in dados.columns]
     
-    # Remove a target, se acidentalmente incluída
+    # Remove a target, se estiver presente
     if target in variaveis_ativas:
         variaveis_ativas.remove(target)
     
@@ -164,18 +163,18 @@ def main():
     if not variaveis_ativas:
         st.error("""
         ❌ Nenhuma variável ativa válida encontrada.  
-        Isso pode acontecer se:
-        - Todas as variáveis foram removidas em etapas anteriores.
+        Isso pode ocorrer se:
+        - Todas as variáveis foram removidas.
         - O nome das colunas mudou.
         - A variável-alvo é a única coluna no dataset.
         """)
         st.stop()
     
-    # Atualiza o session_state (seguro)
+    # Atualiza o session_state (para garantir consistência)
     st.session_state.variaveis_ativas = variaveis_ativas
     
-    # ✅ Pronto para uso!
-    st.success(f"✅ {len(variaveis_ativas)} variáveis ativas carregadas.")
+    # ✅ Confirmação final
+    st.success(f"✅ {len(variaveis_ativas)} variáveis ativas carregadas e validadas.")
 
     st.markdown("""
     Defina a variável-alvo, corrija seu formato, e realize análises preditivas:  
