@@ -140,7 +140,7 @@ def main():
     
     # --- 3. DEFINIÇÃO SEGURO DE VARIÁVEIS ATIVAS ---
     if 'variaveis_ativas' not in st.session_state or st.session_state.variaveis_ativas is None:
-        # st.info(f"ℹ️ `variaveis_ativas` não definido ou é None. Usando todas as colunas exceto `{target}`.")
+        # st.info(f"ℹ️ A lista de variáveis ativas não foi definida ou está vazia. Usando todas as colunas exceto `{target}`.")
         # Fallback seguro
         st.session_state.variaveis_ativas = [col for col in dados.columns if col != target]
     
@@ -175,15 +175,14 @@ def main():
     
     # ✅ Confirmação final
     st.success(f"✅ {len(variaveis_ativas)} variáveis ativas carregadas e validadas.")
-    
-    st.markdown("""
-    Defina a variável-alvo, corrija seu formato, e realize análises preditivas:  
-    **IV, WOE, KS** – tudo em um só lugar.
-    """)
 
     # --- 1. SELEÇÃO E VALIDAÇÃO DA VARIÁVEL-ALVO (Y) ---
     if target not in dados.columns or target is None:
         st.error("ALERTA: variável-alvo inválida ou não selecionada.")
+        st.markdown("""
+          Defina a variável-alvo, corrija seu formato, e realize análises preditivas:  
+          **IV, WOE, KS** – tudo em um só lugar.
+          """)
         st.markdown("### 🔍 Defina a Variável-Alvo (Default)")
         target = st.selectbox(
             "Selecione a coluna que indica **inadimplência**:",
