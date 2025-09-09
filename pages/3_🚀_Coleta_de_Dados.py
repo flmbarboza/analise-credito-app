@@ -10,7 +10,6 @@ from datetime import datetime
 import pandas as pd
 import numpy as np
 import random
-# No início de cada página
 from utils import load_session, save_session
 
 # Carrega sessão salva
