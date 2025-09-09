@@ -37,9 +37,7 @@ def main():
     # --- 2. VALIDAÇÃO DA VARIÁVEL-ALVO ---
     target = st.session_state.get('target')
     if not target or target not in dados.columns:
-        st.warning("⚠️ Variável-alvo não definida ou inválida. Vá para a Análise Bivariada.")
-        st.page_link("pages/5_📈_Analise_Bivariada.py", label="→ Ir para Análise Bivariada")
-        st.stop()
+        st.warning("⚠️ Variável-alvo não definida ou inválida.")
     
     # --- 3. DEFINIÇÃO SEGURO DE VARIÁVEIS ATIVAS ---
     if 'variaveis_ativas' not in st.session_state or st.session_state.variaveis_ativas is None:
