@@ -182,17 +182,16 @@ def main():
     """)
 
     # --- 1. SELEÇÃO E VALIDAÇÃO DA VARIÁVEL-ALVO (Y) ---
-    st.markdown("### 🔍 Defina a Variável-Alvo (Default)")
-    target = st.selectbox(
-        "Selecione a coluna que indica **inadimplência**:",
-        options=dados.columns,
-        index=None,
-        placeholder="Escolha a variável de default",
-        key="target_select"  # ← mantém estado
-    )
-    
     if target not in dados.columns or target is None:
         st.error("ALERTA: variável-alvo inválida ou não selecionada.")
+        st.markdown("### 🔍 Defina a Variável-Alvo (Default)")
+        target = st.selectbox(
+            "Selecione a coluna que indica **inadimplência**:",
+            options=dados.columns,
+            index=None,
+            placeholder="Escolha a variável de default",
+            key="target_select"  # ← mantém estado
+        )
         return
     st.session_state.target = target
     y_data = dados[target].dropna()
