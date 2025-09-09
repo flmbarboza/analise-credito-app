@@ -221,7 +221,7 @@ def main():
     else:
         st.success(f"✅ `{target}` já está no formato 0/1.")
         st.session_state.target = target
-    save_session()  
+      
     
     # --- DEFINIÇÃO INICIAL DE VARIÁVEIS ATIVAS ---
     if 'variaveis_ativas' not in st.session_state:
@@ -235,7 +235,8 @@ def main():
     if len(features) < 2:
         st.warning("É necessário ter pelo menos duas variáveis para análise bivariada.")
         return
-        
+    save_session()
+  
     # --- 2. ANÁLISE BIVARIADA ---
     st.markdown("### 📊 Análise Bivariada")
     col1, col2 = st.columns(2)
