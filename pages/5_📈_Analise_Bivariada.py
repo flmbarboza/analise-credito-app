@@ -255,7 +255,7 @@ def main():
                     st.error(f"Erro ao aplicar mapeamento: {e}")
     
     else:
-        st.success(f"✅ `{target}` já está no formato 0/1.")
+        st.alert(f"✅ A variável-alvo `{target}` já está no formato 0/1.")
 
     try:
         # Tenta ordenar apenas valores numéricos
