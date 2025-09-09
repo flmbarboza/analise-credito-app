@@ -140,7 +140,7 @@ def main():
     
     # --- 3. DEFINIÇÃO SEGURO DE VARIÁVEIS ATIVAS ---
     if 'variaveis_ativas' not in st.session_state or st.session_state.variaveis_ativas is None:
-        st.info(f"ℹ️ `variaveis_ativas` não definido ou é None. Usando todas as colunas exceto `{target}`.")
+        # st.info(f"ℹ️ `variaveis_ativas` não definido ou é None. Usando todas as colunas exceto `{target}`.")
         # Fallback seguro
         st.session_state.variaveis_ativas = [col for col in dados.columns if col != target]
     
@@ -149,7 +149,7 @@ def main():
     
     # --- 4. VALIDAÇÃO FINAL: Garantir que é uma lista válida ---
     if not isinstance(variaveis_ativas, list):
-        st.error("❌ `variaveis_ativas` não é uma lista. Reinicializando...")
+        st.error("❌ A lista de variáveis ativas não foi carregada. Reinicializando...")
         variaveis_ativas = [col for col in dados.columns if col != target]
     
     # Remove colunas que não existem mais nos dados
@@ -175,7 +175,7 @@ def main():
     
     # ✅ Confirmação final
     st.success(f"✅ {len(variaveis_ativas)} variáveis ativas carregadas e validadas.")
-
+    
     st.markdown("""
     Defina a variável-alvo, corrija seu formato, e realize análises preditivas:  
     **IV, WOE, KS** – tudo em um só lugar.
@@ -265,7 +265,7 @@ def main():
         valores_unicos = sorted(valores_numericos) if valores_numericos else valores_unicos
     except:
         pass   
-    
+    save_session()
     # --- DEFINIÇÃO INICIAL DE VARIÁVEIS ATIVAS ---
     if 'variaveis_ativas' not in st.session_state:
         # Fallback: usa todas as colunas exceto a target (se definida)
@@ -291,7 +291,7 @@ def main():
     if len(features) < 2:
         st.warning("É necessário ter pelo menos duas variáveis para análise bivariada.")
         return
-  
+    save_session()
     # --- 2. ANÁLISE BIVARIADA ---
     st.markdown("### 📊 Análise Bivariada")
     col1, col2 = st.columns(2)
