@@ -6,18 +6,6 @@ import random
 from io import BytesIO
 from io import StringIO
 from datetime import datetime
-
-import pandas as pd
-import numpy as np
-import random
-from utils import load_session, save_session
-
-# Carrega sessão salva
-if 'dados' not in st.session_state:
-    saved = load_session()
-    st.session_state.update(saved)
-    if saved:
-        st.info("✅ Dados recuperados da sessão anterior.")
 # --------------------------------------------
 # Funções auxiliares para pré e pós-processamento
 # --------------------------------------------
@@ -129,6 +117,15 @@ def executar_pipeline_seed(base, seed):
     return combinado
     
 def main():
+    from utils import load_session, save_session
+    
+    # Carrega sessão salva
+    if 'dados' not in st.session_state:
+        saved = load_session()
+        st.session_state.update(saved)
+        if saved:
+            st.info("✅ Dados recuperados da sessão anterior.")
+            
     st.title("🚀 Coleta de Dados")
     st.balloons()  # Efeito visual para confirmar o carregamento
     st.markdown("""
