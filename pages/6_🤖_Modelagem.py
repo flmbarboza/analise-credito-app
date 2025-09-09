@@ -10,6 +10,14 @@ from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import LabelEncoder
 import statsmodels.api as sm
 import io
+from utils import load_session, save_session
+
+# Carrega sessão salva
+if 'dados' not in st.session_state:
+    saved = load_session()
+    st.session_state.update(saved)
+    if saved:
+        st.info("✅ Dados recuperados da sessão anterior.")
     
 def main():
     st.title("🤖 Modelagem Preditiva")
