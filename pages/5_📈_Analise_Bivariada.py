@@ -6,7 +6,15 @@ import numpy as np
 from scipy.stats import ks_2samp
 import io, zipfile, base64
 from itertools import cycle
+from utils import load_session, save_session
 
+# Carrega sessão salva
+if 'dados' not in st.session_state:
+    saved = load_session()
+    st.session_state.update(saved)
+    if saved:
+        st.info("✅ Dados recuperados da sessão anterior.")
+        
 def calcular_iv(dados, coluna, target):
     df = dados[[coluna, target]].dropna()
     if df[coluna].dtype != 'object':
