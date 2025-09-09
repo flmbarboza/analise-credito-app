@@ -6,7 +6,15 @@ import numpy as np
 from sklearn.metrics import classification_report, confusion_matrix, roc_curve, auc, roc_auc_score, log_loss
 from sklearn.model_selection import validation_curve
 from sklearn.linear_model import LogisticRegression, SGDClassifier
+from utils import load_session, save_session
 
+# Carrega sessão salva
+if 'dados' not in st.session_state:
+    saved = load_session()
+    st.session_state.update(saved)
+    if saved:
+        st.info("✅ Dados recuperados da sessão anterior.")
+        
 def main():
     st.title("✅ Análise e Validação do Modelo")
     st.markdown("""
