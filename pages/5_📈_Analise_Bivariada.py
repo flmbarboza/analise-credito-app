@@ -248,7 +248,6 @@ def main():
     if len(features) < 2:
         st.warning("É necessário ter pelo menos duas variáveis para análise bivariada.")
         return
-    save_session()
   
     # --- 2. ANÁLISE BIVARIADA ---
     st.markdown("### 📊 Análise Bivariada")
