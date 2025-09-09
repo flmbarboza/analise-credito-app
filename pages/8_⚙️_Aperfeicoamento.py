@@ -9,15 +9,15 @@ import io
 import zipfile
 import base64
 from utils import load_session, save_session
-
-# Carrega sessão salva
-if 'dados' not in st.session_state:
-    saved = load_session()
-    st.session_state.update(saved)
-    if saved:
-        st.info("✅ Dados recuperados da sessão anterior.")
-        
+      
 def main():
+    # Carrega sessão salva
+    if 'dados' not in st.session_state:
+        saved = load_session()
+        st.session_state.update(saved)
+        if saved:
+            st.info("✅ Dados recuperados da sessão anterior.")
+   
     st.title("⚙️ Aperfeiçoamento do Modelo")
     st.markdown("""
     Refine o modelo com base nas métricas anteriores.  
@@ -204,7 +204,7 @@ def main():
         st.session_state.y_pred_final = y_pred_threshold
         st.session_state.custo_por_cliente = custo_por_cliente
         st.session_state.custo_por_cliente_base = custo_por_cliente_base
-    
+        save_session()   
         st.success("✅ Limiar aplicado e métricas atualizadas!")
 
     # --- 4. AJUSTE DE HIPERPARÂMETROS (simulado) ---
@@ -217,7 +217,7 @@ def main():
                 st.session_state.modelo.n_estimators = n_estimators
                 st.session_state.modelo.max_depth = max_depth
                 st.success("✅ Hiperparâmetros atualizados (simulado)!")
-
+        save_session()  
     # --- 5. RELATÓRIO DE APRIMORAMENTO ---
     with st.expander("📄 Gerar Relatório de Aperfeiçoamento", expanded=False):
         st.markdown("### 📝 Resumo das melhorias aplicadas")
