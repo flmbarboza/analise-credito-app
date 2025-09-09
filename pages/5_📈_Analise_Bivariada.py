@@ -126,17 +126,15 @@ def main():
     # --- 1. VALIDAÇÃO INICIAL DE DADOS ---
     if 'dados' not in st.session_state or st.session_state.dados is None or st.session_state.dados.empty:
         st.warning("Dados não carregados ou vazios! Acesse a página de Coleta primeiro.")
-        st.page_link("pages/2_📊_Coleta_de_Dados.py", label="→ Retornar para a Coleta de dados")
+        st.page_link("pages/3_🚀_Coleta_de_Dados.py", label=" → Retornar para Coleta de dados")
         st.stop()
     
     dados = st.session_state.dados.copy()
     
     # --- 2. VALIDAÇÃO DA VARIÁVEL-ALVO ---
     target = st.session_state.get('target')
-    if not target or target not in dados.columns:
-        st.warning("⚠️ Variável-alvo não definida ou inválida. Vá para a Análise Bivariada.")
-        st.page_link("pages/5_📈_Analise_Bivariada.py", label="→ Ir para Análise Bivariada")
-        st.stop()
+    #if not target or target not in dados.columns:
+     #   st.warning("⚠️ Variável-alvo não definida ou inválida.")
     
     # --- 3. DEFINIÇÃO SEGURO DE VARIÁVEIS ATIVAS ---
     if 'variaveis_ativas' not in st.session_state or st.session_state.variaveis_ativas is None:
