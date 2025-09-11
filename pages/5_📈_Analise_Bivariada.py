@@ -141,6 +141,7 @@ def main():
         todas_colunas = [col for col in dados.columns if col != target]
         st.session_state.variaveis_ativas = todas_colunas
         st.info(f"ℹ️ `variaveis_ativas` inicializado com {len(todas_colunas)} variáveis.")
+      
     # DEBUG: Mostrar estado atual
     st.sidebar.write("🔍 Debug - Variáveis ativas no session_state:")
     st.sidebar.write(st.session_state.variaveis_ativas)
@@ -209,38 +210,61 @@ def main():
         st.success(f"🎯 Variável-alvo definida: `{target}`")
       
     # --- 3. DEFINIÇÃO SEGURO DE VARIÁVEIS ATIVAS ---
-    if 'variaveis_ativas' not in st.session_state:
+    # Garante que é uma lista
+    if not isinstance(st.session_state.variaveis_ativas, list):
+        st.warning("❌ Variáveis ativas não é uma lista. Reinicializando...")
         st.session_state.variaveis_ativas = [col for col in dados.columns if col != target]
-        st.info(f"ℹ️ `variaveis_ativas` inicializado com {len(st.session_state.variaveis_ativas)} variáveis.")
-  
-    variaveis_ativas = st.session_state.variaveis_ativas
-        
-      # --- 4. VALIDAÇÃO FINAL: Garantir que é uma lista válida ---
-    if not isinstance(variaveis_ativas, list):
-      st.error("❌ A lista de variáveis ativas não foi carregada. Reinicializando...")
-      st.session_state.variaveis_ativas = [col for col in dados.columns if col != target]
-      variaveis_ativas = st.session_state.variaveis_ativas
-
-    # Remove colunas ausentes e a target
-    variaveis_ativas = [col for col in variaveis_ativas if col in dados.columns and col != target]
-
-    if not variaveis_ativas:
+    
+    # Filtra colunas válidas
+    variaveis_validas = []
+    for col in st.session_state.variaveis_ativas:
+        if col in dados.columns and col != target:
+            variaveis_validas.append(col)
+        else:
+            st.warning(f"⚠️ Coluna '{col}' não encontrada no dataset ou é a target, removendo...")
+    
+    # Atualiza session_state
+    st.session_state.variaveis_ativas = variaveis_validas
+    
+    if not st.session_state.variaveis_ativas:
         st.error("❌ Nenhuma variável ativa válida encontrada. Revise as colunas do dataset.")
         st.stop()
-  
-    # Atualiza o session_state
-    st.session_state.variaveis_ativas = variaveis_ativas
-    st.success(f"✅ {len(variaveis_ativas)} variáveis ativas carregadas e validadas.")
     
-    # --- Seleção de variáveis numéricas ---
+    st.success(f"✅ {len(st.session_state.variaveis_ativas)} variáveis ativas carregadas e validadas.")
+    
+    # --- 6. SELEÇÃO DE VARIÁVEIS NUMÉRICAS E CATEGÓRICAS ---
+    # Usa diretamente do session_state
+    variaveis_ativas = st.session_state.variaveis_ativas
+    
+    # DEBUG
+    st.sidebar.write("🔍 Debug - Variáveis ativas após validação:")
+    st.sidebar.write(variaveis_ativas)
+    
     numericas = dados[variaveis_ativas].select_dtypes(include=[np.number]).columns.tolist()
     categoricas = dados[variaveis_ativas].select_dtypes(include='object').columns.tolist()
-    features = [c for c in (numericas + categoricas) if c != target]
+    
+    # DEBUG
+    st.sidebar.write(f"🔍 Numéricas: {len(numericas)}")
+    st.sidebar.write(f"🔍 Categóricas: {len(categoricas)}")
+    
+    features = numericas + categoricas
+    
+    # Remove a target se por algum motivo estiver presente
+    features = [col for col in features if col != target]
+    
+    st.write(f"📊 Total de features disponíveis: {len(features)}")
+    st.write(f"🔢 Numéricas: {len(numericas)}")
+    st.write(f"📝 Categóricas: {len(categoricas)}")
     
     if len(features) < 2:
-        st.warning("É necessário ter pelo menos duas variáveis para análise bivariada.")
+        st.error(f"❌ Apenas {len(features)} features disponíveis. Verifique:")
+        st.error("- Se as colunas estão no formato correto (numérico/object)")
+        st.error("- Se há colunas suficientes no dataset")
+        st.error(f"Features encontradas: {features}")
         return
+    
     save_session()
+    
     # --- 2. ANÁLISE BIVARIADA ---
     st.markdown("### 📊 Análise Bivariada")
     col1, col2 = st.columns(2)
