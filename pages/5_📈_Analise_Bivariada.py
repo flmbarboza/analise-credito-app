@@ -233,14 +233,8 @@ def main():
     
     # --- 5. SELEÇÃO DE VARIÁVEIS NUMÉRICAS E CATEGÓRICAS ---
     variaveis_ativas = st.session_state.variaveis_ativas
-    
-    # Verifica tipos de dados de cada variável
-    for col in variaveis_ativas:
-        st.sidebar.write(f"🔍 {col}: {dados[col].dtype} - Exemplo: {dados[col].iloc[0] if len(dados) > 0 else 'N/A'}")
-    
     numericas = dados[variaveis_ativas].select_dtypes(include=[np.number, 'int', 'float']).columns.tolist()
     categoricas = dados[variaveis_ativas].select_dtypes(include=['object', 'category']).columns.tolist()
-    
     features = numericas + categoricas
     
     # Remove a target se por algum motivo estiver presente
