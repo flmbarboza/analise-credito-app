@@ -266,7 +266,7 @@ def main():
     if 'variaveis_ativas' not in st.session_state:
         # Fallback: usa todas as colunas exceto a target (se definida)
         if 'target' in st.session_state:
-            st.session_state.variaveis_ativas = [col for col in dados.columns if col != st.session_state.target]
+            st.session_state.variaveis_ativas = [col for col in dados.columns if col != st.session_state.target][:5]
         else:
             st.session_state.variaveis_ativas = dados.columns.tolist()
         st.info("ℹ️ `variaveis_ativas` não definido. Usando todas as colunas disponíveis.")
@@ -282,7 +282,7 @@ def main():
     # --- Seleção de variáveis numéricas ---
     numericas = dados[variaveis_ativas].select_dtypes(include=[np.number]).columns.tolist()
     categoricas = dados[variaveis_ativas].select_dtypes(include='object').columns.tolist()
-    features = [c for c in (numericas + categoricas) if c != target][:]
+    features = [c for c in (numericas + categoricas) if c != target]
     
     if len(features) < 2:
         st.warning("É necessário ter pelo menos duas variáveis para análise bivariada.")
