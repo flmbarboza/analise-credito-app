@@ -135,7 +135,12 @@ def main():
     target = st.session_state.get('target')
     #if not target or target not in dados.columns:
      #   st.warning("⚠️ Variável-alvo não definida ou inválida.")
-
+  
+    # --- 3. DEBUG: VERIFICAR COLUNAS DISPONÍVEIS ---
+    st.sidebar.write("🔍 Debug - Colunas disponíveis:")
+    st.sidebar.write(dados.columns.tolist())
+    st.sidebar.write(f"Target: {target}")
+  
     if target not in dados.columns or target is None:
         st.markdown("""
           ### 🔍 Defina a Variável-Alvo (Default)  
