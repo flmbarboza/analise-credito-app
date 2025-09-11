@@ -120,9 +120,7 @@ def main():
         if saved:  # Só atualiza se houver dados salvos
             st.session_state.update(saved)
             st.info("✅ Dados recuperados da sessão anterior.")
-            # DEBUG: Mostrar o que foi carregado
-            st.sidebar.write("🔍 Sessão carregada:", list(saved.keys()))
-
+       
     st.title("📈 Análise Bivariada e Pré-Seleção de Variáveis")
     # --- 1. VALIDAÇÃO INICIAL DE DADOS ---
     if 'dados' not in st.session_state or st.session_state.dados is None or st.session_state.dados.empty:
