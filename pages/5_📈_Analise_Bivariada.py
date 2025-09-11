@@ -282,7 +282,7 @@ def main():
     # --- Seleção de variáveis numéricas ---
     numericas = dados[variaveis_ativas].select_dtypes(include=[np.number]).columns.tolist()
     categoricas = dados[variaveis_ativas].select_dtypes(include='object').columns.tolist()
-    features = [c for c in (numericas + categoricas) if c != target]
+    features = [c for c in (numericas + categoricas) if c != target][:]
     
     if len(features) < 2:
         st.warning("É necessário ter pelo menos duas variáveis para análise bivariada.")
