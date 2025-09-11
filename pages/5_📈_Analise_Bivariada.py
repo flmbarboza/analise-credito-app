@@ -135,138 +135,99 @@ def main():
     target = st.session_state.get('target')
     #if not target or target not in dados.columns:
      #   st.warning("⚠️ Variável-alvo não definida ou inválida.")
-    
-    # --- 3. DEFINIÇÃO SEGURO DE VARIÁVEIS ATIVAS ---
-    if 'variaveis_ativas' not in st.session_state or st.session_state.variaveis_ativas is None:
-        # st.info(f"ℹ️ A lista de variáveis ativas não foi definida ou está vazia. Usando todas as colunas exceto `{target}`.")
-        # Fallback seguro
-        st.session_state.variaveis_ativas = [col for col in dados.columns if col != target]
-    
-    # Recupera a lista
-    variaveis_ativas = st.session_state.variaveis_ativas
-    
-    # --- 4. VALIDAÇÃO FINAL: Garantir que é uma lista válida ---
-    if not isinstance(variaveis_ativas, list):
-        st.error("❌ A lista de variáveis ativas não foi carregada. Reinicializando...")
-        variaveis_ativas = [col for col in dados.columns if col != target]
-    
-    # Remove colunas que não existem mais nos dados
-    variaveis_ativas = [col for col in variaveis_ativas if col in dados.columns]
-    
-    # Remove a target, se estiver presente
-    if target in variaveis_ativas:
-        variaveis_ativas.remove(target)
-    
-    # --- 5. VERIFICAÇÃO DE VAZIO ---
-    if not variaveis_ativas:
-        st.error("""
-        ❌ Nenhuma variável ativa válida encontrada.  
-        Isso pode ocorrer se:
-        - Todas as variáveis foram removidas.
-        - O nome das colunas mudou.
-        - A variável-alvo é a única coluna no dataset.
-        """)
-        st.stop()
-    
-    # Atualiza o session_state (para garantir consistência)
-    st.session_state.variaveis_ativas = variaveis_ativas
-    
-    # ✅ Confirmação final
-    st.success(f"✅ {len(variaveis_ativas)} variáveis ativas carregadas e validadas.")
 
-    # --- 1. SELEÇÃO E VALIDAÇÃO DA VARIÁVEL-ALVO (Y) ---
     if target not in dados.columns or target is None:
-        st.error("ALERTA: variável-alvo inválida ou não selecionada.")
         st.markdown("""
-          Defina a variável-alvo, corrija seu formato, e realize análises preditivas:  
+          ### 🔍 Defina a Variável-Alvo (Default)  
+          Corrija o formato e realize análises preditivas:  
           **IV, WOE, KS** – tudo em um só lugar.
           """)
-        st.markdown("### 🔍 Defina a Variável-Alvo (Default)")
+        
         target = st.selectbox(
             "Selecione a coluna que indica **inadimplência**:",
             options=dados.columns,
             index=None,
             placeholder="Escolha a variável de default",
-            key="target_select"  # ← mantém estado
+            key="target_select"
         )
-        return
-    st.session_state.target = target
-    y_data = dados[target].dropna()
-    
-    if y_data.empty:
-        st.error(f"A coluna `{target}` está vazia ou contém apenas valores nulos.")
-        return
-    
-    # Obter valores únicos de forma segura
-    try:
-        valores_unicos = sorted(pd.Series(y_data.unique()).dropna())
-    except (TypeError, ValueError):
-        # Para dados não ordenáveis (ex: str + int), ordena como string
-        valores_unicos = sorted(pd.Series(y_data.unique()).dropna().astype(str).tolist())
-    
-    # Verificar se é binária (0/1)
-    if set(valores_unicos) != {0, 1}:
-        st.warning(f"""
-        ⚠️ A variável `{target}` não está no formato 0/1.  
-        Valores encontrados: {valores_unicos}
-        """)
-        st.markdown("#### 🔧 Mapeie os valores para 0 (adimplente) e 1 (inadimplente)")
-        col1, col2 = st.columns(2)
-    
-        with col1:
-            valor_bom = st.selectbox(
-                "Valor que representa **adimplente (0)**",
-                options=valores_unicos,
-                key="valor_bom_select"  # ← estado persistente
-            )
-    
-        with col2:
-            # Remove o valor escolhido como "bom" das opções para "mau"
-            opcoes_maus = [v for v in valores_unicos if v != valor_bom]
-            valor_mau = st.selectbox(
-                "Valor que representa **inadimplente (1)**",
-                options=opcoes_maus,
-                key="valor_mau_select"  # ← estado persistente
-            )
-    
-        # Botão para aplicar o mapeamento
-        if st.button("✅ Aplicar Mapeamento", key="btn_aplicar_mapeamento"):
-            if valor_bom == valor_mau:
-                st.error("Erro: os valores para 'bom' e 'mau' devem ser diferentes.")
-            else:
-                try:
-                    # Mapeia os valores
-                    y_mapped = dados[target].map({valor_bom: 0, valor_mau: 1})
-                    
-                    # Verifica se houve falha no mapeamento (valores não mapeados)
-                    if y_mapped.isnull().any():
-                        st.error(f"Erro: alguns valores não foram mapeados corretamente. Verifique os dados.")
-                    else:
-                        # Atualiza os dados
-                        dados_atualizados = dados.copy()
-                        dados_atualizados[target] = y_mapped.astype(int)
-                        st.session_state.dados = dados_atualizados
-                        st.session_state.target = target
-                        st.success(f"✅ `{target}` foi convertida para 0 (adimplente) e 1 (inadimplente).")
-                        st.rerun()  # ← recarrega para refletir a mudança
-                except Exception as e:
-                    st.error(f"Erro ao aplicar mapeamento: {e}")
-    
-    else:
-        st.info(f"✅ A variável-alvo `{target}` já está no formato 0/1.")
 
-    try:
-        # Tenta ordenar apenas valores numéricos
-        valores_numericos = [x for x in valores_unicos if isinstance(x, (int, float))]
-        valores_unicos = sorted(valores_numericos) if valores_numericos else valores_unicos
-    except:
-        pass   
-    save_session()
+        if target is None:
+            st.stop()
+
+        y_data = dados[target].dropna()
+        if y_data.empty:
+            st.error(f"A coluna `{target}` está vazia.")
+            st.stop()
+
+        valores_unicos = pd.Series(y_data.unique()).dropna().tolist()
+
+        if set(valores_unicos) != {0, 1}:
+            st.warning(f"⚠️ A variável `{target}` não está no formato 0/1. Valores encontrados: {valores_unicos}")
+
+            col1, col2 = st.columns(2)
+            with col1:
+                valor_bom = st.selectbox("Valor que representa **adimplente (0)**", options=valores_unicos, key="valor_bom_select")
+            with col2:
+                opcoes_maus = [v for v in valores_unicos if v != valor_bom]
+                valor_mau = st.selectbox("Valor que representa **inadimplente (1)**", options=opcoes_maus, key="valor_mau_select")
+
+            if st.button("✅ Aplicar Mapeamento", key="btn_aplicar_mapeamento"):
+                if valor_bom == valor_mau:
+                    st.error("Erro: os valores para 'bom' e 'mau' devem ser diferentes.")
+                else:
+                    try:
+                        y_mapped = dados[target].map({valor_bom: 0, valor_mau: 1})
+                        if y_mapped.isnull().any():
+                            st.error("Erro: alguns valores não foram mapeados corretamente.")
+                        else:
+                            dados_atualizados = dados.copy()
+                            dados_atualizados[target] = y_mapped.astype(int)
+                            st.session_state.dados = dados_atualizados
+                            st.session_state.target = target
+                            st.success(f"✅ `{target}` convertida para 0/1.")
+                            save_session()
+                            st.rerun()
+                    except Exception as e:
+                        st.error(f"Erro ao aplicar mapeamento: {e}")
+        else:
+            st.session_state.target = target
+            st.info(f"✅ `{target}` já está no formato 0/1.")
+            save_session()
+            st.rerun()
+
+    else:
+        st.session_state.target = target
+        st.success(f"🎯 Variável-alvo definida: `{target}`")
+      
+    # --- 3. DEFINIÇÃO SEGURO DE VARIÁVEIS ATIVAS ---
+    if 'variaveis_ativas' not in st.session_state:
+        st.session_state.variaveis_ativas = [col for col in dados.columns if col != target]
+        st.info(f"ℹ️ `variaveis_ativas` inicializado com {len(st.session_state.variaveis_ativas)} variáveis.")
+  
+    variaveis_ativas = st.session_state.variaveis_ativas
+        
+      # --- 4. VALIDAÇÃO FINAL: Garantir que é uma lista válida ---
+    if not isinstance(variaveis_ativas, list):
+      st.error("❌ A lista de variáveis ativas não foi carregada. Reinicializando...")
+      st.session_state.variaveis_ativas = [col for col in dados.columns if col != target]
+      variaveis_ativas = st.session_state.variaveis_ativas
+
+    # Remove colunas ausentes e a target
+    variaveis_ativas = [col for col in variaveis_ativas if col in dados.columns and col != target]
+
+    if not variaveis_ativas:
+        st.error("❌ Nenhuma variável ativa válida encontrada. Revise as colunas do dataset.")
+        st.stop()
+  
+    # Atualiza o session_state
+    st.session_state.variaveis_ativas = variaveis_ativas
+    st.success(f"✅ {len(variaveis_ativas)} variáveis ativas carregadas e validadas.")
+    
     # --- DEFINIÇÃO INICIAL DE VARIÁVEIS ATIVAS ---
     if 'variaveis_ativas' not in st.session_state:
         # Fallback: usa todas as colunas exceto a target (se definida)
         if 'target' in st.session_state:
-            st.session_state.variaveis_ativas = [col for col in dados.columns if col != st.session_state.target][:5]
+            st.session_state.variaveis_ativas = [col for col in dados.columns if col != st.session_state.target]
         else:
             st.session_state.variaveis_ativas = dados.columns.tolist()
         st.info("ℹ️ `variaveis_ativas` não definido. Usando todas as colunas disponíveis.")
