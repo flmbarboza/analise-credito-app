@@ -769,22 +769,10 @@ def main():
                             st.error(f"Erro ao gerar dummies: {e}")
                     save_session()
 
-    # --- NOVO: CRIAÇÃO DE VARIÁVEIS PERSONALIZADAS ---
+    # --- NOVO: CRIAÇÃO DE VARIÁVEIS COMBINADAS ---
     st.markdown("---")
-    with st.expander("🔧 Criar Variáveis Personalizadas", expanded=False):
-        st.markdown("### 🧮 Crie variáveis com fórmulas personalizadas")
-        
-        st.markdown("""
-        **📝 Como usar:**
-        - Use os nomes das colunas existentes
-        - Operadores matemáticos: `+` (soma), `-` (subtração), `*` (multiplicação), `/` (divisão)
-        - Funções: `sqrt()`, `log()`, `exp()`, `abs()`
-        - Exemplos:
-          - `renda / despesas`
-          - `idade * score`
-          - `sqrt(valor_emprestimo)`
-          - `log(renda_mensal)`
-        """)
+    with st.expander("🔗 Criar Variáveis Combinadas", expanded=False):
+        st.markdown("### 🧩 Crie novas variáveis a partir de combinações")
         
         if 'dados' not in st.session_state:
             st.warning("Dados não disponíveis.")
@@ -793,282 +781,213 @@ def main():
         dados = st.session_state.dados.copy()
         numericas = dados.select_dtypes(include=[np.number]).columns.tolist()
         
-        # Mostra variáveis numéricas disponíveis
-        st.info(f"🔢 Variáveis numéricas disponíveis: {', '.join(numericas)}")
-        
-        # Seleção do método de criação
-        metodo = st.radio(
-            "Como deseja criar a variável?",
-            options=["📋 Seleção Guiada (Recomendado)", "⚙️ Fórmula Livre (Avançado)"],
-            key="metodo_criacao_var"
-        )
-        
-        if metodo == "📋 Seleção Guiada (Recomendado)":
-            # --- MÉTODO GUIADO ---
-            if len(numericas) < 2:
-                st.info("É necessário pelo menos 2 variáveis numéricas para combinar.")
-            else:
-                col1, col2, col3 = st.columns(3)
-                
-                with col1:
-                    # Seleção de variáveis
-                    vars_selecionadas = st.multiselect(
-                        "Selecione as variáveis:",
-                        options=numericas,
-                        default=numericas[:2] if len(numericas) >= 2 else numericas,
-                        key="vars_combinadas_select"
-                    )
-                
-                with col2:
-                    # Operação de fusão
-                    operacao = st.selectbox(
-                        "Operação:",
-                        options=[
-                            "Soma (+)",
-                            "Média",
-                            "Produto (*)",
-                            "Razão (/)",
-                            "Diferença (-)",
-                            "Máximo",
-                            "Mínimum"
-                        ],
-                        key="op_combinada"
-                    )
-                
-                with col3:
-                    # Operações avançadas
-                    operacao_avancada = st.selectbox(
-                        "Transformação:",
-                        options=["Nenhuma", "Logaritmo", "Raiz Quadrada", "Exponencial", "Valor Absoluto"],
-                        key="op_avancada"
-                    )
-                
-                if len(vars_selecionadas) >= 1:
-                    # Gera nome sugerido automaticamente
-                    nome_sugerido = ""
-                    if operacao == "Soma (+)":
-                        nome_sugerido = "soma_" + "_".join(vars_selecionadas[:3])
-                    elif operacao == "Média":
-                        nome_sugerido = "media_" + "_".join(vars_selecionadas[:3])
-                    elif operacao == "Produto (*)":
-                        nome_sugerido = "prod_" + "_".join(vars_selecionadas[:3])
-                    elif operacao == "Razão (/)":
-                        if len(vars_selecionadas) >= 2:
-                            nome_sugerido = f"{vars_selecionadas[0]}_por_{vars_selecionadas[1]}"
-                        else:
-                            nome_sugerido = "razao_variaveis"
-                    elif operacao == "Diferença (-)":
-                        if len(vars_selecionadas) >= 2:
-                            nome_sugerido = f"{vars_selecionadas[0]}_menos_{vars_selecionadas[1]}"
-                        else:
-                            nome_sugerido = "diferenca_variaveis"
-                    elif operacao == "Máximo":
-                        nome_sugerido = "max_" + "_".join(vars_selecionadas[:3])
-                    elif operacao == "Mínimum":
-                        nome_sugerido = "min_" + "_".join(vars_selecionadas[:3])
-                    
-                    # Adiciona transformação ao nome
-                    if operacao_avancada != "Nenhuma":
-                        if operacao_avancada == "Logaritmo":
-                            nome_sugerido = "log_" + nome_sugerido
-                        elif operacao_avancada == "Raiz Quadrada":
-                            nome_sugerido = "sqrt_" + nome_sugerido
-                        elif operacao_avancada == "Exponencial":
-                            nome_sugerido = "exp_" + nome_sugerido
-                        elif operacao_avancada == "Valor Absoluto":
-                            nome_sugerido = "abs_" + nome_sugerido
-                    
-                    nome_novo = st.text_input("Nome da nova variável:", value=nome_sugerido, key="nome_var_combinada")
-                    
-                    # Preview da fórmula
-                    if vars_selecionadas:
-                        formula_preview = ""
-                        if operacao == "Soma (+)":
-                            formula_preview = " + ".join(vars_selecionadas)
-                        elif operacao == "Média":
-                            formula_preview = f"média({', '.join(vars_selecionadas)})"
-                        elif operacao == "Produto (*)":
-                            formula_preview = " * ".join(vars_selecionadas)
-                        elif operacao == "Razão (/)":
-                            if len(vars_selecionadas) >= 2:
-                                formula_preview = f"{vars_selecionadas[0]} / {vars_selecionadas[1]}"
-                        elif operacao == "Diferença (-)":
-                            if len(vars_selecionadas) >= 2:
-                                formula_preview = f"{vars_selecionadas[0]} - {vars_selecionadas[1]}"
-                        elif operacao == "Máximo":
-                            formula_preview = f"max({', '.join(vars_selecionadas)})"
-                        elif operacao == "Mínimum":
-                            formula_preview = f"min({', '.join(vars_selecionadas)})"
-                        
-                        if operacao_avancada != "Nenhuma":
-                            if operacao_avancada == "Logaritmo":
-                                formula_preview = f"log({formula_preview})"
-                            elif operacao_avancada == "Raiz Quadrada":
-                                formula_preview = f"sqrt({formula_preview})"
-                            elif operacao_avancada == "Exponencial":
-                                formula_preview = f"exp({formula_preview})"
-                            elif operacao_avancada == "Valor Absoluto":
-                                formula_preview = f"abs({formula_preview})"
-                        
-                        st.info(f"📋 Fórmula: `{formula_preview}`")
-        
+        if len(numericas) < 2:
+            st.info("É necessário pelo menos 2 variáveis numéricas para combinar.")
         else:
-            # --- MÉTODO FÓRMULA LIVRE ---
-            st.markdown("""
-            **💡 Dica:** Use os nomes exatos das colunas. Exemplo:
-            - `renda_mensal / numero_dependentes`
-            - `(idade * score) + 100`
-            - `log(valor_emprestimo)`
-            - `sqrt(renda_anual)`
-            """)
+            # Layout em colunas para melhor organização
+            col1, col2 = st.columns(2)
             
-            formula_livre = st.text_area(
-                "Digite sua fórmula:",
-                placeholder="Ex: renda_mensal / despesas_mensais",
-                key="formula_livre"
+            with col1:
+                # Seleção da primeira variável
+                var1 = st.selectbox(
+                    "Selecione a primeira variável:",
+                    options=numericas,
+                    index=0,
+                    key="var1_select"
+                )
+            
+            with col2:
+                # Seleção da segunda variável
+                var2 = st.selectbox(
+                    "Selecione a segunda variável:",
+                    options=[v for v in numericas if v != var1],
+                    index=0,
+                    key="var2_select"
+                )
+            
+            # Seleção da operação
+            operacao = st.selectbox(
+                "Selecione a operação:",
+                options=[
+                    "Soma (A + B)",
+                    "Subtração (A - B)",
+                    "Multiplicação (A * B)",
+                    "Divisão (A / B)",
+                    "Média ((A + B)/2)",
+                    "Razão (A / B)",
+                    "Diferença Percentual ((A-B)/B)",
+                    "Produto (A * B)",
+                    "Máximo (max(A, B))",
+                    "Mínimo (min(A, B))"
+                ],
+                key="operacao_select"
             )
             
-            nome_novo = st.text_input("Nome da nova variável:", value="nova_variavel", key="nome_var_livre")
+            # Nome automático baseado na operação
+            nomes_operacao = {
+                "Soma (A + B)": f"soma_{var1}_{var2}",
+                "Subtração (A - B)": f"diff_{var1}_{var2}",
+                "Multiplicação (A * B)": f"prod_{var1}_{var2}",
+                "Divisão (A / B)": f"div_{var1}_{var2}",
+                "Média ((A + B)/2)": f"media_{var1}_{var2}",
+                "Razão (A / B)": f"razao_{var1}_{var2}",
+                "Diferença Percentual ((A-B)/B)": f"diff_pct_{var1}_{var2}",
+                "Produto (A * B)": f"produto_{var1}_{var2}",
+                "Máximo (max(A, B))": f"max_{var1}_{var2}",
+                "Mínimo (min(A, B))": f"min_{var1}_{var2}"
+            }
             
-            if formula_livre:
-                # Tenta identificar variáveis na fórmula
-                import re
-                variaveis_na_formula = re.findall(r'[a-zA-Z_][a-zA-Z0-9_]*', formula_livre)
-                variaveis_validas = [var for var in variaveis_na_formula if var in numericas]
-                
-                if variaveis_validas:
-                    st.info(f"🔍 Variáveis detectadas: {', '.join(variaveis_validas)}")
+            nome_novo = st.text_input(
+                "Nome da nova variável:",
+                value=nomes_operacao[operacao],
+                key="nome_nova_var"
+            )
+            
+            # Preview da operação
+            st.info(f"🔍 **Operação:** {var1} {operacao.split('(')[1].split(')')[0]} {var2}")
+            
+            if st.button("➕ Criar Variável Combinada", key="btn_criar_combinada", type="primary"):
+                if not nome_novo.strip():
+                    st.warning("O nome da variável não pode ser vazio.")
+                elif nome_novo in dados.columns:
+                    st.warning(f"Já existe uma coluna chamada '{nome_novo}'. Escolha outro nome.")
+                else:
+                    try:
+                        nova_var = None
+                        descricao = ""
+                        
+                        # Aplica a operação selecionada
+                        if operacao == "Soma (A + B)":
+                            nova_var = dados[var1] + dados[var2]
+                            descricao = f"Soma: {var1} + {var2}"
+                        
+                        elif operacao == "Subtração (A - B)":
+                            nova_var = dados[var1] - dados[var2]
+                            descricao = f"Subtração: {var1} - {var2}"
+                        
+                        elif operacao == "Multiplicação (A * B)":
+                            nova_var = dados[var1] * dados[var2]
+                            descricao = f"Multiplicação: {var1} * {var2}"
+                        
+                        elif operacao == "Divisão (A / B)":
+                            # Previne divisão por zero
+                            divisor = dados[var2].replace(0, np.nan)
+                            nova_var = dados[var1] / divisor
+                            descricao = f"Divisão: {var1} / {var2}"
+                        
+                        elif operacao == "Média ((A + B)/2)":
+                            nova_var = (dados[var1] + dados[var2]) / 2
+                            descricao = f"Média: ({var1} + {var2}) / 2"
+                        
+                        elif operacao == "Razão (A / B)":
+                            divisor = dados[var2].replace(0, np.nan)
+                            nova_var = dados[var1] / divisor
+                            descricao = f"Razão: {var1} / {var2}"
+                        
+                        elif operacao == "Diferença Percentual ((A-B)/B)":
+                            divisor = dados[var2].replace(0, np.nan)
+                            nova_var = (dados[var1] - dados[var2]) / divisor
+                            descricao = f"Diferença Percentual: ({var1} - {var2}) / {var2}"
+                        
+                        elif operacao == "Produto (A * B)":
+                            nova_var = dados[var1] * dados[var2]
+                            descricao = f"Produto: {var1} * {var2}"
+                        
+                        elif operacao == "Máximo (max(A, B))":
+                            nova_var = np.maximum(dados[var1], dados[var2])
+                            descricao = f"Máximo entre: {var1} e {var2}"
+                        
+                        elif operacao == "Mínimo (min(A, B))":
+                            nova_var = np.minimum(dados[var1], dados[var2])
+                            descricao = f"Mínimo entre: {var1} e {var2}"
+                        
+                        # Salva a nova variável
+                        if nova_var is not None:
+                            dados[nome_novo] = nova_var
+                            st.session_state.dados = dados
+                            
+                            # Atualiza variáveis ativas
+                            if 'variaveis_ativas' in st.session_state:
+                                if nome_novo not in st.session_state.variaveis_ativas:
+                                    st.session_state.variaveis_ativas.append(nome_novo)
+                            
+                            st.success(f"✅ Variável '{nome_novo}' criada com sucesso!")
+                            st.info(f"📝 {descricao}")
+                            
+                            # Mostra estatísticas
+                            col_stat1, col_stat2, col_stat3 = st.columns(3)
+                            with col_stat1:
+                                st.metric("Média", f"{nova_var.mean():.2f}")
+                            with col_stat2:
+                                st.metric("Desvio Padrão", f"{nova_var.std():.2f}")
+                            with col_stat3:
+                                st.metric("Não-nulos", f"{nova_var.count()}")
+                            
+                            # Preview dos dados
+                            with st.expander("👀 Visualizar primeiros valores"):
+                                st.dataframe(dados[[var1, var2, nome_novo]].head())
+                            
+                            save_session()
+                            st.rerun()
+                            
+                    except Exception as e:
+                        st.error(f"❌ Erro ao criar variável: {e}")
+                        st.info("Verifique se os dados das variáveis são compatíveis com a operação selecionada.")
+    
+    # --- VARIÁVEIS COM MAIS DE 2 VARIÁVEIS ---
+    with st.expander("🔢 Combinações com Múltiplas Variáveis", expanded=False):
+        st.markdown("### 📊 Operações com 3 ou mais variáveis")
         
-        # Botão para criar a variável
-        if st.button("➕ Criar Variável", key="btn_criar_variavel", type="primary"):
-            if not nome_novo.strip():
-                st.warning("O nome da variável não pode ser vazio.")
-            elif nome_novo in dados.columns:
-                st.warning(f"Já existe uma coluna chamada `{nome_novo}`. Escolha outro nome.")
-            else:
-                try:
-                    nova_var = None
-                    descricao = ""
-                    
-                    if metodo == "📋 Seleção Guiada (Recomendado)":
-                        if not vars_selecionadas:
-                            st.warning("Selecione pelo menos uma variável.")
-                            st.stop()
+        if len(numericas) >= 3:
+            vars_multiplas = st.multiselect(
+                "Selecione as variáveis para combinar:",
+                options=numericas,
+                default=numericas[:3],
+                key="vars_multiplas_select"
+            )
+            
+            if len(vars_multiplas) >= 2:
+                operacao_multipla = st.selectbox(
+                    "Operação com múltiplas variáveis:",
+                    options=["Soma", "Média", "Produto", "Máximo", "Mínimo"],
+                    key="op_multipla_select"
+                )
+                
+                nome_multiplo = st.text_input(
+                    "Nome da variável combinada:",
+                    value=f"{operacao_multipla.lower()}_{'_'.join(vars_multiplas[:2])}",
+                    key="nome_multiplo_var"
+                )
+                
+                if st.button("➕ Criar Combinação Múltipla", key="btn_multiplo"):
+                    try:
+                        if operacao_multipla == "Soma":
+                            nova_var_mult = dados[vars_multiplas].sum(axis=1)
+                        elif operacao_multipla == "Média":
+                            nova_var_mult = dados[vars_multiplas].mean(axis=1)
+                        elif operacao_multipla == "Produto":
+                            nova_var_mult = dados[vars_multiplas].prod(axis=1)
+                        elif operacao_multipla == "Máximo":
+                            nova_var_mult = dados[vars_multiplas].max(axis=1)
+                        elif operacao_multipla == "Mínimo":
+                            nova_var_mult = dados[vars_multiplas].min(axis=1)
                         
-                        # Operações básicas
-                        if operacao == "Soma (+)":
-                            nova_var = dados[vars_selecionadas].sum(axis=1)
-                            descricao = f"Soma de: {', '.join(vars_selecionadas)}"
-                        
-                        elif operacao == "Média":
-                            nova_var = dados[vars_selecionadas].mean(axis=1)
-                            descricao = f"Média de: {', '.join(vars_selecionadas)}"
-                        
-                        elif operacao == "Produto (*)":
-                            nova_var = dados[vars_selecionadas].prod(axis=1)
-                            descricao = f"Produto de: {', '.join(vars_selecionadas)}"
-                        
-                        elif operacao == "Razão (/)":
-                            if len(vars_selecionadas) >= 2:
-                                divisor = dados[vars_selecionadas[1]].replace(0, np.nan)
-                                nova_var = dados[vars_selecionadas[0]] / divisor
-                                descricao = f"Razão: {vars_selecionadas[0]} / {vars_selecionadas[1]}"
-                            else:
-                                st.warning("Razão precisa de pelo menos 2 variáveis.")
-                                st.stop()
-                        
-                        elif operacao == "Diferença (-)":
-                            if len(vars_selecionadas) >= 2:
-                                nova_var = dados[vars_selecionadas[0]] - dados[vars_selecionadas[1]]
-                                descricao = f"Diferença: {vars_selecionadas[0]} - {vars_selecionadas[1]}"
-                            else:
-                                st.warning("Diferença precisa de pelo menos 2 variáveis.")
-                                st.stop()
-                        
-                        elif operacao == "Máximo":
-                            nova_var = dados[vars_selecionadas].max(axis=1)
-                            descricao = f"Máximo de: {', '.join(vars_selecionadas)}"
-                        
-                        elif operacao == "Mínimum":
-                            nova_var = dados[vars_selecionadas].min(axis=1)
-                            descricao = f"Mínimo de: {', '.join(vars_selecionadas)}"
-                        
-                        # Aplicar transformações
-                        if operacao_avancada != "Nenhuma" and nova_var is not None:
-                            if operacao_avancada == "Logaritmo":
-                                nova_var = np.log1p(nova_var)  # log1p para evitar log(0)
-                                descricao += " (logaritmo)"
-                            elif operacao_avancada == "Raiz Quadrada":
-                                nova_var = np.sqrt(nova_var.clip(lower=0))  # Evita raiz de negativo
-                                descricao += " (raiz quadrada)"
-                            elif operacao_avancada == "Exponencial":
-                                nova_var = np.exp(nova_var)
-                                descricao += " (exponencial)"
-                            elif operacao_avancada == "Valor Absoluto":
-                                nova_var = np.abs(nova_var)
-                                descricao += " (valor absoluto)"
-                    
-                    else:
-                        # MÉTODO FÓRMULA LIVRE
-                        if not formula_livre.strip():
-                            st.warning("Digite uma fórmula.")
-                            st.stop()
-                        
-                        # Cria um ambiente seguro para eval
-                        safe_env = {}
-                        for var in numericas:
-                            safe_env[var] = dados[var]
-                        
-                        # Adiciona funções matemáticas seguras
-                        safe_env.update({
-                            'sqrt': np.sqrt,
-                            'log': np.log1p,
-                            'exp': np.exp,
-                            'abs': np.abs,
-                            'np': np
-                        })
-                        
-                        try:
-                            # Avalia a fórmula
-                            nova_var = eval(formula_livre, {"__builtins__": {}}, safe_env)
-                            descricao = f"Fórmula: {formula_livre}"
-                        except Exception as e:
-                            st.error(f"Erro na fórmula: {e}")
-                            st.info("Verifique se os nomes das variáveis estão corretos e a sintaxe é válida.")
-                            st.stop()
-                    
-                    # Salvar nova variável
-                    if nova_var is not None:
-                        dados[nome_novo] = nova_var
+                        dados[nome_multiplo] = nova_var_mult
                         st.session_state.dados = dados
                         
-                        # Atualiza variáveis ativas
                         if 'variaveis_ativas' in st.session_state:
-                            if nome_novo not in st.session_state.variaveis_ativas:
-                                st.session_state.variaveis_ativas.append(nome_novo)
+                            if nome_multiplo not in st.session_state.variaveis_ativas:
+                                st.session_state.variaveis_ativas.append(nome_multiplo)
                         
-                        st.success(f"✅ Variável `{nome_novo}` criada com sucesso!")
-                        st.info(f"🔹 {descricao}")
-                        
-                        # Estatísticas descritivas
-                        col1, col2, col3 = st.columns(3)
-                        with col1:
-                            st.metric("Média", f"{nova_var.mean():.2f}")
-                        with col2:
-                            st.metric("Desvio Padrão", f"{nova_var.std():.2f}")
-                        with col3:
-                            st.metric("Não-nulos", f"{nova_var.count()}")
-                        
-                        # Preview
-                        with st.expander("📊 Visualizar dados"):
-                            st.dataframe(dados[[nome_novo]].head(10))
-                        
+                        st.success(f"✅ Variável '{nome_multiplo}' criada!")
                         save_session()
                         st.rerun()
-                            
-                except Exception as e:
-                    st.error(f"Erro ao criar a variável: {e}")
-                    st.info("Verifique se as operações são válidas para os tipos de dados selecionados.")
+                        
+                    except Exception as e:
+                        st.error(f"Erro: {e}")
+        else:
+            st.info("✋ É necessário pelo menos 3 variáveis numéricas para esta opção.")
+          
     # --- RELATÓRIO ---
     with st.expander("📋 Relatório de Análise"):
         st.markdown("### ✅ Variáveis Ativas Após Pré-Seleção")
