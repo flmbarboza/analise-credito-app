@@ -115,12 +115,13 @@ def criar_zip_exportacao(selecionados, dados, target, iv_df, ks_df, woe_tables, 
 def main():
     from utils import load_session, save_session
     
-    # Carrega sessão salva
     if 'dados' not in st.session_state:
         saved = load_session()
-        st.session_state.update(saved)
-        if saved:
+        if saved:  # Só atualiza se houver dados salvos
+            st.session_state.update(saved)
             st.info("✅ Dados recuperados da sessão anterior.")
+            # DEBUG: Mostrar o que foi carregado
+            st.sidebar.write("🔍 Sessão carregada:", list(saved.keys()))
 
     st.title("📈 Análise Bivariada e Pré-Seleção de Variáveis")
     # --- 1. VALIDAÇÃO INICIAL DE DADOS ---
@@ -130,22 +131,15 @@ def main():
         st.stop()
     
     dados = st.session_state.dados.copy()
+    # DEBUG: Mostrar colunas disponíveis
+    st.sidebar.write("🔍 Colunas no dataset:", dados.columns.tolist())
+    st.sidebar.write("🔍 Shape do dataset:", dados.shape)
     
     # --- 2. VALIDAÇÃO DA VARIÁVEL-ALVO ---
     target = st.session_state.get('target')
     #if not target or target not in dados.columns:
      #   st.warning("⚠️ Variável-alvo não definida ou inválida.")
-  
-    if 'variaveis_ativas' not in st.session_state:
-        # Inicializa com TODAS as colunas exceto target
-        todas_colunas = [col for col in dados.columns if col != target]
-        st.session_state.variaveis_ativas = todas_colunas
-        st.info(f"ℹ️ `variaveis_ativas` inicializado com {len(todas_colunas)} variáveis.")
-      
-    # DEBUG: Mostrar estado atual
-    st.sidebar.write("🔍 Debug - Variáveis ativas no session_state:")
-    st.sidebar.write(st.session_state.variaveis_ativas)
-  
+    
     if target not in dados.columns or target is None:
         st.markdown("""
           ### 🔍 Defina a Variável-Alvo (Default)  
@@ -210,12 +204,26 @@ def main():
         st.success(f"🎯 Variável-alvo definida: `{target}`")
       
     # --- 3. DEFINIÇÃO SEGURO DE VARIÁVEIS ATIVAS ---
-    # Garante que é uma lista
-    if not isinstance(st.session_state.variaveis_ativas, list):
-        st.warning("❌ Variáveis ativas não é uma lista. Reinicializando...")
-        st.session_state.variaveis_ativas = [col for col in dados.columns if col != target]
+    if 'variaveis_ativas' not in st.session_state:
+        # Inicializa com TODAS as colunas exceto target
+        todas_colunas = [col for col in dados.columns if col != target]
+        st.session_state.variaveis_ativas = todas_colunas
+        st.info(f"ℹ️ `variaveis_ativas` inicializado com {len(todas_colunas)} variáveis.")
+    else:
+        # VERIFICA se a variável no session_state está correta
+        if not isinstance(st.session_state.variaveis_ativas, list) or len(st.session_state.variaveis_ativas) == 0:
+            st.warning("❌ Variáveis ativas inválidas. Reinicializando...")
+            todas_colunas = [col for col in dados.columns if col != target]
+            st.session_state.variaveis_ativas = todas_colunas
+            st.info(f"ℹ️ `variaveis_ativas` reinicializado com {len(todas_colunas)} variáveis.")
     
-    # Filtra colunas válidas
+    # DEBUG: Mostrar estado atual
+    st.sidebar.write("🔍 Variáveis ativas no session_state:", st.session_state.variaveis_ativas)
+    st.sidebar.write("🔍 Tipo de variaveis_ativas:", type(st.session_state.variaveis_ativas))
+    st.sidebar.write("🔍 Comprimento de variaveis_ativas:", len(st.session_state.variaveis_ativas))
+    
+    # --- 4. VALIDAÇÃO E FILTRAGEM ---
+    # Filtra colunas válidas que realmente existem no dataset
     variaveis_validas = []
     for col in st.session_state.variaveis_ativas:
         if col in dados.columns and col != target:
@@ -223,8 +231,10 @@ def main():
         else:
             st.warning(f"⚠️ Coluna '{col}' não encontrada no dataset ou é a target, removendo...")
     
-    # Atualiza session_state
-    st.session_state.variaveis_ativas = variaveis_validas
+    # Atualiza session_state apenas se necessário
+    if len(variaveis_validas) != len(st.session_state.variaveis_ativas):
+        st.session_state.variaveis_ativas = variaveis_validas
+        st.info(f"🔄 Lista de variáveis ativas atualizada: {len(variaveis_validas)} variáveis válidas")
     
     if not st.session_state.variaveis_ativas:
         st.error("❌ Nenhuma variável ativa válida encontrada. Revise as colunas do dataset.")
@@ -232,20 +242,22 @@ def main():
     
     st.success(f"✅ {len(st.session_state.variaveis_ativas)} variáveis ativas carregadas e validadas.")
     
-    # --- 6. SELEÇÃO DE VARIÁVEIS NUMÉRICAS E CATEGÓRICAS ---
-    # Usa diretamente do session_state
+    # --- 5. SELEÇÃO DE VARIÁVEIS NUMÉRICAS E CATEGÓRICAS ---
     variaveis_ativas = st.session_state.variaveis_ativas
     
-    # DEBUG
-    st.sidebar.write("🔍 Debug - Variáveis ativas após validação:")
-    st.sidebar.write(variaveis_ativas)
+    # DEBUG DETALHADO
+    st.sidebar.write("🔍 Variáveis ativas para análise:", variaveis_ativas)
     
-    numericas = dados[variaveis_ativas].select_dtypes(include=[np.number]).columns.tolist()
-    categoricas = dados[variaveis_ativas].select_dtypes(include='object').columns.tolist()
+    # Verifica tipos de dados de cada variável
+    for col in variaveis_ativas:
+        st.sidebar.write(f"🔍 {col}: {dados[col].dtype} - Exemplo: {dados[col].iloc[0] if len(dados) > 0 else 'N/A'}")
+    
+    numericas = dados[variaveis_ativas].select_dtypes(include=[np.number, 'int', 'float']).columns.tolist()
+    categoricas = dados[variaveis_ativas].select_dtypes(include=['object', 'category']).columns.tolist()
     
     # DEBUG
-    st.sidebar.write(f"🔍 Numéricas: {len(numericas)}")
-    st.sidebar.write(f"🔍 Categóricas: {len(categoricas)}")
+    st.sidebar.write(f"🔍 Numéricas encontradas: {numericas}")
+    st.sidebar.write(f"🔍 Categóricas encontradas: {categoricas}")
     
     features = numericas + categoricas
     
@@ -253,18 +265,23 @@ def main():
     features = [col for col in features if col != target]
     
     st.write(f"📊 Total de features disponíveis: {len(features)}")
-    st.write(f"🔢 Numéricas: {len(numericas)}")
-    st.write(f"📝 Categóricas: {len(categoricas)}")
+    st.write(f"🔢 Numéricas: {len(numericas)} - {numericas}")
+    st.write(f"📝 Categóricas: {len(categoricas)} - {categoricas}")
     
     if len(features) < 2:
-        st.error(f"❌ Apenas {len(features)} features disponíveis. Verifique:")
-        st.error("- Se as colunas estão no formato correto (numérico/object)")
-        st.error("- Se há colunas suficientes no dataset")
-        st.error(f"Features encontradas: {features}")
+        st.error(f"❌ Apenas {len(features)} features disponíveis. Problemas detectados:")
+        st.error(f"- Dataset tem {len(dados.columns)} colunas no total")
+        st.error(f"- Target: {target}")
+        st.error(f"- Variáveis ativas no session_state: {len(st.session_state.variaveis_ativas)}")
+        st.error(f"- Features após filtragem: {features}")
         return
     
-    save_session()
+    # MOSTRA PREVIEW DOS DADOS
+    st.subheader("📋 Preview dos Dados")
+    st.dataframe(dados[features + [target]].head() if target in dados.columns else dados[features].head())
     
+    save_session()   
+  
     # --- 2. ANÁLISE BIVARIADA ---
     st.markdown("### 📊 Análise Bivariada")
     col1, col2 = st.columns(2)
