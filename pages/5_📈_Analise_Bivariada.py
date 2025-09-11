@@ -131,9 +131,6 @@ def main():
         st.stop()
     
     dados = st.session_state.dados.copy()
-    # DEBUG: Mostrar colunas disponíveis
-    st.sidebar.write("🔍 Colunas no dataset:", dados.columns.tolist())
-    st.sidebar.write("🔍 Shape do dataset:", dados.shape)
     
     # --- 2. VALIDAÇÃO DA VARIÁVEL-ALVO ---
     target = st.session_state.get('target')
@@ -212,16 +209,10 @@ def main():
     else:
         # VERIFICA se a variável no session_state está correta
         if not isinstance(st.session_state.variaveis_ativas, list) or len(st.session_state.variaveis_ativas) < 2:
-            st.warning("❌ Variáveis ativas inválidas. Reinicializando...")
             todas_colunas = [col for col in dados.columns if col != target]
             st.session_state.variaveis_ativas = todas_colunas
-            st.info(f"ℹ️ `variaveis_ativas` reinicializado com {len(todas_colunas)} variáveis.")
-    
-    # DEBUG: Mostrar estado atual
-    st.sidebar.write("🔍 Variáveis ativas no session_state:", st.session_state.variaveis_ativas)
-    st.sidebar.write("🔍 Tipo de variaveis_ativas:", type(st.session_state.variaveis_ativas))
-    st.sidebar.write("🔍 Comprimento de variaveis_ativas:", len(st.session_state.variaveis_ativas))
-    
+            st.info(f"ℹ️ Encontradas {len(todas_colunas)} variáveis além da variável-alvo.")
+      
     # --- 4. VALIDAÇÃO E FILTRAGEM ---
     # Filtra colunas válidas que realmente existem no dataset
     variaveis_validas = []
@@ -245,19 +236,12 @@ def main():
     # --- 5. SELEÇÃO DE VARIÁVEIS NUMÉRICAS E CATEGÓRICAS ---
     variaveis_ativas = st.session_state.variaveis_ativas
     
-    # DEBUG DETALHADO
-    st.sidebar.write("🔍 Variáveis ativas para análise:", variaveis_ativas)
-    
     # Verifica tipos de dados de cada variável
     for col in variaveis_ativas:
         st.sidebar.write(f"🔍 {col}: {dados[col].dtype} - Exemplo: {dados[col].iloc[0] if len(dados) > 0 else 'N/A'}")
     
     numericas = dados[variaveis_ativas].select_dtypes(include=[np.number, 'int', 'float']).columns.tolist()
     categoricas = dados[variaveis_ativas].select_dtypes(include=['object', 'category']).columns.tolist()
-    
-    # DEBUG
-    st.sidebar.write(f"🔍 Numéricas encontradas: {numericas}")
-    st.sidebar.write(f"🔍 Categóricas encontradas: {categoricas}")
     
     features = numericas + categoricas
     
@@ -275,11 +259,6 @@ def main():
         st.error(f"- Variáveis ativas no session_state: {len(st.session_state.variaveis_ativas)}")
         st.error(f"- Features após filtragem: {features}")
         return
-    
-    # MOSTRA PREVIEW DOS DADOS
-    st.subheader("📋 Preview dos Dados")
-    st.dataframe(dados[features + [target]].head() if target in dados.columns else dados[features].head())
-    
     save_session()   
   
     # --- 2. ANÁLISE BIVARIADA ---
