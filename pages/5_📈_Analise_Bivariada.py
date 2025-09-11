@@ -211,7 +211,7 @@ def main():
         st.info(f"ℹ️ `variaveis_ativas` inicializado com {len(todas_colunas)} variáveis.")
     else:
         # VERIFICA se a variável no session_state está correta
-        if not isinstance(st.session_state.variaveis_ativas, list) or len(st.session_state.variaveis_ativas) == 0:
+        if not isinstance(st.session_state.variaveis_ativas, list) or len(st.session_state.variaveis_ativas) < 2:
             st.warning("❌ Variáveis ativas inválidas. Reinicializando...")
             todas_colunas = [col for col in dados.columns if col != target]
             st.session_state.variaveis_ativas = todas_colunas
