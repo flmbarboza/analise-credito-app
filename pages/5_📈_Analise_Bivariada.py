@@ -141,7 +141,10 @@ def main():
         todas_colunas = [col for col in dados.columns if col != target]
         st.session_state.variaveis_ativas = todas_colunas
         st.info(f"ℹ️ `variaveis_ativas` inicializado com {len(todas_colunas)} variáveis.")
-      
+    # DEBUG: Mostrar estado atual
+    st.sidebar.write("🔍 Debug - Variáveis ativas no session_state:")
+    st.sidebar.write(st.session_state.variaveis_ativas)
+  
     if target not in dados.columns or target is None:
         st.markdown("""
           ### 🔍 Defina a Variável-Alvo (Default)  
