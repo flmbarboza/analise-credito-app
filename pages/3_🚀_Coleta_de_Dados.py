@@ -172,137 +172,119 @@ def main():
     
 
     else:  # Upload de arquivo
-    # Adicionar seleção de tipo de arquivo primeiro
-    tipo_arquivo = st.selectbox(
-        "Tipo de arquivo",
-        options=["CSV", "Excel (XLSX)"],
-        index=0,
-        help="Selecione o formato do arquivo que deseja carregar"
-    )
-    
-    if tipo_arquivo == "CSV":
-        col1, col2 = st.columns(2)
-        with col1:
-            delimiter = st.selectbox(
-                "Delimitador do arquivo CSV",
-                options=[",", ";", "\t", "|", "outro"],
-                index=0,
-                help="Selecione o caractere usado para separar as colunas no arquivo CSV"
-            )
-            
-            if delimiter == "outro":
-                delimiter = st.text_input("Especifique o delimitador", value=",")
-        
-        with col2:
-            # Opção para remover espaços em branco
-            auto_trim = st.checkbox(
-                "Remover espaços em branco automaticamente",
-                value=True,
-                help="Remove espaços extras no início/fim de textos e nomes de colunas"
-            )
-        
-        arquivo = st.file_uploader(
-            "Carregue seu arquivo CSV",
-            type=["csv", "txt"],
-            accept_multiple_files=False
+        # Adicionar seleção de tipo de arquivo primeiro
+        tipo_arquivo = st.selectbox(
+            "Tipo de arquivo",
+            options=["CSV", "Excel (XLSX)"],
+            index=0,
+            help="Selecione o formato do arquivo que deseja carregar"
         )
         
-    else:  # Excel (XLSX)
-        col1, col2 = st.columns(2)
-        with col1:
-            # Seleção de planilha para arquivos Excel
-            sheet_name = st.text_input(
-                "Nome da planilha (opcional)",
-                value="",
-                help="Deixe em branco para carregar a primeira planilha"
+        if tipo_arquivo == "CSV":
+            col1, col2 = st.columns(2)
+            with col1:
+                delimiter = st.selectbox(
+                    "Delimitador do arquivo CSV",
+                    options=[",", ";", "\t", "|", "outro"],
+                    index=0,
+                    help="Selecione o caractere usado para separar as colunas no arquivo CSV"
+                )
+                
+                if delimiter == "outro":
+                    delimiter = st.text_input("Especifique o delimitador", value=",")
+            
+            with col2:
+                # Opção para remover espaços em branco
+                auto_trim = st.checkbox(
+                    "Remover espaços em branco automaticamente",
+                    value=True,
+                    help="Remove espaços extras no início/fim de textos e nomes de colunas"
+                )
+            
+            arquivo = st.file_uploader(
+                "Carregue seu arquivo CSV",
+                type=["csv", "txt"],
+                accept_multiple_files=False
+            )
+            
+        else:  # Excel (XLSX)
+            col1, col2 = st.columns(2)
+            with col1:
+                # Seleção de planilha para arquivos Excel
+                sheet_name = st.text_input(
+                    "Nome da planilha (opcional)",
+                    value="",
+                    help="Deixe em branco para carregar a primeira planilha"
+                )
+            
+            with col2:
+                # Opção para remover espaços em branco
+                auto_trim = st.checkbox(
+                    "Remover espaços em branco automaticamente",
+                    value=True,
+                    help="Remove espaços extras no início/fim de textos e nomes de colunas"
+                )
+            
+            arquivo = st.file_uploader(
+                "Carregue seu arquivo Excel",
+                type=["xlsx", "xls"],
+                accept_multiple_files=False
             )
         
-        with col2:
-            # Opção para remover espaços em branco
-            auto_trim = st.checkbox(
-                "Remover espaços em branco automaticamente",
-                value=True,
-                help="Remove espaços extras no início/fim de textos e nomes de colunas"
-            )
-        
-        arquivo = st.file_uploader(
-            "Carregue seu arquivo Excel",
-            type=["xlsx", "xls"],
-            accept_multiple_files=False
-        )
-    
-    if arquivo is not None:
-        try:
-            if tipo_arquivo == "CSV":
-                # Ler o arquivo CSV com o delimitador especificado
-                dados = pd.read_csv(arquivo, delimiter=delimiter)
-                
-            else:  # Excel
-                # Ler o arquivo Excel
-                if sheet_name.strip():  # Se foi especificado um nome de planilha
-                    dados = pd.read_excel(arquivo, sheet_name=sheet_name)
-                else:  # Carrega a primeira planilha
-                    dados = pd.read_excel(arquivo)
-            
-            # Aplicar trim automático se selecionado
-            if auto_trim:
-                # Trim em nomes de colunas
-                dados.columns = dados.columns.str.strip()
-                
-                # Trim em valores de texto
-                for col in dados.select_dtypes(include=['object']).columns:
-                    dados[col] = dados[col].apply(lambda x: x.strip() if isinstance(x, str) else x)
-            
-            st.session_state.dados = dados
-            st.success(f"✅ Arquivo carregado com sucesso! Shape: {dados.shape}")
-            
-            # Mostrar preview dos dados
-            with st.expander("📋 Visualizar primeiras linhas"):
-                st.dataframe(dados.head())
-            
-            # Mostrar informações básicas
-            col_info1, col_info2, col_info3 = st.columns(3)
-            with col_info1:
-                st.metric("Total de linhas", dados.shape[0])
-            with col_info2:
-                st.metric("Total de colunas", dados.shape[1])
-            with col_info3:
-                st.metric("Valores faltantes", dados.isnull().sum().sum())
-                
-        except Exception as e:
-            st.error(f"❌ Erro ao carregar o arquivo: {e}")
-            
-            # Mensagens de erro específicas
-            if tipo_arquivo == "Excel (XLSX)":
-                st.info("💡 Dicas para arquivos Excel:")
-                st.info("- Verifique se o nome da planilha está correto")
-                st.info("- Certifique-se de que o arquivo não está corrompido")
-                st.info("- Tente salvar como XLSX mais recente")
-            else:
-                st.info("💡 Dicas para arquivos CSV:")
-                st.info("- Verifique se o delimitador está correto")
-                st.info("- Confirme a codificação do arquivo")
-                st.info("- Cheque se há linhas mal formatadas")
-                
-                # Mostrar pré-visualização
-                st.success("Arquivo carregado com sucesso!")
-                st.write("Pré-visualização dos dados (5 primeiras linhas):")
-                st.dataframe(dados.head())
-                save_session()
-                # Mostrar estatísticas básicas
-                with st.expander("📊 Estatísticas básicas do arquivo"):
-                    st.write(f"Total de linhas: {len(dados)}")
-                    st.write(f"Total de colunas: {len(dados.columns)}")
-                    st.write("Tipos de dados:")
-                    st.write(dados.dtypes)
+        if arquivo is not None:
+            try:
+                if tipo_arquivo == "CSV":
+                    # Ler o arquivo CSV com o delimitador especificado
+                    dados = pd.read_csv(arquivo, delimiter=delimiter)
                     
-            except pd.errors.ParserError as e:
-                st.error(f"Erro ao ler arquivo com o delimitador '{delimiter}'. Tente outro delimitador.")
-                st.error(f"Detalhes do erro: {str(e)}")
+                else:  # Excel
+                    # Ler o arquivo Excel
+                    if sheet_name.strip():  # Se foi especificado um nome de planilha
+                        dados = pd.read_excel(arquivo, sheet_name=sheet_name)
+                    else:  # Carrega a primeira planilha
+                        dados = pd.read_excel(arquivo)
+                
+                # Aplicar trim automático se selecionado
+                if auto_trim:
+                    # Trim em nomes de colunas
+                    dados.columns = dados.columns.str.strip()
+                    
+                    # Trim em valores de texto
+                    for col in dados.select_dtypes(include=['object']).columns:
+                        dados[col] = dados[col].apply(lambda x: x.strip() if isinstance(x, str) else x)
+                
+                st.session_state.dados = dados
+                st.success(f"✅ Arquivo carregado com sucesso! Shape: {dados.shape}")
+                
+                # Mostrar preview dos dados
+                with st.expander("📋 Visualizar primeiras linhas"):
+                    st.dataframe(dados.head())
+                
+                # Mostrar informações básicas
+                col_info1, col_info2, col_info3 = st.columns(3)
+                with col_info1:
+                    st.metric("Total de linhas", dados.shape[0])
+                with col_info2:
+                    st.metric("Total de colunas", dados.shape[1])
+                with col_info3:
+                    st.metric("Valores faltantes", dados.isnull().sum().sum())
+                    
             except Exception as e:
-                st.error(f"Erro inesperado ao processar o arquivo: {str(e)}")
-                st.error("Verifique se o arquivo está no formato correto e tente novamente.")
-    
+                st.error(f"❌ Erro ao carregar o arquivo: {e}")
+                
+                # Mensagens de erro específicas
+                if tipo_arquivo == "Excel (XLSX)":
+                    st.info("💡 Dicas para arquivos Excel:")
+                    st.info("- Verifique se o nome da planilha está correto")
+                    st.info("- Certifique-se de que o arquivo não está corrompido")
+                    st.info("- Tente salvar como XLSX mais recente")
+                else:
+                    st.info("💡 Dicas para arquivos CSV:")
+                    st.info("- Verifique se o delimitador está correto")
+                    st.info("- Confirme a codificação do arquivo")
+                    st.info("- Cheque se há linhas mal formatadas")
+                    
+        
    # Seção para ajuste de nomes de variáveis
     if st.session_state.dados is not None:
         st.divider()
