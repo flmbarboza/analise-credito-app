@@ -15,7 +15,17 @@ def main():
         st.session_state.update(saved)
         if saved:
             st.info("✅ Dados recuperados da sessão anterior.")
-    
+
+    if 'variaveis_ativas' not in st.session_state:
+        # Inicializa com TODAS as colunas exceto target
+        todas_colunas = [col for col in dados.columns if col != target]
+        st.session_state.variaveis_ativas = todas_colunas
+        st.info(f"ℹ️ `variaveis_ativas` inicializado com {len(todas_colunas)} variáveis.")
+      
+    # DEBUG: Mostrar estado atual
+    st.sidebar.write("🔍 Debug - Variáveis ativas no session_state:")
+    st.sidebar.write(st.session_state.variaveis_ativas)
+  
     st.title("📊 Análise Univariada")
 
     # --- 1. VALIDAÇÃO DE DADOS (fora de qualquer expander) ---
