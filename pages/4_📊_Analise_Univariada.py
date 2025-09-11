@@ -9,12 +9,13 @@ import base64
 def main():
     from utils import load_session, save_session
     
-    # Carrega sessão salva
     if 'dados' not in st.session_state:
         saved = load_session()
-        st.session_state.update(saved)
-        if saved:
+        if saved:  # Só atualiza se houver dados salvos
+            st.session_state.update(saved)
             st.info("✅ Dados recuperados da sessão anterior.")
+            # DEBUG: Mostrar o que foi carregado
+            st.sidebar.write("🔍 Sessão carregada:", list(saved.keys()))
 
     if 'variaveis_ativas' not in st.session_state:
         # Inicializa com TODAS as colunas exceto target
